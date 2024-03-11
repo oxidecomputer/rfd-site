@@ -18,7 +18,7 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const url = `https://rfd-api.shared.oxide.computer/${path.replace(/^\//, '')}`
+  const url = `${process.env.RFD_API}/${path.replace(/^\//, '')}`
   console.info(`Requesting ${url} from the RFD API`)
 
   const response = await fetch(url, { headers })

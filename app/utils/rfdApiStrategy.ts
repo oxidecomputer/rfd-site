@@ -17,6 +17,7 @@ import {
 import type { RfdApiPermission, RfdApiProvider, RfdScope } from './rfdApi'
 
 export type RfdApiStrategyOptions = {
+  host: string
   clientID: string
   clientSecret: string
   callbackURL: string
@@ -85,11 +86,10 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
   RfdApiExtraParams
 > {
   public name = `rfd-api`
-
-  private readonly userInfoURL = 'https://rfd-api.shared.oxide.computer/self'
+  protected host = ``
 
   constructor(
-    { clientID, clientSecret, callbackURL, remoteProvider, scope }: RfdApiStrategyOptions,
+    { host, clientID, clientSecret, callbackURL, remoteProvider, scope }: RfdApiStrategyOptions,
     verify: StrategyVerifyCallback<
       User,
       OAuth2StrategyVerifyParams<RfdApiProfile, RfdApiExtraParams>
@@ -100,13 +100,18 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
         clientID,
         clientSecret,
         callbackURL,
-        authorizationURL: `https://rfd-api.shared.oxide.computer/login/oauth/${remoteProvider}/code/authorize`,
-        tokenURL: `https://rfd-api.shared.oxide.computer/login/oauth/${remoteProvider}/code/token`,
+        authorizationURL: `${host}/login/oauth/${remoteProvider}/code/authorize`,
+        tokenURL: `${host}/login/oauth/${remoteProvider}/code/token`,
       },
       verify,
     )
     this.name = `${this.name}-${remoteProvider}`
     this.scope = this.parseScope(scope)
+    this.host = host
+  }
+
+  protected userInfoUrl(): string {
+    return `${this.host}/self`
   }
 
   protected authorizationParams(): URLSearchParams {
@@ -115,7 +120,7 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
   }
 
   protected async userProfile(accessToken: string): Promise<RfdApiProfile> {
-    const response = await fetch(this.userInfoURL, {
+    const response = await fetch(this.userInfoUrl(), {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },

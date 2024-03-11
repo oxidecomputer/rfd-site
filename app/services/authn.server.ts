@@ -88,6 +88,7 @@ const auth = new Authenticator<User>(sessionStorage)
 auth.use(
   new RfdApiStrategy(
     {
+      host: process.env.RFD_API || '',
       clientID: process.env.RFD_API_CLIENT_ID || '',
       clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
       callbackURL: process.env.RFD_API_GOOGLE_CALLBACK_URL || '',
@@ -103,6 +104,7 @@ auth.use(
 auth.use(
   new RfdApiStrategy(
     {
+      host: process.env.RFD_API || '',
       clientID: process.env.RFD_API_CLIENT_ID || '',
       clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
       callbackURL: process.env.RFD_API_GITHUB_CALLBACK_URL || '',
