@@ -6,6 +6,23 @@
  * Copyright Oxide Computer Company
  */
 
+import { isLocalMode } from './rfd.server'
+
+export function getRfdApiUrl(): string {
+  // If we are loading in local mode, then the API is not used, and it is fine to return
+  // and invalid value
+  if (isLocalMode) {
+    return ''
+  }
+
+  // Otherwise crash the system if we do not have an API target set
+  if (!process.env.RFD_API) {
+    throw Error('Env var RFD_API must be set when not running in local mode')
+  }
+
+  return process.env.RFD_API
+}
+
 export async function apiRequest<T>(
   path: string,
   accessToken: string | undefined,
@@ -18,7 +35,7 @@ export async function apiRequest<T>(
     headers['Authorization'] = `Bearer ${accessToken}`
   }
 
-  const url = `https://rfd-api.shared.oxide.computer/${path.replace(/^\//, '')}`
+  const url = `${getRfdApiUrl()}/${path.replace(/^\//, '')}`
   console.info(`Requesting ${url} from the RFD API`)
 
   const response = await fetch(url, { headers })

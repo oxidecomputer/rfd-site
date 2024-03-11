@@ -6,22 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
-import type { User } from '~/services/authn.server'
-import { fetchGroups } from '~/services/rfd.server'
-
 import type { RfdApiPermission } from './rfdApi'
 
 export type Permission = { k: 'ReadDiscussions' } | { k: 'ReadRfd'; v: number }
-
-export async function canUser(user: User, permission: Permission): Promise<boolean> {
-  const groups = (await fetchGroups(user)).filter((group) =>
-    user.groups.includes(group.name),
-  )
-  const allPermissions = user.permissions.concat(
-    groups.flatMap((group) => group.permissions),
-  )
-  return can(allPermissions, permission)
-}
 
 export function can(allPermissions: RfdApiPermission[], permission: Permission): boolean {
   const checks = createChecks(permission)
