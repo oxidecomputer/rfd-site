@@ -89,7 +89,14 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
   protected userInfoUrl = ``
 
   constructor(
-    { host, clientID, clientSecret, callbackURL, remoteProvider, scope }: RfdApiStrategyOptions,
+    {
+      host,
+      clientID,
+      clientSecret,
+      callbackURL,
+      remoteProvider,
+      scope,
+    }: RfdApiStrategyOptions,
     verify: StrategyVerifyCallback<
       User,
       OAuth2StrategyVerifyParams<RfdApiProfile, RfdApiExtraParams>
