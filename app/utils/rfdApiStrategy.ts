@@ -86,7 +86,7 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
   RfdApiExtraParams
 > {
   public name = `rfd-api`
-  protected host = ``
+  protected userInfoUrl = ``
 
   constructor(
     { host, clientID, clientSecret, callbackURL, remoteProvider, scope }: RfdApiStrategyOptions,
@@ -107,11 +107,7 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
     )
     this.name = `${this.name}-${remoteProvider}`
     this.scope = this.parseScope(scope)
-    this.host = host
-  }
-
-  protected userInfoUrl(): string {
-    return `${this.host}/self`
+    this.userInfoUrl = `${host}/self`
   }
 
   protected authorizationParams(): URLSearchParams {
@@ -120,7 +116,7 @@ export class RfdApiStrategy<User extends ExpiringUser> extends OAuth2Strategy<
   }
 
   protected async userProfile(accessToken: string): Promise<RfdApiProfile> {
-    const response = await fetch(this.userInfoUrl(), {
+    const response = await fetch(this.userInfoUrl, {
       headers: {
         Authorization: `Bearer ${accessToken}`,
       },
