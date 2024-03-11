@@ -1,0 +1,108 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, you can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright Oxide Computer Company
+ */
+
+.hljs {
+  color: #babcbd;
+  /* background: #080f11; */
+}
+
+.hljs::selection,
+.hljs::selection {
+  color: #1e1e22;
+  background: #bf8fef;
+}
+
+.hljs-code,
+.hljs-comment,
+.hljs-quote {
+  color: #888896;
+}
+
+.hljs-deletion,
+.hljs-literal,
+.hljs-number {
+  color: #e87e97;
+}
+
+.hljs-doctag,
+.hljs-meta,
+.hljs-operator,
+.hljs-punctuation,
+.hljs-selector-attr,
+.hljs-subst,
+.hljs-template-variable {
+  color: #f1d78f;
+}
+
+.hljs-type {
+  color: #efef8f;
+}
+
+.hljs-selector-class,
+.hljs-selector-id,
+.hljs-tag,
+.hljs-title {
+  color: #48d597;
+}
+
+.hljs-addition,
+.hljs-regexp,
+.hljs-string {
+  color: #48d597;
+}
+
+.hljs-class,
+.hljs-property {
+  color: #8fefbf;
+}
+
+.hljs-name,
+.hljs-selector-tag {
+  color: #48d597;
+}
+
+.hljs-built_in,
+.hljs-keyword {
+  color: #7996dd;
+}
+
+.hljs-bullet,
+.hljs-section {
+  color: #8f8fef;
+}
+
+.hljs-selector-pseudo {
+  color: #2e8160;
+}
+
+.hljs-attr,
+.hljs-attribute,
+.hljs-params,
+.hljs-variable {
+  color: #a2dfc5;
+}
+
+.hljs-link,
+.hljs-symbol {
+  color: #7e89e8;
+}
+
+.hljs-literal,
+.hljs-strong,
+.hljs-title {
+  font-weight: 700;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+code.language-bash:before {
+  content: '$ ';
+  /* @apply text-grey-700; */
+}

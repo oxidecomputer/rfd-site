@@ -1,0 +1,128 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, you can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright Oxide Computer Company
+ */
+
+@import './lib/fonts.css';
+@import '@oxide/design-system/styles/dist/main.css';
+@import '@oxide/design-system/styles/dist/yellow.css';
+@import '@oxide/design-system/styles/dist/purple.css';
+@import '@oxide/design-system/styles/dist/green.css';
+@import '@oxide/design-system/styles/dist/blue.css';
+@import '@oxide/design-system/components/dist/asciidoc.css';
+@import '@oxide/design-system/components/dist/button.css';
+
+@import './lib/asciidoc.css';
+@import './lib/highlight.css';
+@import './lib/github-markdown.css';
+@import './lib/loading-bar.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --toc-width: 240px;
+  --header-height: 60px;
+}
+
+.light-mode {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+.light-mode img,
+.light-mode picture,
+.light-mode video {
+  filter: invert(1) hue-rotate(180deg);
+}
+
+@media only screen and (max-width: 1200px) {
+  :root {
+    --toc-width: 200px;
+  }
+}
+
+html,
+body {
+  -webkit-font-smoothing: antialiased;
+  font-feature-settings:
+    'ss02' on,
+    'ss03' on,
+    'ss09' on,
+    'ss06' on,
+    'ss07' on,
+    'ss08' on,
+    'case' on;
+  -webkit-text-stroke: 0;
+  font-size: 16px;
+
+  @apply bg-default;
+}
+
+@layer base {
+  body {
+    @apply text-sans-sm text-default;
+  }
+}
+
+.overlay-shadow {
+  box-shadow: 0px 8px 50px 0px rgba(0, 0, 0, 0.5);
+}
+
+.backdrop {
+  background-color: var(--surface-scrim);
+  transition-property: opacity, backdrop-filter;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  transition-duration: 50ms;
+  opacity: 1;
+  backdrop-filter: blur(4px);
+}
+
+/**
+ * Remove focus ring for non-explicit scenarios.
+ */
+a:focus-visible,
+button:focus-visible,
+[role='listbox']:focus-visible,
+[role='option']:focus-visible,
+[role='button']:focus-visible,
+input[type='radio']:focus-visible,
+input[type='checkbox']:focus-visible {
+  @apply rounded outline-0 ring ring-2 ring-accent-tertiary;
+}
+
+a:focus,
+button:focus,
+[role='listbox']:focus,
+[role='option']:focus,
+[role='button']:focus,
+input[type='radio']:focus,
+input[type='checkbox']:focus {
+  outline: 2px solid black;
+  outline-offset: -2px;
+  box-shadow: none;
+  @apply rounded outline-0 ring ring-2 ring-accent-tertiary;
+}
+
+a:focus:not(:focus-visible),
+button:focus:not(:focus-visible),
+[role='listbox']:focus:not(:focus-visible),
+[role='option']:focus:not(:focus-visible),
+[role='button']:focus:not(:focus-visible),
+input[type='radio']:focus:not(:focus-visible),
+input[type='checkbox']:focus:not(:focus-visible) {
+  @apply outline-0 ring-0;
+}
+
+.link-with-underline {
+  @apply text-secondary hover:text-default;
+  text-decoration: underline;
+  text-decoration-color: var(--content-quinary);
+
+  &:hover {
+    text-decoration-color: var(--content-tertiary);
+  }
+}
