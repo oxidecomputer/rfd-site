@@ -15,7 +15,7 @@ import { Octokit } from 'octokit'
 import { generateAuthors, type Author } from '~/components/rfd/RfdPreview'
 import { isTruthy } from '~/utils/isTruthy'
 import { parseRfdNum } from '~/utils/parseRfdNum'
-import { canUser } from '~/utils/permission'
+import { can, Permission } from '~/utils/permission'
 import type { GroupResponse, RfdListResponseItem, RfdResponse } from '~/utils/rfdApi'
 
 import type { Group, User } from './authn.server'
@@ -54,6 +54,16 @@ export type RfdListItem = {
 
 const localRepo = process.env.LOCAL_RFD_REPO
 export const isLocalMode = process.env.NODE_ENV === 'development' && localRepo
+
+async function canUser(user: User, permission: Permission): Promise<boolean> {
+  const groups = (await fetchGroups(user)).filter((group) =>
+    user.groups.includes(group.name),
+  )
+  const allPermissions = user.permissions.concat(
+    groups.flatMap((group) => group.permissions),
+  )
+  return can(allPermissions, permission)
+}
 
 function findLineStartingWith(content: string, prefixRegex: string): string | undefined {
   // (^|\n) is required to match either the first line (beginning of file) or
