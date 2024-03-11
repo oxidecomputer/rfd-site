@@ -96,6 +96,26 @@ current branch. Missing RFDs will 404. If you are working on two RFDs and they'r
 different branches, you cannot preview both at the same time unless you make a temporary
 combined branch that contains both.
 
+### Configuration
+
+When running in a non-local mode, the following settings must be specified:
+
+* `SESSION_SECRET` - Key that will be used to signed cookies
+
+* `RFD_API` - Backend RFD API to communicate with (i.e. https://api.server.com)
+* `RFD_API_CLIENT_ID` - OAuth client id create via the RFD API
+* `RFD_API_CLIENT_SECRET` - OAuth client secret create via the RFD API
+* `RFD_API_GOOGLE_CALLBACK_URL` - Should be of the form of `https://{rfd_site_hostname}/auth/google/callback`
+* `RFD_API_GITHUB_CALLBACK_URL` - Should be of the form of `https://{rfd_site_hostname}/auth/github/callback`
+
+* `STORAGE_URL` - Url of bucket for static assets
+* `STORAGE_KEY_NAME` - Name of the key defined in `STORAGE_KEY`
+* `STORAGE_KEY` - Key for generating signed static asset urls
+
+* `GITHUB_APP_ID` - App id for fetching GitHub PR discussions
+* `GITHUB_INSTALLATION_ID` - Installation id of GitHub App
+* `GITHUB_PRIVATE_KEY` - Private key of the GitHub app for discussion fetching
+
 ## License
 
 Unless otherwise noted, all components are licensed under the
