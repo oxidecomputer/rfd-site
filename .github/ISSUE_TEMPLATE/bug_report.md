@@ -1,7 +1,7 @@
 ---
-name: Issue Template
-about: Generic issue template
-title: ''
+name: Bug report
+about: Create a report to help us improve
+title: "[BUG]"
 labels: ''
 assignees: ''
 
