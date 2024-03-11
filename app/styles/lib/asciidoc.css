@@ -1,0 +1,72 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, you can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright Oxide Computer Company
+ */
+
+@layer components {
+  /* Removes top spacing from header if it is the first element */
+  .asciidoc-body #content > .sect1:first-of-type > h1:nth-child(2),
+  .asciidoc-body #content > .sect1:first-of-type > h2:nth-child(2),
+  .asciidoc-body #content > .sect1:first-of-type > h3:nth-child(2),
+  .asciidoc-body #content > .sect1:first-of-type > h4:nth-child(2),
+  .asciidoc-body #content > .sect1:first-of-type > h5:nth-child(2) {
+    @apply mt-0;
+  }
+
+  .asciidoc-body h2[data-sectnum] a,
+  .asciidoc-body h1[data-sectnum] a,
+  .asciidoc-body h3[data-sectnum] a,
+  .asciidoc-body h4[data-sectnum] a,
+  .asciidoc-body h5[data-sectnum] a {
+    @apply inline;
+  }
+
+  .asciidoc-body h1[data-sectnum]:before,
+  .asciidoc-body h2[data-sectnum]:before,
+  .asciidoc-body h3[data-sectnum]:before,
+  .asciidoc-body h4[data-sectnum]:before,
+  .asciidoc-body h5[data-sectnum]:before {
+    @apply pointer-events-none top-[6px] mr-2 inline-block text-quaternary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    content: attr(data-sectnum);
+  }
+
+  .asciidoc-body h3[data-sectnum]:before {
+    @apply top-[2px];
+  }
+
+  .asciidoc-body h4[data-sectnum]:before,
+  .asciidoc-body h5[data-sectnum]:before {
+    @apply top-0;
+  }
+
+  .asciidoc-body h1[data-sectnum] a:after,
+  .asciidoc-body h2[data-sectnum] a:after,
+  .asciidoc-body h3[data-sectnum] a:after,
+  .asciidoc-body h4[data-sectnum] a:after,
+  .asciidoc-body h5[data-sectnum] a:after {
+    @apply hidden;
+  }
+
+  .asciidoc-body .table-wrapper caption a:hover:after {
+    @apply align-[-2px];
+  }
+
+  .asciidoc-body img {
+    @apply bg-inverse;
+  }
+
+  .asciidoc-body .transparent-dark img {
+    @apply bg-raise;
+  }
+
+  .asciidoc-body span img {
+    @apply bg-transparent;
+  }
+
+  .asciidoc-body .admonition-content > div:first-of-type {
+    @apply text-sans-semi-md;
+  }
+}
