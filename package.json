@@ -48,7 +48,7 @@
     "remix-utils": "^3.3.0",
     "simple-text-diff": "^1.7.0",
     "tunnel-rat": "^0.1.2",
-    "zod": "^3.19.1"
+    "zod": "^3.22.3"
   },
   "devDependencies": {
     "@csstools/postcss-global-data": "^1.0.2",
