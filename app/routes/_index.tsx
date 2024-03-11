@@ -388,13 +388,28 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
   )
 }
 
-const Labels = ({ labels }: { labels: string }) => {
+const Labels = ({ labels }: { labels: string }) => (
+  <div className="order-4 col-span-3 hidden max-h-[2.5rem] 1000:flex">
+    <ClientOnly
+      fallback={
+        <>
+          <div className="h-4 w-16 rounded bg-tertiary" />
+          <div className="ml-1 hidden h-4 w-12 rounded bg-tertiary 800:block"></div>
+        </>
+      }
+    >
+      {() => <LabelsInner labels={labels} />}
+    </ClientOnly>
+  </div>
+)
+
+const LabelsInner = ({ labels }: { labels: string }) => {
   const containerEl = useRef<HTMLDivElement>(null)
   const { isOverflow } = useIsOverflow(containerEl)
   return (
     <div
       ref={containerEl}
-      className="order-4 col-span-3 hidden max-h-[2.5rem] flex-wrap gap-2 overflow-hidden pr-8 text-quaternary 1000:flex"
+      className="relative flex flex-shrink flex-wrap gap-1 overflow-hidden pr-8 text-quaternary"
     >
       {labels ? (
         labels.split(',').map((label) => (
