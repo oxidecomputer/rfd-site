@@ -100,7 +100,7 @@ const CustomDocument = ({ document }: { document: AdocTypes.Document }) => {
 
             <ul
               id="footnotes"
-              className="col-span-12 col-start-2 800:pr-16 1100:w-[calc(100%-var(--toc-width))] 1200:col-start-3"
+              className="col-span-12 col-start-2 800:pr-16 1100:w-[calc(100%-var(--toc-width))] 1200:col-start-3 print:!col-span-12 print:!col-start-1"
             >
               {footnotes.map((footnote) => (
                 <li
@@ -153,11 +153,11 @@ const CustomDocument = ({ document }: { document: AdocTypes.Document }) => {
           <div
             id="content"
             ref={bodyRef}
-            className="asciidoc-body max-w-full flex-shrink overflow-hidden 800:overflow-visible 800:pr-10 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16"
+            className="asciidoc-body max-w-full flex-shrink overflow-hidden 800:overflow-visible 800:pr-10 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:p-0"
           >
             <Content blocks={blocks} />
           </div>
-          <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1100:sticky 1100:block">
+          <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1100:sticky 1100:block print:hidden">
             <ui.Out />
             <DesktopOutline toc={toc} activeItem={activeItem} />
           </div>
