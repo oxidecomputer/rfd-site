@@ -8,11 +8,10 @@
 
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useLoaderData } from '@remix-run/react'
-import { useEffect, type Dispatch, type SetStateAction } from 'react'
 
 import type { loader } from '~/routes/rfd.$slug'
 
-import { DropdownItem, DropdownLink, DropdownMenu } from '../Dropdown'
+import { DropdownLink, DropdownMenu } from '../Dropdown'
 import Icon from '../Icon'
 
 const MoreDropdown = () => {

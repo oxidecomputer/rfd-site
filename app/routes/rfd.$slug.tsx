@@ -17,7 +17,7 @@ import {
 import { Await, useLoaderData, useLocation } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { Fragment, Suspense, useMemo, useState } from 'react'
+import { Fragment, Suspense, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { ClientOnly } from 'remix-utils'
 
