@@ -214,12 +214,12 @@ export default function Rfd() {
           </div>
 
           <div className="col-span-12 grid grid-cols-12 items-baseline">
-            <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2">
+            <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 print:hidden">
               <span className="hidden 1200:inline">RFD</span> {number}
             </div>
             <div className="col-span-12 flex items-baseline 800:col-span-11 1100:col-span-10">
-              <h1 className="w-full pr-4 text-sans-2xl 600:pr-10 800:text-sans-3xl 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16">
-                {title}
+              <h1 className="w-full pr-4 text-sans-2xl 600:pr-10 800:text-sans-3xl 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
+                <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
                 <div className="print:hidden">
@@ -234,11 +234,14 @@ export default function Rfd() {
           </div>
         </Container>
 
-        <div className="border-b border-secondary print:border-0">
-          <PropertyRow label="State" className="hidden capitalize print:block">
+        <div className="border-b border-secondary print:m-auto print:max-w-1200 print:rounded-lg print:border">
+          <PropertyRow
+            label="State"
+            className="hidden capitalize print:block print:border-t-0"
+          >
             {state}
           </PropertyRow>
-          <PropertyRow label="RFD" className="800:hidden">
+          <PropertyRow label="RFD" className="800:hidden print:hidden">
             {number.toString()}
           </PropertyRow>
           {authors.length > 0 && (
@@ -311,12 +314,13 @@ const PropertyRow = ({
 }) => (
   <div
     className={cn(
-      'w-full border-t py-3 border-secondary print:border-0 print:py-2',
+      'w-full border-t py-3 border-secondary print:py-2 print:border-default',
       className,
     )}
   >
     <Container isGrid>
-      <div className="col-span-4 text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2">
+      <div className="relative col-span-4 text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-default">
+        <div className="absolute -top-2 -bottom-2 right-0 w-px bg-[black]" />
         {label}
       </div>
       <div className="col-span-8 text-sans-md text-secondary 800:col-span-9 1200:col-span-8 print:col-span-10">
