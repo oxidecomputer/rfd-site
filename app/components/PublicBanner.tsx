@@ -33,7 +33,7 @@ export function PublicBanner() {
   return (
     <>
       {/* The [&+*]:pt-10 style is to ensure the page container isn't pushed out of screen as it uses 100vh for layout */}
-      <label className="flex h-10 w-full items-center justify-center text-sans-md text-info-secondary bg-info-secondary">
+      <label className="flex h-10 w-full items-center justify-center text-sans-md text-info-secondary bg-info-secondary print:hidden">
         <Icon name="info" size={16} className="mr-2" />
         Viewing public RFDs.
         <button

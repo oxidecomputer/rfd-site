@@ -15,20 +15,8 @@ import type { loader } from '~/routes/rfd.$slug'
 import { DropdownItem, DropdownLink, DropdownMenu } from '../Dropdown'
 import Icon from '../Icon'
 
-const MoreDropdown = ({
-  setConfidential,
-  confidential,
-}: {
-  setConfidential: Dispatch<SetStateAction<Boolean>>
-  confidential: Boolean
-}) => {
+const MoreDropdown = () => {
   const { rfd } = useLoaderData<typeof loader>()
-
-  useEffect(() => {
-    if (!confidential) return
-    window.print()
-    setConfidential(false)
-  }, [confidential, setConfidential])
 
   return (
     <Dropdown.Root modal={false}>
@@ -57,14 +45,6 @@ const MoreDropdown = ({
         >
           View PDF
         </DropdownLink>
-
-        <DropdownItem
-          onSelect={() => {
-            setConfidential(true)
-          }}
-        >
-          Print confidential PDF
-        </DropdownItem>
       </DropdownMenu>
     </Dropdown.Root>
   )

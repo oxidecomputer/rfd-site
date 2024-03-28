@@ -131,8 +131,6 @@ export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
 export default function Rfd() {
   const { pathname, hash } = useLocation()
 
-  const [confidential, setConfidential] = useState<Boolean>(false)
-
   const { rfd, groups, discussionPromise } = useLoaderData<typeof loader>()
   const {
     rfd: { number, title, state, authors, labels, commit_date, content },
@@ -223,10 +221,7 @@ export default function Rfd() {
               </h1>
               {userIsInternal && (
                 <div className="print:hidden">
-                  <MoreDropdown
-                    setConfidential={setConfidential}
-                    confidential={confidential}
-                  />
+                  <MoreDropdown />
                 </div>
               )}
             </div>
@@ -294,11 +289,6 @@ export default function Rfd() {
 
         <Asciidoc content={doc} options={opts} />
       </main>
-      {(confidential || !userIsInternal) && (
-        <div className="fixed top-1/2 left-1/2 hidden w-full -translate-x-1/2 -translate-y-1/2 rotate-45 text-[3rem] opacity-20 print:block">
-          <div>Oxide Confidential Information</div>
-        </div>
-      )}
     </>
   )
 }
