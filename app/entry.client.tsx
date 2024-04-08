@@ -6,27 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
-import { RemixBrowser, useLocation, useMatches } from '@remix-run/react'
-import * as Sentry from '@sentry/remix'
-import { startTransition, StrictMode, useEffect } from 'react'
+import { RemixBrowser } from '@remix-run/react'
+import { startTransition, StrictMode } from 'react'
 import { hydrateRoot } from 'react-dom/client'
-
-if ('ENV' in window && typeof window.ENV.SENTRY_DSN === 'string') {
-  Sentry.init({
-    dsn: window.ENV.SENTRY_DSN,
-    tracesSampleRate: 0.1,
-    enabled: process.env.NODE_ENV === 'production',
-    integrations: [
-      new Sentry.BrowserTracing({
-        routingInstrumentation: Sentry.remixRouterInstrumentation(
-          useEffect,
-          useLocation,
-          useMatches,
-        ),
-      }),
-    ],
-  })
-}
 
 startTransition(() => {
   hydrateRoot(

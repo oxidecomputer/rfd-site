@@ -9,17 +9,8 @@
 import { PassThrough } from 'node:stream'
 import { Response, type AppLoadContext, type EntryContext } from '@remix-run/node'
 import { RemixServer } from '@remix-run/react'
-import * as Sentry from '@sentry/remix'
 import isbot from 'isbot'
 import { renderToPipeableStream } from 'react-dom/server'
-
-if (typeof process.env.SENTRY_DSN === 'string') {
-  Sentry.init({
-    dsn: process.env.SENTRY_DSN,
-    tracesSampleRate: 0.1,
-    enabled: process.env.NODE_ENV === 'production',
-  })
-}
 
 const ABORT_DELAY = 5_000
 

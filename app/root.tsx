@@ -24,7 +24,6 @@ import {
   useLoaderData,
   useRouteLoaderData,
 } from '@remix-run/react'
-import { withSentry } from '@sentry/remix'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { Author } from '~/components/rfd/RfdPreview'
@@ -63,9 +62,6 @@ export const loader = async ({ request }: LoaderArgs) => {
   return json({
     // Any data added to the ENV key of this loader will be injected into the
     // global window object (window.ENV)
-    ENV: {
-      SENTRY_DSN: process.env.SENTRY_DSN,
-    },
     theme,
     inlineComments,
     user,
@@ -145,4 +141,4 @@ function App() {
   )
 }
 
-export default withSentry(App)
+export default App
