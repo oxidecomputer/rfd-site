@@ -32,6 +32,7 @@ const scope: RfdScope[] = [
 ]
 
 export type User = {
+  id: string
   authenticator: AuthenticationService
   email: string | null
   displayName: string | null
@@ -71,6 +72,7 @@ async function parseUser(
   )
 
   return {
+    id: profile._raw.info.id,
     authenticator: service,
     email: profile.emails?.[0].value || '',
     displayName: profile.displayName ?? null,
@@ -141,6 +143,7 @@ async function isAuthenticated(
 async function isAuthenticated(request: Request, options: any): Promise<User | null> {
   if (isLocalMode) {
     const user: User = {
+      id: 'none',
       authenticator: 'local',
       email: 'local@oxide.computer',
       displayName: 'local',
