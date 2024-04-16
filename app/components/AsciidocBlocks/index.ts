@@ -9,12 +9,12 @@
 import { AsciiDocBlocks } from '@oxide/design-system/components/dist'
 import { getText, type AdocTypes, type Options } from '@oxide/react-asciidoc'
 
-import CustomDocument, { ui } from './Document'
+import { CustomDocument, MinimalDocument, ui } from './Document'
 import Image from './Image'
 import Listing from './Listing'
 import Section from './Section'
 
-export const opts: Options = {
+export let opts: Options = {
   overrides: {
     admonition: AsciiDocBlocks.Admonition,
     table: AsciiDocBlocks.Table,
@@ -69,4 +69,4 @@ const convertInlineQuoted = (node: AdocTypes.Inline) => {
   }
 }
 
-export { ui, convertInlineQuoted }
+export { ui, convertInlineQuoted, MinimalDocument }

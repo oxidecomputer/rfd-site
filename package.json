@@ -14,6 +14,7 @@
   },
   "dependencies": {
     "@ariakit/react": "^0.3.5",
+    "@codemirror/language": "^6.10.1",
     "@floating-ui/react": "^0.17.0",
     "@meilisearch/instant-meilisearch": "^0.8.2",
     "@oxide/design-system": "^1.4.0",
@@ -26,7 +27,11 @@
     "@sentry/remix": "^7.15.0",
     "@tanstack/react-query": "^4.3.9",
     "@types/marked": "^4.0.8",
+    "@types/sqlite3": "^3.1.11",
+    "@uiw/codemirror-theme-console": "^4.21.25",
+    "@uiw/react-codemirror": "^4.21.25",
     "classnames": "^2.3.1",
+    "codemirror-asciidoc": "^2.0.1",
     "dayjs": "^1.11.5",
     "fuzzysort": "^2.0.1",
     "highlight.js": "^11.6.0",
@@ -47,7 +52,10 @@
     "remix-auth-oauth2": "^1.11.1",
     "remix-utils": "^3.3.0",
     "simple-text-diff": "^1.7.0",
+    "sqlite": "^5.1.1",
+    "sqlite3": "^5.1.7",
     "tunnel-rat": "^0.1.2",
+    "usehooks-ts": "^3.1.0",
     "zod": "^3.22.3"
   },
   "devDependencies": {

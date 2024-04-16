@@ -25,7 +25,7 @@ import {
 
 export const ui = tunnel()
 
-const CustomDocument = ({ document }: { document: AdocTypes.Document }) => {
+export const CustomDocument = ({ document }: { document: AdocTypes.Document }) => {
   const [titleEl, setTitleEl] = useState<HTMLHeadingElement | null>(null)
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeItem, setActiveItem] = useState('')
@@ -174,4 +174,8 @@ const CustomDocument = ({ document }: { document: AdocTypes.Document }) => {
   )
 }
 
-export default CustomDocument
+export const MinimalDocument = ({ document }: { document: AdocTypes.Document }) => (
+  <div id="content" className="asciidoc-body w-full max-w-[840px]">
+    <Content blocks={document.getBlocks()} />
+  </div>
+)

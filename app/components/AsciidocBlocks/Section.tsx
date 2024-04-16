@@ -25,6 +25,9 @@ const Section = ({ node }: { node: SectionType }) => {
   let sectNum = node.getSectionNumeral()
   sectNum = sectNum === '.' ? '' : sectNum
 
+  const hasSectLinks = docAttrs['sectlinks'] === true
+  const hasSectNums = docAttrs['sectnums'] === true
+
   const sectNumLevels = docAttrs['sectnumlevels'] ? parseInt(docAttrs['sectnumlevels']) : 3
 
   if (node.getCaption()) {
@@ -52,30 +55,40 @@ const Section = ({ node }: { node: SectionType }) => {
     <>
       {/* eslint-disable-next-line jsx-a11y/anchor-is-valid, jsx-a11y/anchor-has-content */}
       <a className="anchor" id={node.getId() || ''} aria-hidden="true" />
-      <a className="link group" href={`#${node.getId()}`}>
-        {parse(stripAnchors(title))}
-        <Icon
-          name="link"
-          size={16}
-          className="ml-2 hidden text-accent-secondary group-hover:inline-block"
-        />
-      </a>
+      {hasSectLinks ? (
+        <a className="link group" href={`#${node.getId()}`}>
+          {parse(stripAnchors(title))}
+          <Icon
+            name="link"
+            size={16}
+            className="ml-2 hidden text-accent-secondary group-hover:inline-block"
+          />
+        </a>
+      ) : (
+        parse(stripAnchors(title))
+      )}
     </>
   )
 
   if (level === 0) {
+    const h1Props = {
+      className: cn('sect0', getRole(node)),
+      ...(hasSectNums && { 'data-sectnum': sectNum }), // Conditionally add data-sectnum
+    }
     return (
       <>
-        <h1 className={cn('sect0', getRole(node))} data-sectnum={sectNum}>
-          {title}
-        </h1>
+        <h1 {...h1Props}>{title}</h1>
         <Content blocks={node.getBlocks()} />
       </>
     )
   } else {
+    const elementProps = {
+      ...(hasSectNums && { 'data-sectnum': sectNum }), // Conditionally add data-sectnum
+    }
+
     return (
       <div className={cn(`sect${level}`, getRole(node))}>
-        {createElement(`h${level + 1}`, { 'data-sectnum': sectNum }, title)}
+        {createElement(`h${level + 1}`, elementProps, title)}
         <div className="sectionbody">
           <Content blocks={node.getBlocks()} />
         </div>

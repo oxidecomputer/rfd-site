@@ -20,6 +20,8 @@
 @import './lib/github-markdown.css';
 @import './lib/loading-bar.css';
 
+@import '../components/spinner.css';
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -60,6 +62,19 @@ body {
   font-size: 16px;
 
   @apply bg-default;
+}
+
+body.tome {
+  @apply m-0;
+}
+
+.cm-line {
+  @apply pl-4;
+}
+
+#code_mirror_wrapper .cm-line,
+#code_mirror_wrapper .cm-gutters {
+  @apply !text-[15px] !normal-case !tracking-normal text-mono-md;
 }
 
 @layer base {
