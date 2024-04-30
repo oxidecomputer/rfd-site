@@ -22,6 +22,7 @@ import {
   ScrollRestoration,
   useCatch,
   useLoaderData,
+  useMatches,
   useRouteLoaderData,
 } from '@remix-run/react'
 import { withSentry } from '@sentry/remix'
@@ -46,6 +47,8 @@ import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
 export const meta: V2_MetaFunction = () => {
   return [{ title: 'RFD / Oxide' }]
 }
+
+export const shouldRevalidate = () => false
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
@@ -98,29 +101,34 @@ export const Layout = ({
 }: {
   children: React.ReactNode
   theme?: string
-}) => (
-  <html lang="en" className={theme}>
-    <head>
-      <meta name="charset" content="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <Meta />
-      <Links />
-      <link rel="icon" href="/favicon.svg" />
-      <link rel="icon" type="image/png" href="/favicon.png" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      {/* Use plausible analytics only on Vercel */}
-      {process.env.NODE_ENV === 'production' && (
-        <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
-      )}
-    </head>
-    <body className="mb-32">
-      {children}
-      <ScrollRestoration />
-      <Scripts />
-      <LiveReload />
-    </body>
-  </html>
-)
+}) => {
+  const matches = useMatches()
+  const section = matches[matches.length - 1].pathname.split('/')[1]
+
+  return (
+    <html lang="en" className={theme}>
+      <head>
+        <meta name="charset" content="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+        <link rel="icon" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Use plausible analytics only on Vercel */}
+        {process.env.NODE_ENV === 'production' && (
+          <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
+        )}
+      </head>
+      <body className={section !== 'notes' ? 'mb-32' : ''}>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+        <LiveReload />
+      </body>
+    </html>
+  )
+}
 
 function App() {
   const { theme, isLocalMode, ENV } = useLoaderData<typeof loader>()

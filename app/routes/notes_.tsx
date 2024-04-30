@@ -6,11 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
-import { EmptyMessage } from '@oxide/design-system'
-import { redirect, type LoaderArgs } from '@remix-run/node'
-import { Link, useLoaderData } from '@remix-run/react'
+import { type LoaderArgs } from '@remix-run/node'
+import { Outlet } from '@remix-run/react'
 
-import Container from '~/components/Container'
 import { isAuthenticated } from '~/services/authn.server'
 
 export const loader = async ({ request }: LoaderArgs) => {
@@ -18,28 +16,33 @@ export const loader = async ({ request }: LoaderArgs) => {
 
   if (!user) throw new Response('Not authorized', { status: 401 })
 
-  const response = await fetch(`http://localhost:8080/user/${user.id}`, {
+  const response = await fetch(`http://localhost:8000/user/${user.id}`, {
     headers: {
       'x-api-key': process.env.TOME_API_KEY || '',
     },
   })
+
   if (!response.ok) {
     throw new Error(`Error fetching: ${response.statusText}`)
   }
   const data = await response.json()
-
-  if (data.length > 0) {
-    return redirect(`/tome/${data[0].id}/edit`)
-  } else {
-    return redirect('/tome/new')
+  return {
+    notes: data,
+    isMac: /Macintosh/i.test(request.headers.get('User-Agent') || ''),
+    user,
   }
 }
 
-export type Tome = {
+export type NoteItem = {
   id: string
   title: string
   user: string
   body: string
   created: string
   updated: string
+  published: 1 | 0
+}
+
+export default function Note() {
+  return <Outlet />
 }

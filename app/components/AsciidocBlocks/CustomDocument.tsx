@@ -173,9 +173,3 @@ export const CustomDocument = ({ document }: { document: AdocTypes.Document }) =
     </>
   )
 }
-
-export const MinimalDocument = ({ document }: { document: AdocTypes.Document }) => (
-  <div id="content" className="asciidoc-body w-full max-w-[840px]">
-    <Content blocks={document.getBlocks()} />
-  </div>
-)

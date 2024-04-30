@@ -5,7 +5,7 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, redirect, type ActionArgs } from '@remix-run/node'
+import { json, type ActionArgs } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 
@@ -14,15 +14,19 @@ export async function action({ request, params }: ActionArgs) {
 
   if (!user) throw new Response('User not found', { status: 401 })
 
-  const response = await fetch(`http://localhost:8080/tome/${params.id}`, {
-    method: 'DELETE',
+  const { publish } = await request.json()
+
+  const response = await fetch(`http://localhost:8000/notes/${params.id}/publish`, {
+    method: 'POST',
     headers: {
       'x-api-key': process.env.TOME_API_KEY || '',
+      'Content-Type': 'application/json; charset=utf-8',
     },
+    body: JSON.stringify({ publish }),
   })
 
   if (response.ok) {
-    return redirect(`/tome`)
+    return json({ status: response.status })
   } else {
     const result = await response.json()
     return json({ error: result.error }, { status: response.status })

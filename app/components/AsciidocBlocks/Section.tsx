@@ -25,8 +25,8 @@ const Section = ({ node }: { node: SectionType }) => {
   let sectNum = node.getSectionNumeral()
   sectNum = sectNum === '.' ? '' : sectNum
 
-  const hasSectLinks = docAttrs['sectlinks'] === true
-  const hasSectNums = docAttrs['sectnums'] === true
+  const hasSectLinks = docAttrs['sectlinks'] === true || docAttrs['sectlinks'] === 'true'
+  const hasSectNums = docAttrs['sectnums'] === true || docAttrs['sectnums'] === 'true'
 
   const sectNumLevels = docAttrs['sectnumlevels'] ? parseInt(docAttrs['sectnumlevels']) : 3
 

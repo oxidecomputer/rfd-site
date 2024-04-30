@@ -15,6 +15,7 @@ import { useMemo } from 'react'
 import { ClientOnly } from 'remix-utils'
 
 import { opts } from '~/components/AsciidocBlocks'
+import { CustomDocument } from '~/components/AsciidocBlocks/CustomDocument'
 import Container from '~/components/Container'
 import { DropdownItem, DropdownLink, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
@@ -24,7 +25,7 @@ import { PropertyRow } from './rfd.$slug'
 const ad = asciidoctor()
 
 export async function loader({ params: { id } }: LoaderArgs) {
-  const response = await fetch(`http://localhost:8080/tome/${id}`, {
+  const response = await fetch(`http://localhost:8000/notes/${id}`, {
     headers: {
       'x-api-key': 'abcdef',
     },
@@ -36,18 +37,18 @@ export async function loader({ params: { id } }: LoaderArgs) {
   return data
 }
 
-export default function Tome() {
-  const tome = useLoaderData()
+export default function Note() {
+  const note = useLoaderData()
 
   const doc = useMemo(() => {
-    return ad.load(tome.body, {
+    return ad.load(note.body, {
       standalone: true,
       sourcemap: true,
       attributes: {
         sectnums: true,
       },
     })
-  }, [tome])
+  }, [note])
 
   return (
     <div>
@@ -57,7 +58,7 @@ export default function Tome() {
       >
         <div className="col-span-12 flex items-baseline 800:col-span-11 1100:col-span-10 1100:col-start-3">
           <h1 className="w-full pr-4 text-sans-2xl 600:pr-10 800:text-sans-3xl 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
-            {tome.title}
+            {note.title}
           </h1>
 
           <div className="print:hidden">
@@ -72,32 +73,32 @@ export default function Tome() {
         </PropertyRow>
         <PropertyRow label="Created">
           <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
-            {() => <>{dayjs(tome.created).format('MMM D YYYY, h:mm A')}</>}
+            {() => <>{dayjs(note.created).format('MMM D YYYY, h:mm A')}</>}
           </ClientOnly>
         </PropertyRow>
         <PropertyRow label="Updated">
           <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
-            {() => <>{dayjs(tome.updated).format('MMM D YYYY, h:mm A')}</>}
+            {() => <>{dayjs(note.updated).format('MMM D YYYY, h:mm A')}</>}
           </ClientOnly>
         </PropertyRow>
       </div>
 
-      <Asciidoc content={doc} options={opts} />
+      <Asciidoc content={doc} options={{ ...opts, customDocument: CustomDocument }} />
     </div>
   )
 }
 
 const MoreDropdown = () => {
-  const tome = useLoaderData()
+  const note = useLoaderData()
   const fetcher = useFetcher() // Initialize the fetcher
 
   const handleDelete = () => {
-    if (window.confirm('Are you sure you want to delete this tome?')) {
+    if (window.confirm('Are you sure you want to delete this note?')) {
       fetcher.submit(
-        { id: tome.id },
+        { id: note.id },
         {
           method: 'post',
-          action: `/tome/${tome.id}/delete`,
+          action: `/notes/${note.id}/delete`,
           encType: 'application/x-www-form-urlencoded',
         },
       )
@@ -111,7 +112,7 @@ const MoreDropdown = () => {
       </Dropdown.Trigger>
 
       <DropdownMenu>
-        <DropdownLink to={`/tome/${tome.id}/edit`}>Edit</DropdownLink>
+        <DropdownLink to={`/notes/${note.id}/edit`}>Edit</DropdownLink>
         <DropdownItem className="text-error" onSelect={handleDelete}>
           Delete
         </DropdownItem>

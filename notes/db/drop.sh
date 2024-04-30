@@ -1,6 +1,6 @@
 #!/bin/bash
 
-DATABASE="tome.db"
+DATABASE="notes.db"
 
 if [ -f "$DATABASE" ]; then
     rm "$DATABASE"

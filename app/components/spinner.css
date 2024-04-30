@@ -47,11 +47,11 @@
   }
 }
 
-.tome .spinner .bg {
+.note .spinner .bg {
   stroke: var(--base-neutral-900);
 }
 
-.tome .spinner .path {
+.note .spinner .path {
   stroke: var(--content-accent);
 }
 

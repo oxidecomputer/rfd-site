@@ -64,7 +64,7 @@ body {
   @apply bg-default;
 }
 
-body.tome {
+body.note {
   @apply m-0;
 }
 

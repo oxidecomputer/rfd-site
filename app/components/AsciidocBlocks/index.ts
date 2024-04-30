@@ -9,7 +9,6 @@
 import { AsciiDocBlocks } from '@oxide/design-system/components/dist'
 import { getText, type AdocTypes, type Options } from '@oxide/react-asciidoc'
 
-import { CustomDocument, MinimalDocument, ui } from './Document'
 import Image from './Image'
 import Listing from './Listing'
 import Section from './Section'
@@ -22,7 +21,6 @@ export let opts: Options = {
     listing: Listing,
     section: Section,
   },
-  customDocument: CustomDocument,
 }
 
 export const renderWithBreaks = (text: string): string => {
@@ -46,7 +44,7 @@ const QUOTE_TAGS: {[key: string]: [string, string, boolean?]} = {
 
 const chop = (str: string) => str.substring(0, str.length - 1)
 
-const convertInlineQuoted = (node: AdocTypes.Inline) => {
+export const convertInlineQuoted = (node: AdocTypes.Inline) => {
   const type = node.getType()
   const quoteTag = QUOTE_TAGS[type]
   const [open, close, tag] = quoteTag || ['', '']
@@ -68,5 +66,3 @@ const convertInlineQuoted = (node: AdocTypes.Inline) => {
     return `<span ${idAttr} ${classAttr}>${open}${text}${close}</span>`
   }
 }
-
-export { ui, convertInlineQuoted, MinimalDocument }

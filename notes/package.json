@@ -1,5 +1,5 @@
 {
-  "name": "tome",
+  "name": "notes",
   "module": "index.ts",
   "type": "module",
   "devDependencies": {

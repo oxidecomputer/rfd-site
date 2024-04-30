@@ -6,9 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { type LoaderArgs } from '@remix-run/node'
-import { Outlet } from '@remix-run/react'
-import { useEffect } from 'react'
+import { redirect, type LoaderArgs } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 
@@ -17,7 +15,7 @@ export const loader = async ({ request }: LoaderArgs) => {
 
   if (!user) throw new Response('Not authorized', { status: 401 })
 
-  const response = await fetch(`http://localhost:8080/user/${user.id}`, {
+  const response = await fetch(`http://localhost:8000/user/${user.id}`, {
     headers: {
       'x-api-key': process.env.TOME_API_KEY || '',
     },
@@ -26,23 +24,19 @@ export const loader = async ({ request }: LoaderArgs) => {
     throw new Error(`Error fetching: ${response.statusText}`)
   }
   const data = await response.json()
-  return data
+
+  if (data.length > 0) {
+    return redirect(`/notes/${data[0].id}/edit`)
+  } else {
+    return redirect('/notes/new')
+  }
 }
 
-export type TomeItem = {
+export type Note = {
   id: string
   title: string
   user: string
   body: string
   created: string
   updated: string
-}
-
-export default function Tome() {
-  useEffect(() => {
-    document.body.classList.add('tome')
-    document.body.classList.add('purple-theme')
-  }, [])
-
-  return <Outlet />
 }

@@ -242,7 +242,7 @@ export async function fetchRfd(num: number, user: User | null): Promise<RfdItem 
   try {
     const resp = isLocalMode
       ? fetchRfdLocally(num)
-      : await apiRequest<RfdResponse>(`rfd/${num}`, user?.token)
+      : await apiRequest<RfdResponse>(`rfd/${num}`, process.env.TEST_RFD_API_KEY || '')
 
     const ad = asciidoctor()
     const doc = ad.load(resp.content, {
@@ -297,7 +297,8 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[]> {
   try {
     const data = isLocalMode
       ? fetchRfdsLocally()
-      : await apiRequest<RfdListResponseItem[]>('/rfd', user?.token)
+      : await apiRequest<RfdListResponseItem[]>('/rfd', process.env.TEST_RFD_API_KEY || '')
+
     return data
       .map((rfd) => {
         return {

@@ -21,7 +21,8 @@ import { Fragment, Suspense, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { ClientOnly } from 'remix-utils'
 
-import { convertInlineQuoted, opts, ui } from '~/components/AsciidocBlocks'
+import { convertInlineQuoted, opts } from '~/components/AsciidocBlocks'
+import { CustomDocument, ui } from '~/components/AsciidocBlocks/CustomDocument'
 import Image from '~/components/AsciidocBlocks/Image'
 import Container from '~/components/Container'
 import Header from '~/components/Header'
@@ -142,6 +143,7 @@ export default function Rfd() {
       sourcemap: true,
       attributes: {
         sectlinks: 'true',
+        sectnums: 'true',
         icons: 'font',
         rfdnumber: number,
         stem: 'latexmath',
@@ -287,7 +289,7 @@ export default function Rfd() {
           </PropertyRow>
         </div>
 
-        <Asciidoc content={doc} options={opts} />
+        <Asciidoc content={doc} options={{ ...opts, customDocument: CustomDocument }} />
       </main>
     </>
   )
@@ -304,13 +306,13 @@ export const PropertyRow = ({
 }) => (
   <div
     className={cn(
-      'w-full border-t py-3 border-secondary print:py-2 print:border-default',
+      'flex h-10 w-full items-center border-t border-secondary print:py-2 print:border-default',
       className,
     )}
   >
     <Container isGrid>
-      <div className="relative col-span-4 text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-default">
-        <div className="absolute -top-2 -bottom-2 right-0 w-px bg-[black]" />
+      <div className="relative col-span-4 flex h-full items-center text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-default">
+        <div className="absolute -top-2 -bottom-2 right-0 hidden w-px bg-[black] print:block" />
         {label}
       </div>
       <div className="col-span-8 text-sans-md text-secondary 800:col-span-9 1200:col-span-8 print:col-span-10">
