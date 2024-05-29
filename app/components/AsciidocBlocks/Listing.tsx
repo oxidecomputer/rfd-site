@@ -48,8 +48,21 @@ hljs.registerLanguage('oxql', function (hljs) {
     contains: [
       hljs.QUOTE_STRING_MODE,
       {
+        // 30s, 20m, etc
         className: 'number',
-        begin: '\\b\\d+[mhdw]\\b',
+        match: /\d+[smhdw]/,
+        relevance: 0,
+      },
+      {
+        // 2024-05-27T00:00:00
+        className: 'number',
+        match: /@\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}/,
+        relevance: 0,
+      },
+      {
+        // @now()
+        className: 'number',
+        match: /@now\(\)/,
         relevance: 0,
       },
       hljs.C_NUMBER_MODE,
