@@ -47,9 +47,6 @@ hljs.registerLanguage('oxql', function (hljs) {
     },
     contains: [
       hljs.QUOTE_STRING_MODE,
-      hljs.COMMENT('\\(\\*', '\\*\\)'),
-      hljs.COMMENT('\\\\\\*', '$'),
-      { begin: /\/\\/ }, // relevance booster
       {
         className: 'number',
         begin: '\\b\\d+[mhdw]\\b',
