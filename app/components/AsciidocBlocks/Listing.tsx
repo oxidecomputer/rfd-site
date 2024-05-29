@@ -40,6 +40,26 @@ hljs.registerLanguage('tla', function (hljs) {
   }
 })
 
+hljs.registerLanguage('oxql', function (hljs) {
+  return {
+    keywords: {
+      keyword: 'get join align filter group_by',
+    },
+    contains: [
+      hljs.QUOTE_STRING_MODE,
+      hljs.COMMENT('\\(\\*', '\\*\\)'),
+      hljs.COMMENT('\\\\\\*', '$'),
+      { begin: /\/\\/ }, // relevance booster
+      {
+        className: 'number',
+        begin: '\\b\\d+[mhdw]\\b',
+        relevance: 0,
+      },
+      hljs.C_NUMBER_MODE,
+    ],
+  }
+})
+
 // Inspired by the HTML5 listing convert function
 // https://github.com/asciidoctor/asciidoctor/blob/82c5044d1ae5a45a83a8c82d26d5b5b86fcbc179/lib/asciidoctor/converter/html5.rb#L653-L678
 const Listing = ({ node }: { node: AdocTypes.Block }) => {
