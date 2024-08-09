@@ -67,7 +67,7 @@ ad.ConverterFactory.register(new InlineConverter(), ['html5'])
 
 export const links = () => [{ rel: 'stylesheet', href: styles }]
 
-const resp404 = () => new Response('Not Found', { status: 404 })
+export const resp404 = () => new Response('Not Found', { status: 404 })
 
 /**
  * Fetch RFD, accounting for the possibility of the RFD being public.
