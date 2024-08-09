@@ -21,8 +21,9 @@ export async function loader({ request, params: { slug } }: LoaderArgs) {
   const user = await isAuthenticated(request)
   const rfd = await fetchRfd(num, user)
 
-  // If someone goes to a private RFD but they're not logged in, they will
-  // want to log in and see it.
+  // !rfd covers both non-existent and private RFDs for the logged-out user. In
+  // both cases, once they log in, if they have permission to read it, they'll
+  // get the redirect, otherwise they will get 404.
   if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${num}/discussion`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
