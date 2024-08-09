@@ -49,7 +49,7 @@ test('Filter by author', async ({ page }) => {
   // don't know how many public RFDs there are but there are a bunch
   expect(await rfdLinks.count()).toBeGreaterThan(10)
 
-  await page.getByPlaceholder('Filter by').fill('crespo')
+  await page.getByPlaceholder('Filter by').fill('davidcrespo')
 
   // but after you filter there are fewer
   expect(await rfdLinks.count()).toEqual(2)
