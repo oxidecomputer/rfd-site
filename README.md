@@ -30,7 +30,7 @@ read more about this site and how we use it in our blog post
 
 The site is built with [Remix](https://remix.run/), a full stack React web framework.
 [rfd-api](https://github.com/oxidecomputer/rfd-api) collects the RFDs from
-`oxidecomputer/rfd` stores it in a database, and serves it through an HTTP API, which this
+`oxidecomputer/rfd`, stores them in a database, and serves them through an HTTP API, which this
 site uses. RFD discussions come from an associated pull request on GitHub. These are linked
 to from the document and displayed inline alongside the text.
 
