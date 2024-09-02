@@ -64,8 +64,6 @@ class InlineConverter {
 
 ad.ConverterFactory.register(new InlineConverter(), ['html5'])
 
-export const links = () => [{ rel: 'stylesheet', href: styles }]
-
 export const resp404 = () => new Response('Not Found', { status: 404 })
 
 /**
