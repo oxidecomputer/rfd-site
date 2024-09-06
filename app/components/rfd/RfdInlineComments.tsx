@@ -559,7 +559,7 @@ const CodeLine = ({
       )}
       <div
         className={cn(
-          'flex flex-grow py-1 pl-2 pr-6',
+          'flex flex-grow whitespace-pre-wrap py-1 pl-2 pr-6',
           change === 'add' && 'bg-accent-secondary',
           change === 'remove' && 'bg-destructive-secondary',
         )}
