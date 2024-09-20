@@ -79,7 +79,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
   const content = getContent(node)
   const decodedContent = decode(content) || content // unescape the html entities
 
-  // Function to replace callouts with placeholders
+  // Replace callouts with placeholders
   const replaceCallouts = (content: string) => {
     const calloutRegex = /<i class="conum" data-value="\d+"><\/i>/g
     const callouts: string[] = []
@@ -90,7 +90,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
     return { placeholderContent, callouts }
   }
 
-  // Function to restore callouts from placeholders
+  // Restore callouts from placeholders
   const restoreCallouts = (highlightedContent: string, callouts: string[]) => {
     return highlightedContent.replace(
       /__CALLOUT_PLACEHOLDER_(\d+)__/g,
