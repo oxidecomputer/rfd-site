@@ -69,4 +69,8 @@
   .asciidoc-body .admonition-content > div:first-of-type {
     @apply text-sans-semi-md;
   }
+
+  .asciidoc-body pre .conum[data-value] {
+    @apply text-accent bg-accent-secondary-hover;
+  }
 }

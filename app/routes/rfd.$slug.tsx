@@ -21,7 +21,12 @@ import { Fragment, Suspense, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
 import { ClientOnly } from 'remix-utils'
 
-import { convertInlineQuoted, opts, ui } from '~/components/AsciidocBlocks'
+import {
+  convertInlineCallout,
+  convertInlineQuoted,
+  opts,
+  ui,
+} from '~/components/AsciidocBlocks'
 import Image from '~/components/AsciidocBlocks/Image'
 import Container from '~/components/Container'
 import Header from '~/components/Header'
@@ -55,6 +60,8 @@ class InlineConverter {
         return renderToString(<Image node={node} hasLightbox={false} />)
       case 'inline_quoted':
         return convertInlineQuoted(node as unknown as AdocTypes.Inline) // We know this is always inline
+      case 'inline_callout':
+        return convertInlineCallout(node as unknown as AdocTypes.Inline) // We know this is always inline
       default:
         break
     }
