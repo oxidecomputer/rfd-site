@@ -79,11 +79,31 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
   const content = getContent(node)
   const decodedContent = decode(content) || content // unescape the html entities
 
+  // Replace callouts with placeholders
+  const replaceCallouts = (content: string) => {
+    const calloutRegex = /<i class="conum" data-value="\d+"><\/i>/g
+    const callouts: string[] = []
+    let placeholderContent = content.replace(calloutRegex, (match) => {
+      callouts.push(match)
+      return `__CALLOUT_PLACEHOLDER_${callouts.length - 1}__`
+    })
+    return { placeholderContent, callouts }
+  }
+
+  // Restore callouts from placeholders
+  const restoreCallouts = (highlightedContent: string, callouts: string[]) => {
+    return highlightedContent.replace(
+      /__CALLOUT_PLACEHOLDER_(\d+)__/g,
+      (_, index) => callouts[parseInt(index)],
+    )
+  }
+
+  const { placeholderContent, callouts } = replaceCallouts(decodedContent)
+
   // Listing blocks of style `source` are source code, should have their syntax
   // highlighted (where we have language support) and be inside both a `pre` and `code` tag
   if (node.getStyle() === 'source') {
     const lang = attrs.language
-
     return (
       <div className="listingblock" {...getLineNumber(node)}>
         <CaptionedTitle node={node} />
@@ -98,7 +118,10 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
                 dangerouslySetInnerHTML={{
                   __html:
                     (hljs.getLanguage(lang) &&
-                      hljs.highlight(decodedContent, { language: lang }).value) ||
+                      restoreCallouts(
+                        hljs.highlight(placeholderContent, { language: lang }).value,
+                        callouts,
+                      )) ||
                     decodedContent,
                 }}
               />
@@ -113,7 +136,12 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
       <div className="listingblock" {...getLineNumber(node)}>
         <CaptionedTitle node={node} />
         <div className="content">
-          <pre className={nowrap ? ' nowrap' : ''}>{node.getSource()}</pre>
+          <pre
+            className={cn('highlight !block', nowrap ? 'nowrap' : '')}
+            dangerouslySetInnerHTML={{
+              __html: restoreCallouts(placeholderContent, callouts),
+            }}
+          />
         </div>
       </div>
     )

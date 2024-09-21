@@ -69,4 +69,10 @@ const convertInlineQuoted = (node: AdocTypes.Inline) => {
   }
 }
 
-export { ui, convertInlineQuoted }
+function convertInlineCallout(node: AdocTypes.Inline): string {
+  let text = getText(node)
+
+  return `<i class="conum" data-value="${text}"></i>`
+}
+
+export { ui, convertInlineQuoted, convertInlineCallout }
