@@ -68,7 +68,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           >
             <Icon name="logs" size={16} />
           </Link>
-          <SelectRfdCombobox currentRfd={currentRfd} rfds={rfds} />
+          <SelectRfdCombobox isLoggedIn={!!user} currentRfd={currentRfd} rfds={rfds} />
         </div>
 
         <div className="flex space-x-2">
