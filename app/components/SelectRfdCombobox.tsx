@@ -23,9 +23,11 @@ const Outline = classed.div`absolute left-0 top-0 z-10 h-full w-full rounded bor
 const SelectRfdCombobox = ({
   rfds,
   currentRfd,
+  isLoggedIn,
 }: {
   rfds: RfdListItem[]
   currentRfd: RfdItem | undefined
+  isLoggedIn: boolean
 }) => {
   const [open, setOpen] = useState(false)
 
@@ -42,7 +44,12 @@ const SelectRfdCombobox = ({
         <div className="text-mono-xs text-quaternary">
           RFD {currentRfd ? currentRfd.number : ''}
         </div>
-        <div className="max-w-[160px] truncate !leading-[14px] text-sans-sm text-secondary 600:max-w-[240px]">
+        <div
+          className={cn(
+            'truncate !leading-[14px] text-sans-sm text-secondary 600:max-w-[240px]',
+            isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
+          )}
+        >
           {currentRfd ? currentRfd.title : 'Select a RFD'}
         </div>
       </div>
