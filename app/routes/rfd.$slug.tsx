@@ -31,7 +31,6 @@ import Image from '~/components/AsciidocBlocks/Image'
 import Container from '~/components/Container'
 import Header from '~/components/Header'
 import AccessWarning from '~/components/rfd/AccessWarning'
-import styles from '~/components/rfd/index.css'
 import MoreDropdown from '~/components/rfd/MoreDropdown'
 import RfdDiscussionDialog, { CommentCount } from '~/components/rfd/RfdDiscussionDialog'
 import RfdInlineComments from '~/components/rfd/RfdInlineComments'
@@ -71,8 +70,6 @@ class InlineConverter {
 }
 
 ad.ConverterFactory.register(new InlineConverter(), ['html5'])
-
-export const links = () => [{ rel: 'stylesheet', href: styles }]
 
 export const resp404 = () => new Response('Not Found', { status: 404 })
 
