@@ -77,7 +77,6 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
   const attrs = node.getAttributes()
   const nowrap = node.isOption('nowrap') || !document.hasAttribute('prewrap')
   const content = getContent(node)
-  const decodedContent = decode(content) || content // unescape the html entities
 
   // Replace callouts with placeholders
   const replaceCallouts = (content: string) => {
@@ -98,19 +97,29 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
     )
   }
 
-  const { placeholderContent, callouts } = replaceCallouts(decodedContent)
+  // If we are highlighting we want the content to be decoded, since
+  // highlight.js will want the original content with tags included
+  // which it will then encode after highlighting.
+  // Otherwise let's just use the original content which comes from
+  // asciidoctor.js encoded.
+  const isSource = node.getStyle() === 'source'
+  const lang = attrs.language
+  const hasLang = hljs.getLanguage(lang)
+  const shouldDecode = isSource && (hasLang || lang === 'mermaid')
+  const preparedContent = shouldDecode ? decode(content) || content : content
+
+  const { placeholderContent, callouts } = replaceCallouts(preparedContent)
 
   // Listing blocks of style `source` are source code, should have their syntax
   // highlighted (where we have language support) and be inside both a `pre` and `code` tag
   if (node.getStyle() === 'source') {
-    const lang = attrs.language
     return (
       <div className="listingblock" {...getLineNumber(node)}>
         <CaptionedTitle node={node} />
         <div className="content">
           <pre className={cn('highlight', nowrap ? ' nowrap' : '')}>
             {lang && lang === 'mermaid' ? (
-              <Mermaid content={decodedContent} />
+              <Mermaid content={preparedContent} />
             ) : (
               <code
                 className={`language-${lang || ''}`}
@@ -122,7 +131,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
                         hljs.highlight(placeholderContent, { language: lang }).value,
                         callouts,
                       )) ||
-                    decodedContent,
+                    preparedContent,
                 }}
               />
             )}
@@ -139,7 +148,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
           <pre
             className={cn('highlight !block', nowrap ? 'nowrap' : '')}
             dangerouslySetInnerHTML={{
-              __html: restoreCallouts(placeholderContent, callouts),
+              __html: restoreCallouts(preparedContent, callouts),
             }}
           />
         </div>
