@@ -131,7 +131,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
                         hljs.highlight(placeholderContent, { language: lang }).value,
                         callouts,
                       )) ||
-                    preparedContent,
+                    placeholderContent,
                 }}
               />
             )}
@@ -148,7 +148,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
           <pre
             className={cn('highlight !block', nowrap ? 'nowrap' : '')}
             dangerouslySetInnerHTML={{
-              __html: restoreCallouts(preparedContent, callouts),
+              __html: restoreCallouts(placeholderContent, callouts),
             }}
           />
         </div>
