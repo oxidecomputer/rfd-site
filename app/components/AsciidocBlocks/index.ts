@@ -59,13 +59,21 @@ const convertInlineQuoted = (node: AdocTypes.Inline) => {
     text = renderWithBreaks(text)
   }
 
-  const idAttr = node.getId() ? `id="${node.getId()}"` : ''
-  const classAttr = node.getRole() ? `class="${node.getRole()}"` : ''
+  const id = node.getId()
+  const role = node.getRole()
 
-  if (tag) {
-    return `${chop(open)} ${idAttr} ${classAttr}>${text}${close}`
+  const idAttr = id ? `id="${id}"` : ''
+  const classAttr = role ? `class="${role}"` : ''
+  const attrs = `${idAttr} ${classAttr}`
+
+  if (id || role) {
+    if (tag) {
+      return `${chop(open)} ${attrs}>${text}${close}`
+    } else {
+      return `<span ${attrs}>${open}${text}${close}</span>`
+    }
   } else {
-    return `<span ${idAttr} ${classAttr}>${open}${text}${close}</span>`
+    return `${open}${text}${close}`
   }
 }
 
