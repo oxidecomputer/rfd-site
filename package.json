@@ -30,6 +30,7 @@
     "fuzzysort": "^2.0.1",
     "highlight.js": "^11.6.0",
     "html-entities": "^2.4.0",
+    "isbot": "^4",
     "lodash": "^4.17.21",
     "marked": "^4.2.5",
     "mermaid": "^10.3.0",
