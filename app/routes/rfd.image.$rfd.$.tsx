@@ -6,13 +6,13 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, Response, type LoaderArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 import { fetchLocalImage, fetchRfd, isLocalMode } from '~/services/rfd.server'
 import { getExpiringUrl } from '~/services/storage.server'
 
-export async function loader({ request, params }: LoaderArgs) {
+export async function loader({ request, params }: LoaderFunctionArgs) {
   const rfd = params['rfd']
   const filename = params['*']
 

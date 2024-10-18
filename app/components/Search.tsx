@@ -12,7 +12,7 @@ import {
   type AlgoliaMultipleQueriesQuery,
   type InstantMeiliSearchInstance,
 } from '@meilisearch/instant-meilisearch'
-import { Link } from '@remix-run/react'
+import { Link, useNavigate } from '@remix-run/react'
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
 import dayjs from 'dayjs'
@@ -26,7 +26,6 @@ import {
   useHits,
   useSearchBox,
 } from 'react-instantsearch-hooks-web'
-import { useNavigate } from 'react-router-dom'
 
 import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
@@ -78,11 +77,13 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         // the RFD API backend
         const request = requests[0]
         return fetch(
-          `/search?q=${request.params
-            ?.query}&attributes_to_crop=${request.params?.attributesToSnippet?.join(
+          `/search?q=${
+            request.params?.query
+          }&attributes_to_crop=${request.params?.attributesToSnippet?.join(
             ',',
-          )}&highlight_post_tag=${request.params
-            ?.highlightPostTag}&highlight_pre_tag=${request.params?.highlightPreTag}`,
+          )}&highlight_post_tag=${
+            request.params?.highlightPostTag
+          }&highlight_pre_tag=${request.params?.highlightPreTag}`,
         ).then(async (resp) => {
           const data = await resp.json()
           return data
@@ -97,7 +98,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         <Dialog
           open={open}
           onClose={onClose}
-          className="overlay-shadow fixed top-4 left-1/2 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0 bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px]"
+          className="overlay-shadow fixed left-1/2 top-4 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0 bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px]"
           aria-label="Jump to"
           backdrop={<div className="backdrop" />}
         >
@@ -344,7 +345,7 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
               {isNewSection && (
                 <h3
                   className={cn(
-                    'h-6 rounded-t-sm px-3 !leading-6 text-mono-xs text-tertiary bg-tertiary line-clamp-1',
+                    'line-clamp-1 h-6 rounded-t-sm px-3 !leading-6 text-mono-xs text-tertiary bg-tertiary',
                     sectionIsSelected && '600:!text-inverse 600:!bg-accent',
                   )}
                 >
@@ -509,7 +510,7 @@ export const ActionMenuHotkey = ({ keys, action }: ActionMenuHotkeyProps) => (
       {keys.map((hotkey) => (
         <kbd
           key={hotkey}
-          className="mr-1 inline-block rounded py-1 px-2 text-mono-xs text-secondary bg-secondary"
+          className="mr-1 inline-block rounded px-2 py-1 text-mono-xs text-secondary bg-secondary"
         >
           {hotkey}
         </kbd>

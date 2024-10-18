@@ -6,11 +6,10 @@
  * Copyright Oxide Computer Company
  */
 
-import { Link } from '@remix-run/react'
+import { Link, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import fuzzysort from 'fuzzysort'
 import { useCallback, useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
 
 import Icon from '~/components/Icon'
 import { useKey } from '~/hooks/use-key'
@@ -120,13 +119,13 @@ const ComboboxWrapper = ({
     <div className={open ? 'visible' : 'pointer-events-none invisible'}>
       <div
         className={cn(
-          'fixed top-0 left-0 right-0 bottom-0 bg-default 600:bg-transparent',
+          'fixed bottom-0 left-0 right-0 top-0 bg-default 600:bg-transparent',
           open ? 'opacity-80 ' : 'opacity-0',
         )}
         onClick={() => handleDismiss()}
       />
       <div
-        className="group absolute top-4 left-4 right-4 600:top-[calc(var(--header-height)+8px)] 600:right-auto 600:w-[16rem]"
+        className="group absolute left-4 right-4 top-4 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem]"
         onKeyDown={(e) => {
           const lastIdx = matchedItems.length - 1
           if (e.key === 'Enter') {
