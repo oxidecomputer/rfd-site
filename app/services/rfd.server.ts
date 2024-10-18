@@ -12,8 +12,6 @@ import type { GetResponseTypeFromEndpointMethod } from '@octokit/types'
 import { asciidoctor, type AdocTypes } from '@oxide/react-asciidoc'
 import { Octokit } from 'octokit'
 
-// hack to get automatic reload on file writes in local mode
-import watchTrigger from '~/.watch-trigger?raw'
 import { generateAuthors, type Author } from '~/components/rfd/RfdPreview'
 import { isTruthy } from '~/utils/isTruthy'
 import { parseRfdNum } from '~/utils/parseRfdNum'
@@ -22,14 +20,6 @@ import type { GroupResponse, RfdListResponseItem, RfdResponse } from '~/utils/rf
 
 import type { Group, User } from './authn.server'
 import { apiRequest } from './rfdApi.server'
-
-const localRepo = process.env.LOCAL_RFD_REPO
-export const isLocalMode = process.env.NODE_ENV === 'development' && localRepo
-
-// sneaky weird thing
-if (isLocalMode) {
-  console.log(watchTrigger)
-}
 
 export type RfdItem = {
   number: number
@@ -61,6 +51,9 @@ export type RfdListItem = {
   commit_date: string
   visibility: 'private' | 'public'
 }
+
+const localRepo = process.env.LOCAL_RFD_REPO
+export const isLocalMode = process.env.NODE_ENV === 'development' && localRepo
 
 async function canUser(user: User, permission: Permission): Promise<boolean> {
   const groups = (await fetchGroups(user)).filter((group) =>

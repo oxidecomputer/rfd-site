@@ -5,7 +5,6 @@
   "scripts": {
     "build": "remix vite:build",
     "dev": "remix vite:dev",
-    "watch-local": "tsx tools/watch-local.ts",
     "test": "vitest --config test/vitest.config.ts",
     "tsc": "tsc --noEmit",
     "fmt": "prettier --write --ignore-path ./.gitignore  .",
@@ -76,7 +75,6 @@
     "postcss-value-parser": "^4.2.0",
     "prettier-plugin-tailwindcss": "^0.5.7",
     "tailwindcss": "^3.3.1",
-    "tsx": "^4.19.1",
     "typescript": "~5.2.2",
     "vite": "^5.4.9",
     "vite-tsconfig-paths": "^5.0.1",
