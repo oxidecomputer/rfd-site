@@ -229,12 +229,12 @@ export const SmallScreenOutline = ({
     return (
       <Accordion.Root
         type="single"
-        className="fixed bottom-0 left-0 right-0 z-10 mt-4 block max-h-[calc(100vh-var(--header-height)-2rem)] w-full overflow-y-auto border-t border-b bg-default border-secondary 1100:hidden print:hidden"
+        className="fixed bottom-0 left-0 right-0 z-10 mt-4 block max-h-[calc(100vh-var(--header-height)-2rem)] w-full overflow-y-auto border-b border-t bg-default border-secondary 1100:hidden print:hidden"
         collapsible
       >
         <Accordion.Item value={`small-toc-${title}`}>
           <Accordion.Header>
-            <Accordion.Trigger className="flex w-full items-center justify-between py-4 px-4 text-sans-md text-secondary 400:px-6 600:px-8 600:hover:bg-hover [&>svg]:data-[state=open]:rotate-90">
+            <Accordion.Trigger className="flex w-full items-center justify-between px-4 py-4 text-sans-md text-secondary 400:px-6 600:px-8 600:hover:bg-hover [&>svg]:data-[state=open]:rotate-90">
               Table of Contents{' '}
               <Icon
                 name="carat-right"
