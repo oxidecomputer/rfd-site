@@ -9,22 +9,21 @@
 import {
   json,
   type LinksFunction,
-  type LoaderArgs,
+  type LoaderFunctionArgs,
+  type MetaFunction,
   type SerializeFrom,
-  type V2_MetaFunction,
 } from '@remix-run/node'
 import {
+  isRouteErrorResponse,
   Links,
-  LiveReload,
   Meta,
   Outlet,
   Scripts,
   ScrollRestoration,
-  useCatch,
   useLoaderData,
+  useRouteError,
   useRouteLoaderData,
 } from '@remix-run/react'
-import { withSentry } from '@sentry/remix'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { Author } from '~/components/rfd/RfdPreview'
@@ -37,19 +36,18 @@ import {
   provideNewRfdNumber,
   type RfdListItem,
 } from '~/services/rfd.server'
-import styles from '~/tailwind.css'
+import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
-import NotFound from './components/NotFound'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
 
-export const meta: V2_MetaFunction = () => {
+export const meta: MetaFunction = () => {
   return [{ title: 'RFD / Oxide' }]
 }
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   let theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
   let inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
@@ -63,9 +61,6 @@ export const loader = async ({ request }: LoaderArgs) => {
   return json({
     // Any data added to the ENV key of this loader will be injected into the
     // global window object (window.ENV)
-    ENV: {
-      SENTRY_DSN: process.env.SENTRY_DSN,
-    },
     theme,
     inlineComments,
     user,
@@ -81,27 +76,31 @@ export function useRootLoaderData() {
   return useRouteLoaderData('root') as SerializeFrom<typeof loader>
 }
 
-// 404 Catch
-export function CatchBoundary() {
-  const caught = useCatch()
+export function ErrorBoundary() {
+  const error = useRouteError()
 
-  if (caught.status === 404) {
-    return <NotFound />
+  let message = 'Something went wrong'
+
+  if (isRouteErrorResponse(error)) {
+    if (error.status === 404) {
+      message = '404 Not Found'
+    }
   }
-}
 
+  return (
+    <Layout>
+      <div className="flex h-full w-full items-center justify-center">
+        <h1 className="text-2xl">{message}</h1>
+      </div>
+    </Layout>
+  )
+}
 const queryClient = new QueryClient()
 
-export const Layout = ({
-  children,
-  theme,
-}: {
-  children: React.ReactNode
-  theme?: string
-}) => (
+const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => (
   <html lang="en" className={theme}>
     <head>
-      <meta name="charset" content="utf-8" />
+      <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width,initial-scale=1" />
       <Meta />
       <Links />
@@ -117,13 +116,12 @@ export const Layout = ({
       {children}
       <ScrollRestoration />
       <Scripts />
-      <LiveReload />
     </body>
   </html>
 )
 
-function App() {
-  const { theme, isLocalMode, ENV } = useLoaderData<typeof loader>()
+export default function App() {
+  const { theme, isLocalMode } = useLoaderData<typeof loader>()
 
   return (
     <Layout theme={theme}>
@@ -136,13 +134,6 @@ function App() {
           </div>
         )}
       </QueryClientProvider>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `window.ENV = ${JSON.stringify(ENV)}`,
-        }}
-      />
     </Layout>
   )
 }
-
-export default withSentry(App)

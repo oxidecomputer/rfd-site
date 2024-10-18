@@ -19,7 +19,7 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   timeout: 60000,
   use: {
-    baseURL: process.env.CI ? process.env.BASE_URL : 'http://127.0.0.1:3000',
+    baseURL: process.env.CI ? process.env.BASE_URL : 'http://localhost:3000',
     trace: 'on-first-retry',
   },
   projects: [

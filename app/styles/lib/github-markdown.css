@@ -21,7 +21,7 @@
   }
 
   & blockquote {
-    @apply mt-4 mb-4 border-l pl-4 border-default;
+    @apply mb-4 mt-4 border-l pl-4 border-default;
 
     & p {
       @apply text-tertiary;

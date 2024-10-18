@@ -23,7 +23,7 @@ const Modal = ({
     <>
       <Dialog
         store={dialogStore}
-        className="overlay-shadow fixed top-1/2 left-1/2 z-30 w-[calc(100%-2.5rem)] max-w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-lg border p-0 bg-raise border-secondary"
+        className="overlay-shadow fixed left-1/2 top-1/2 z-30 w-[calc(100%-2.5rem)] max-w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-lg border p-0 bg-raise border-secondary"
         backdrop={<div className="backdrop" />}
       >
         <div className="flex w-full items-center border-b p-4 bg-secondary border-secondary">

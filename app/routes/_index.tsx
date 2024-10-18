@@ -7,21 +7,26 @@
  */
 
 import { Badge } from '@oxide/design-system'
-import { json, redirect, type ActionArgs, type LoaderArgs } from '@remix-run/node'
+import {
+  json,
+  redirect,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from '@remix-run/node'
 import {
   Link,
   useFetcher,
   useLoaderData,
   useLocation,
+  useNavigate,
   useSearchParams,
 } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import fuzzysort from 'fuzzysort'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
-import { ClientOnly } from 'remix-utils'
 
+import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import { SortArrowBottom, SortArrowTop } from '~/components/CustomIcons'
 import Header from '~/components/Header'
@@ -36,13 +41,13 @@ import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')
   return json(parseSortOrder(await rfdSortCookie.parse(cookieHeader)))
 }
 
 // only for setting the sort order cookie
-export const action = async ({ request }: ActionArgs) => {
+export const action = async ({ request }: ActionFunctionArgs) => {
   const body = await request.formData()
   const newCookie = parseSortOrder(Object.fromEntries(body))
   // redirect to same URL to preserve query params
@@ -227,7 +232,7 @@ export default function Index() {
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none !filter-none"
+              className="absolute -left-[2.7777777778%] top-0 z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none !filter-none"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
@@ -351,7 +356,7 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
         >
           <div className="-m-2 inline-flex flex-col rounded-lg p-2 800:group-hover:bg-hover">
             <div>RFD {rfd.number}</div>
-            <div className="text-secondary line-clamp-2">{rfd.title}</div>
+            <div className="line-clamp-2 text-secondary">{rfd.title}</div>
           </div>
         </Link>
 

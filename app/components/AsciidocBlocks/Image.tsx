@@ -88,7 +88,7 @@ const Image = ({
             className="fixed [&_img]:mx-auto"
             backdrop={<div className="backdrop" />}
           >
-            <Ariakit.DialogDismiss className="fixed top-1/2 left-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 cursor-zoom-out p-20">
+            <Ariakit.DialogDismiss className="fixed left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 cursor-zoom-out p-20">
               <img
                 src={url}
                 className={`max-h-full max-w-full rounded object-contain`}

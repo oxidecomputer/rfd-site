@@ -387,7 +387,7 @@ export const CommentThreadBlock = ({
       {/* )} */}
 
       {/* Code */}
-      <div className={cn('border-t border-b border-secondary', isOverlay && 'border-t')}>
+      <div className={cn('border-b border-t border-secondary', isOverlay && 'border-t')}>
         {lines.map((line, index) => {
           let change: Change = null
 

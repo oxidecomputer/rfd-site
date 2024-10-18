@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type LoaderArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 import { fetchRfd } from '~/services/rfd.server'
@@ -14,7 +14,7 @@ import { parseRfdNum } from '~/utils/parseRfdNum'
 
 import { resp404 } from './rfd.$slug'
 
-export async function loader({ request, params: { slug } }: LoaderArgs) {
+export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 

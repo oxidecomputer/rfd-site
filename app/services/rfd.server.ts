@@ -15,7 +15,7 @@ import { Octokit } from 'octokit'
 import { generateAuthors, type Author } from '~/components/rfd/RfdPreview'
 import { isTruthy } from '~/utils/isTruthy'
 import { parseRfdNum } from '~/utils/parseRfdNum'
-import { can, Permission } from '~/utils/permission'
+import { can, type Permission } from '~/utils/permission'
 import type { GroupResponse, RfdListResponseItem, RfdResponse } from '~/utils/rfdApi'
 
 import type { Group, User } from './authn.server'

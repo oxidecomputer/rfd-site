@@ -6,11 +6,11 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type LoaderArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
-export async function loader({ params: { slug } }: LoaderArgs) {
+export async function loader({ params: { slug } }: LoaderFunctionArgs) {
   if (parseRfdNum(slug)) {
     return redirect(`/rfd/${slug}`)
   } else {

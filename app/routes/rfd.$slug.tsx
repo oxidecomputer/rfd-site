@@ -10,16 +10,14 @@ import Asciidoc, { asciidoctor, type AdocTypes } from '@oxide/react-asciidoc'
 import {
   defer,
   redirect,
-  Response,
-  type LoaderArgs,
-  type V2_MetaFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
 } from '@remix-run/node'
 import { Await, useLoaderData, useLocation } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { Fragment, Suspense, useMemo } from 'react'
 import { renderToString } from 'react-dom/server'
-import { ClientOnly } from 'remix-utils'
 
 import {
   convertInlineCallout,
@@ -28,10 +26,10 @@ import {
   ui,
 } from '~/components/AsciidocBlocks'
 import Image from '~/components/AsciidocBlocks/Image'
+import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import Header from '~/components/Header'
 import AccessWarning from '~/components/rfd/AccessWarning'
-import styles from '~/components/rfd/index.css'
 import MoreDropdown from '~/components/rfd/MoreDropdown'
 import RfdDiscussionDialog, { CommentCount } from '~/components/rfd/RfdDiscussionDialog'
 import RfdInlineComments from '~/components/rfd/RfdInlineComments'
@@ -72,8 +70,6 @@ class InlineConverter {
 
 ad.ConverterFactory.register(new InlineConverter(), ['html5'])
 
-export const links = () => [{ rel: 'stylesheet', href: styles }]
-
 export const resp404 = () => new Response('Not Found', { status: 404 })
 
 /**
@@ -86,7 +82,7 @@ export const resp404 = () => new Response('Not Found', { status: 404 })
  * | no rfd      | 404        | 404         | login redirect |
  *
  */
-export async function loader({ request, params: { slug } }: LoaderArgs) {
+export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
@@ -127,7 +123,7 @@ export async function loader({ request, params: { slug } }: LoaderArgs) {
   })
 }
 
-export const meta: V2_MetaFunction<typeof loader> = ({ data }) => {
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data && data.rfd) {
     return [{ title: `${data.rfd.number} - ${data.rfd.title} / RFD / Oxide` }]
   } else {
@@ -317,7 +313,7 @@ const PropertyRow = ({
   >
     <Container isGrid>
       <div className="relative col-span-4 text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-default">
-        <div className="absolute -top-2 -bottom-2 right-0 w-px bg-[black]" />
+        <div className="absolute -bottom-2 -top-2 right-0 w-px bg-[black]" />
         {label}
       </div>
       <div className="col-span-8 text-sans-md text-secondary 800:col-span-9 1200:col-span-8 print:col-span-10">

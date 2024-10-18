@@ -119,7 +119,7 @@ const FilterDropdown = () => {
 
       {(authorNameParam || authorEmailParam) && (
         <>
-          <div className="mr-1 ml-3 block text-quaternary">Author:</div>
+          <div className="ml-3 mr-1 block text-quaternary">Author:</div>
           <FilterBadge onClick={clearAuthor} color="purple">
             {authorNameParam || authorEmailParam}
           </FilterBadge>
@@ -128,7 +128,7 @@ const FilterDropdown = () => {
 
       {labelParam && (
         <>
-          <div className="mr-1 ml-3 block text-quaternary">Label:</div>
+          <div className="ml-3 mr-1 block text-quaternary">Label:</div>
           <FilterBadge onClick={clearLabel} color="blue">
             {labelParam}
           </FilterBadge>

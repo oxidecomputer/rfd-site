@@ -221,7 +221,7 @@ const DialogContent = ({
   return (
     <Dialog
       store={dialogStore}
-      className="dialog overlay-shadow fixed top-0 bottom-0 right-0 z-20 flex w-[670px] flex-col border-l bg-raise border-secondary print:hidden"
+      className="dialog overlay-shadow fixed bottom-0 right-0 top-0 z-20 flex w-[670px] flex-col border-l bg-raise border-secondary print:hidden"
       backdropProps={{ className: 'backdrop' }}
     >
       <DialogHeading className="mb-4 p-8">
@@ -339,7 +339,7 @@ const DiscussionReview = ({
     <section className={cn('relative', !isLast && 'pb-8')}>
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-4 top-0 bottom-0 w-[1px] border-l border-l-secondary" />
+        <div className="absolute bottom-0 left-4 top-0 w-[1px] border-l border-l-secondary" />
       )}
 
       {/* Review header */}
@@ -398,7 +398,7 @@ const DiscussionReview = ({
         return (
           <div key={thread[0].id} className="relative">
             {thread[0].line && (
-              <div className="absolute left-1 top-3 bottom-3 right-1">
+              <div className="absolute bottom-3 left-1 right-1 top-3">
                 <DialogDismiss
                   onClick={() => gotoBlock(thread[0].line!)}
                   className="group sticky top-0"
@@ -409,7 +409,7 @@ const DiscussionReview = ({
                 </DialogDismiss>
               </div>
             )}
-            <div className="relative mt-4 ml-10 flex justify-end">
+            <div className="relative ml-10 mt-4 flex justify-end">
               <CommentThreadBlock
                 path={thread[0].path}
                 line={thread[0].line || thread[0].original_line}
@@ -444,7 +444,7 @@ const DiscussionIssueComment = ({
     <section className={cn('relative', !isLast && 'pb-8')}>
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute left-4 top-0 bottom-0 w-[1px] border-l border-l-secondary" />
+        <div className="absolute bottom-0 left-4 top-0 w-[1px] border-l border-l-secondary" />
       )}
 
       {/* Review header */}

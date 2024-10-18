@@ -79,7 +79,6 @@ module.exports = {
       addUtilities(elevationUtilities)
       addVariant('children', '& > *')
     }),
-    require('@tailwindcss/line-clamp'),
   ],
   variants: {
     extend: {
