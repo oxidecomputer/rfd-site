@@ -11,14 +11,16 @@ import { vercelPreset } from '@vercel/remix/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
+import { LocalRfdPlugin } from './vite/local-rfd-plugin'
+
+const plugins = [remix({ presets: [vercelPreset()] }), tsconfigPaths()]
+
+const localRepo = process.env.LOCAL_RFD_REPO
+if (localRepo) plugins.push(LocalRfdPlugin(localRepo))
+
 export default defineConfig({
-  plugins: [remix({ presets: [vercelPreset()] }), tsconfigPaths()],
+  plugins,
   server: {
-    watch: {
-      ignored: process.env.LOCAL_RFD_REPO
-        ? ['!**/node_modules/**', `!${process.env.LOCAL_RFD_REPO}/rfd/**`]
-        : ['!**/node_modules/**'],
-    },
     port: 3000,
   },
 })
