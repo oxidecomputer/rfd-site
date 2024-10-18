@@ -25,7 +25,7 @@ import {
   Snippet,
   useHits,
   useSearchBox,
-} from 'react-instantsearch-hooks-web'
+} from 'react-instantsearch'
 
 import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
@@ -120,17 +120,17 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
 const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
   const navigate = useNavigate()
 
-  const { hits, results } = useHits()
+  const { items, results } = useHits()
 
   const [selectedIdx, setSelectedIdx] = useState(0)
 
   useEffect(() => {
     // Whenever number of groups changes ensure the index is not more than that
-    setSelectedIdx((s) => (s > hits.length ? hits.length : s))
-  }, [hits])
+    setSelectedIdx((s) => (s > items.length ? items.length : s))
+  }, [items])
 
   // Remove items without content
-  const hitsWithoutEmpty = hits.filter((hit) => hit.content !== '')
+  const hitsWithoutEmpty = items.filter((hit) => hit.content !== '')
 
   // Group hits
   const groupedHits = groupBy(hitsWithoutEmpty as RFDHit[], (hit) => hit.rfd_number)
@@ -192,7 +192,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
       <div
         className={cn(
           'flex h-12 items-center focus-visible:outline-none 600:h-16',
-          (hits.length > 0 || noMatches) && 'border-b border-b-secondary',
+          (items.length > 0 || noMatches) && 'border-b border-b-secondary',
         )}
       >
         <SearchBox />
@@ -206,7 +206,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
         </button>
       </div>
 
-      {(hits.length > 0 || noMatches) && (
+      {(items.length > 0 || noMatches) && (
         <>
           <div className="flex h-[60vh] overflow-hidden 600:h-[32rem]">
             {noMatches ? (
@@ -221,7 +221,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
               </div>
             ) : (
               <SearchResponse
-                hasHits={hits.length > 0}
+                hasHits={items.length > 0}
                 hits={flattenedHits}
                 selectedIdx={selectedIdx}
               />
