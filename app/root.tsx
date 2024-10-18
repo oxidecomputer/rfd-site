@@ -24,7 +24,6 @@ import {
   useLoaderData,
   useRouteLoaderData,
 } from '@remix-run/react'
-import { withSentry } from '@sentry/remix'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { Author } from '~/components/rfd/RfdPreview'
@@ -61,11 +60,6 @@ export const loader = async ({ request }: LoaderArgs) => {
   const labels: string[] = rfds ? findLabels(rfds) : []
 
   return json({
-    // Any data added to the ENV key of this loader will be injected into the
-    // global window object (window.ENV)
-    ENV: {
-      SENTRY_DSN: process.env.SENTRY_DSN,
-    },
     theme,
     inlineComments,
     user,
@@ -123,7 +117,7 @@ export const Layout = ({
 )
 
 function App() {
-  const { theme, isLocalMode, ENV } = useLoaderData<typeof loader>()
+  const { theme, isLocalMode } = useLoaderData<typeof loader>()
 
   return (
     <Layout theme={theme}>
@@ -136,13 +130,8 @@ function App() {
           </div>
         )}
       </QueryClientProvider>
-      <script
-        dangerouslySetInnerHTML={{
-          __html: `window.ENV = ${JSON.stringify(ENV)}`,
-        }}
-      />
     </Layout>
   )
 }
 
-export default withSentry(App)
+export default App

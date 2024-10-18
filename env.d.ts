@@ -6,8 +6,4 @@
  * Copyright Oxide Computer Company
  */
 
-interface Window {
-  ENV: {
-    SENTRY_DSN?: string
-  }
-}
+interface Window {}
