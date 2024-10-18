@@ -14,11 +14,6 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 export default defineConfig({
   plugins: [remix({ presets: [vercelPreset()] }), tsconfigPaths()],
   server: {
-    watch: {
-      ignored: process.env.LOCAL_RFD_REPO
-        ? ['!**/node_modules/**', `!${process.env.LOCAL_RFD_REPO}/rfd/**`]
-        : ['!**/node_modules/**'],
-    },
     port: 3000,
   },
 })
