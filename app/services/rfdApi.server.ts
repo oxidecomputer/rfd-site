@@ -36,8 +36,6 @@ export async function apiRequest<T>(
   }
 
   const url = `${getRfdApiUrl()}/${path.replace(/^\//, '')}`
-  console.info(`Requesting ${url} from the RFD API`)
-
   const response = await fetch(url, { headers })
 
   if (!response.ok) {
