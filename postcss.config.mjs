@@ -6,8 +6,11 @@
  * Copyright Oxide Computer Company
  */
 
-interface Window {
-  ENV: {
-    SENTRY_DSN?: string
-  }
+export default {
+  plugins: {
+    'tailwindcss/nesting': {},
+    tailwindcss: {},
+    // use `npx autoprefixer --info` to see autoprefixer debug info
+    autoprefixer: {},
+  },
 }

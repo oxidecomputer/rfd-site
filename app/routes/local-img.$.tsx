@@ -7,13 +7,13 @@
  */
 
 import fs from 'fs/promises'
-import type { LoaderArgs } from '@remix-run/node'
+import type { LoaderFunctionArgs } from '@remix-run/node'
 import { lookup } from 'mime-types'
 
 // serve images (technically any file) straight from local rfd repo when we're
 // in local mode
 
-export async function loader({ params }: LoaderArgs) {
+export async function loader({ params }: LoaderFunctionArgs) {
   const filename = params['*']
 
   // endpoint will 404 unless we're in local RFD mode
