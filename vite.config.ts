@@ -7,13 +7,12 @@
  */
 
 import { vitePlugin as remix } from '@remix-run/dev'
-import { vercelPreset } from '@vercel/remix/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { LocalRfdPlugin } from './vite/local-rfd-plugin'
 
-const plugins = [remix({ presets: [vercelPreset()] }), tsconfigPaths()]
+const plugins = [remix(), tsconfigPaths()]
 
 const localRepo = process.env.LOCAL_RFD_REPO
 if (localRepo) plugins.push(LocalRfdPlugin(localRepo))
