@@ -10,7 +10,8 @@
     "fmt": "prettier --write --ignore-path ./.gitignore  .",
     "fmt:check": "prettier --check --ignore-path ./.gitignore . ",
     "e2ec": "npx playwright test --project=chrome",
-    "lint": "eslint app"
+    "lint": "eslint app",
+    "start": "PORT=3000 remix-serve ./build/server/index.js"
   },
   "dependencies": {
     "@ariakit/react": "^0.3.5",
