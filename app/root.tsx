@@ -27,7 +27,7 @@ import {
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { Author } from '~/components/rfd/RfdPreview'
-import { isAuthenticated } from '~/services/authn.server'
+import { auth, isAuthenticated } from '~/services/authn.server'
 import {
   fetchRfds,
   findAuthors,
@@ -53,23 +53,29 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
   const user = await isAuthenticated(request)
-  const rfds: RfdListItem[] = await fetchRfds(user)
+  try {
+    const rfds: RfdListItem[] = await fetchRfds(user)
 
-  const authors: Author[] = rfds ? findAuthors(rfds) : []
-  const labels: string[] = rfds ? findLabels(rfds) : []
+    const authors: Author[] = rfds ? findAuthors(rfds) : []
+    const labels: string[] = rfds ? findLabels(rfds) : []
 
-  return json({
-    // Any data added to the ENV key of this loader will be injected into the
-    // global window object (window.ENV)
-    theme,
-    inlineComments,
-    user,
-    rfds,
-    authors,
-    labels,
-    isLocalMode,
-    newRfdNumber: provideNewRfdNumber([...rfds]),
-  })
+    return json({
+      // Any data added to the ENV key of this loader will be injected into the
+      // global window object (window.ENV)
+      theme,
+      inlineComments,
+      user,
+      rfds,
+      authors,
+      labels,
+      isLocalMode,
+      newRfdNumber: provideNewRfdNumber([...rfds]),
+    })
+  } catch (err) {
+    // The only error that should be caught here is the unauthenticated error.
+    // And if that occurs we need to log the user out
+    await auth.logout(request, { redirectTo: '/' })
+  }
 }
 
 export function useRootLoaderData() {
