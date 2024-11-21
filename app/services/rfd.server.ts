@@ -163,6 +163,13 @@ export type ListIssueCommentsType = ListIssueCommentsResponseType['data']
 
 export type IssueCommentType = ListIssueCommentsType[number]
 
+export class UnauthenticatedError extends Error {
+  constructor(message: string) {
+    super(message)
+    this.name = 'UnauthenticatedError'
+  }
+}
+
 /** Includes auth check: non-internal users can't see discussion */
 export async function fetchDiscussion(
   discussionLink: string | null,
@@ -310,6 +317,13 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[]> {
       .sort((a, b) => Date.parse(b.committed_at) - Date.parse(a.committed_at))
   } catch (err) {
     console.error(err)
+
+    // If this was an unauthenticated error then rethrow the error, it means the user
+    // presented invalid credentials and the session needs to be reset
+    if ((err as Response).status === 401) {
+      throw new UnauthenticatedError('Invalid authentication credential')
+    }
+
     return []
   }
 }
