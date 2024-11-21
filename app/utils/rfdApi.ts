@@ -12,8 +12,8 @@ export type RfdScope =
   | 'user:provider:w'
   | 'user:token:r'
   | 'user:token:w'
-  | 'group:r'
-  | 'group:w'
+  | 'group:info:r'
+  | 'group:info:w'
   | 'group:membership:w'
   | 'mapper:r'
   | 'mapper:w'
@@ -22,6 +22,8 @@ export type RfdScope =
   | 'search'
   | 'oauth:client:r'
   | 'oauth:client:w'
+  | 'mlink:client:r'
+  | 'mlink:client:w'
 
 export type RfdApiProvider = 'google' | 'github'
 

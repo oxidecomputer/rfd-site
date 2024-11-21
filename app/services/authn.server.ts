@@ -24,7 +24,7 @@ import { apiRequest, getRfdApiUrl } from './rfdApi.server'
 export type AuthenticationService = 'github' | 'google' | 'local'
 
 const scope: RfdScope[] = [
-  'group:r',
+  'group:info:r',
   'rfd:content:r',
   'rfd:discussion:r',
   'search',
