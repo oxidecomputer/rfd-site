@@ -126,3 +126,25 @@ input[type='checkbox']:focus:not(:focus-visible) {
     text-decoration-color: var(--content-tertiary);
   }
 }
+
+/* todo: upgrade design-system and grab from there */
+@layer components {
+  .accent-link {
+    @apply text-accent-secondary hover:text-accent;
+    text-decoration: underline;
+    text-decoration-color: var(--content-accent-tertiary);
+  }
+
+  .inline-code {
+    @apply text-secondary;
+    @apply ml-[1px] mr-[1px] rounded border px-[4px] py-[1px] align-[1px] text-[0.825rem] bg-raise border-secondary;
+  }
+}
+
+#footnotes p a {
+  @apply accent-link;
+}
+
+#footnotes p code {
+  @apply inline-code;
+}
