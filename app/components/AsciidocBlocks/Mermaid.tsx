@@ -11,21 +11,7 @@ import { useEffect, useId, useState } from 'react'
 
 mermaid.initialize({
   startOnLoad: false,
-  // @ts-ignore The types are wrong here. Base is available and is what's required for theming
-  theme: 'base',
-  themeVariables: {
-    darkMode: true,
-    background: '#080F11',
-    primaryColor: '#1C2225',
-    primaryTextColor: '#E7E7E8',
-    primaryBorderColor: '#238A5E',
-    fontFamily:
-      'SuisseIntl, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif',
-    lineColor: '#7E8385',
-  },
-  flowchart: {
-    curve: 'cardinal',
-  },
+  theme: 'dark',
 })
 
 const Mermaid = ({ content }: { content: string }) => {
