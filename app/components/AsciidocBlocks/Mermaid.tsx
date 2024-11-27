@@ -7,25 +7,23 @@
  */
 
 import mermaid from 'mermaid'
-import { useEffect, useId, useState } from 'react'
+import { memo, useId, useState } from 'react'
 
 mermaid.initialize({
   startOnLoad: false,
   theme: 'dark',
 })
 
-const Mermaid = ({ content }: { content: string }) => {
-  const [html, setHtml] = useState<string>('')
+const Mermaid = memo(function Mermaid({ content }: { content: string }) {
   const [showSource, setShowSource] = useState(false)
   const id = `mermaid-diagram-${useId().replace(/:/g, '_')}`
 
-  useEffect(() => {
-    const renderMermaid = async () => {
+  const mermaidRef = async (node: HTMLElement | null) => {
+    if (node) {
       const { svg } = await mermaid.render(id, content)
-      setHtml(svg)
+      node.innerHTML = svg
     }
-    renderMermaid()
-  }, [id, content, setHtml])
+  }
 
   return (
     <>
@@ -36,13 +34,9 @@ const Mermaid = ({ content }: { content: string }) => {
         {showSource ? 'Hide' : 'Show'} Source <span className="text-quinary">|</span>{' '}
         Mermaid
       </button>
-      {html && !showSource ? (
-        <code className="w-full" dangerouslySetInnerHTML={{ __html: html }} />
-      ) : (
-        <code>{content}</code>
-      )}
+      {!showSource ? <code ref={mermaidRef} className="w-full" /> : <code>{content}</code>}
     </>
   )
-}
+})
 
 export default Mermaid
