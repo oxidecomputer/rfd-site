@@ -7,39 +7,23 @@
  */
 
 import mermaid from 'mermaid'
-import { useEffect, useId, useState } from 'react'
+import { memo, useId, useState } from 'react'
 
 mermaid.initialize({
   startOnLoad: false,
-  // @ts-ignore The types are wrong here. Base is available and is what's required for theming
-  theme: 'base',
-  themeVariables: {
-    darkMode: true,
-    background: '#080F11',
-    primaryColor: '#1C2225',
-    primaryTextColor: '#E7E7E8',
-    primaryBorderColor: '#238A5E',
-    fontFamily:
-      'SuisseIntl, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif',
-    lineColor: '#7E8385',
-  },
-  flowchart: {
-    curve: 'cardinal',
-  },
+  theme: 'dark',
 })
 
-const Mermaid = ({ content }: { content: string }) => {
-  const [html, setHtml] = useState<string>('')
+const Mermaid = memo(function Mermaid({ content }: { content: string }) {
   const [showSource, setShowSource] = useState(false)
   const id = `mermaid-diagram-${useId().replace(/:/g, '_')}`
 
-  useEffect(() => {
-    const renderMermaid = async () => {
+  const mermaidRef = async (node: HTMLElement | null) => {
+    if (node) {
       const { svg } = await mermaid.render(id, content)
-      setHtml(svg)
+      node.innerHTML = svg
     }
-    renderMermaid()
-  }, [id, content, setHtml])
+  }
 
   return (
     <>
@@ -50,13 +34,9 @@ const Mermaid = ({ content }: { content: string }) => {
         {showSource ? 'Hide' : 'Show'} Source <span className="text-quinary">|</span>{' '}
         Mermaid
       </button>
-      {html && !showSource ? (
-        <code className="w-full" dangerouslySetInnerHTML={{ __html: html }} />
-      ) : (
-        <code>{content}</code>
-      )}
+      {!showSource ? <code ref={mermaidRef} className="w-full" /> : <code>{content}</code>}
     </>
   )
-}
+})
 
 export default Mermaid

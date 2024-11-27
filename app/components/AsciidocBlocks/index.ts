@@ -25,8 +25,25 @@ export const opts: Options = {
   customDocument: CustomDocument,
 }
 
+/**
+ * Adds word break opportunities (<wbr/>) after slashes in text, except within HTML tags.
+ * This function is used to improve line breaks for long paths or URLs in rendered content.
+ * *
+ * renderWithBreaks('/path/to/long/file.txt')
+ * '/<wbr/>path/<wbr/>to/<wbr/>long/<wbr/>file.txt'
+ */
 export const renderWithBreaks = (text: string): string => {
-  return text.replaceAll(/(?<!\s)\//g, '/<wbr/>')
+  return text
+    .split(/(<[^>]*>)/g)
+    .map((segment) => {
+      // if the segment is an HTML tag, leave it unchanged
+      if (segment.startsWith('<') && segment.endsWith('>')) {
+        return segment
+      }
+      // replace slashes that are not surrounded by spaces
+      return segment.replace(/(?:^|(?<=\S))\/(?=\S)/g, '/<wbr/>')
+    })
+    .join('')
 }
 
 // prettier-ignore
