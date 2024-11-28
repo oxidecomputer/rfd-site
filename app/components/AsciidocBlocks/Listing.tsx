@@ -102,13 +102,9 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
   // which it will then encode after highlighting.
   // Otherwise let's just use the original content which comes from
   // asciidoctor.js encoded.
-  const isSource = node.getStyle() === 'source'
   const lang = attrs.language
-  const hasLang = hljs.getLanguage(lang)
-  const shouldDecode = isSource && (hasLang || lang === 'mermaid')
-  const preparedContent = shouldDecode ? decode(content) || content : content
 
-  const { placeholderContent, callouts } = replaceCallouts(preparedContent)
+  const { placeholderContent, callouts } = replaceCallouts(content)
 
   // Listing blocks of style `source` are source code, should have their syntax
   // highlighted (where we have language support) and be inside both a `pre` and `code` tag
@@ -119,7 +115,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
         <div className="content">
           <pre className={cn('highlight', nowrap ? ' nowrap' : '')}>
             {lang && lang === 'mermaid' ? (
-              <Mermaid content={preparedContent} />
+              <Mermaid content={decode(content)} />
             ) : (
               <code
                 className={`language-${lang || ''}`}
@@ -131,7 +127,7 @@ const Listing = ({ node }: { node: AdocTypes.Block }) => {
                         hljs.highlight(placeholderContent, { language: lang }).value,
                         callouts,
                       )) ||
-                    placeholderContent,
+                    restoreCallouts(placeholderContent, callouts),
                 }}
               />
             )}
