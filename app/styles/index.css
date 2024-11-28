@@ -91,7 +91,7 @@ button:focus-visible,
 [role='button']:focus-visible,
 input[type='radio']:focus-visible,
 input[type='checkbox']:focus-visible {
-  @apply rounded outline-0 ring ring-2 ring-accent-tertiary;
+  @apply outline-0 ring-2 ring-accent-tertiary;
 }
 
 a:focus,
@@ -104,7 +104,7 @@ input[type='checkbox']:focus {
   outline: 2px solid black;
   outline-offset: -2px;
   box-shadow: none;
-  @apply rounded outline-0 ring ring-2 ring-accent-tertiary;
+  @apply outline-0 ring-2 ring-accent-tertiary;
 }
 
 a:focus:not(:focus-visible),
@@ -147,4 +147,10 @@ input[type='checkbox']:focus:not(:focus-visible) {
 
 #footnotes p code {
   @apply inline-code;
+}
+
+/* todo: include in design-system after upgrade */
+.asciidoc-body a:not(:is(h1, h2, h3, h4, h5, h6) a) {
+  text-decoration-color: rgba(var(--content-accent-tertiary-rgb), 0.8);
+  @apply underline text-accent-secondary;
 }
