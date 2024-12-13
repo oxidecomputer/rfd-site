@@ -9,10 +9,12 @@
 import fs from 'fs'
 import { createAppAuth } from '@octokit/auth-app'
 import type { GetResponseTypeFromEndpointMethod } from '@octokit/types'
-import { asciidoctor, type AdocTypes } from '@oxide/react-asciidoc'
+import { handleDocument } from '@oxide/design-system/components/dist'
+import { type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import { Octokit } from 'octokit'
 
 import { generateAuthors, type Author } from '~/components/rfd/RfdPreview'
+import { ad, attrs } from '~/utils/asciidoctor'
 import { isTruthy } from '~/utils/isTruthy'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can, type Permission } from '~/utils/permission'
@@ -30,8 +32,8 @@ export type RfdItem = {
   discussion_link: string | null
   authors: Author[]
   labels: string[]
-  content: string
-  toc: TocItem[]
+  content: DocumentBlock
+  toc: DocumentSection[]
   commit_date: string
   pdf_link_google_drive: string
   visibility: 'private' | 'public'
@@ -251,13 +253,13 @@ export async function fetchRfd(num: number, user: User | null): Promise<RfdItem 
       ? fetchRfdLocally(num)
       : await apiRequest<RfdResponse>(`rfd/${num}`, user?.token)
 
-    const ad = asciidoctor()
     const doc = ad.load(resp.content, {
-      standalone: true,
+      ...attrs,
       attributes: {
         rfdnumber: num,
       },
     })
+    const highlightedDocument = await handleDocument(doc)
 
     return {
       number: resp.rfd_number,
@@ -268,8 +270,8 @@ export async function fetchRfd(num: number, user: User | null): Promise<RfdItem 
       discussion_link: resp.discussion,
       authors: resp.authors ? generateAuthors(resp.authors) : [],
       labels: resp.labels ? resp.labels.split(',') : [],
-      content: resp.content,
-      toc: generateTableOfContents(doc.getSections()),
+      content: highlightedDocument,
+      toc: highlightedDocument.sections,
       commit_date: resp.committed_at,
       pdf_link_google_drive:
         resp.pdfs.filter((pdf) => pdf.source === 'google')[0]?.link || '',
@@ -373,41 +375,4 @@ export const provideNewRfdNumber = (rfds: RfdListItem[]): number | null => {
   const latestRfd = rfds[rfds.length - 1]
 
   return latestRfd.number + 1
-}
-
-const generateTableOfContents = (sections: AdocTypes.Section[]) => {
-  let toc: TocItem[] = []
-
-  if (sections.length < 1) return toc
-
-  for (let section of sections) {
-    generateSection(toc, section)
-  }
-
-  return toc
-}
-
-export type TocItem = {
-  id: string
-  level: number
-  title: string
-  sectNum: string
-}
-
-const generateSection = (toc: TocItem[], section: AdocTypes.Section) => {
-  toc.push({
-    id: section.getId(),
-    level: section.getLevel(),
-    title: section.getTitle() || '',
-    // @ts-ignore
-    sectNum: section.$sectnum().slice(0, -1),
-  })
-
-  if (section.hasSections()) {
-    const sections = section.getSections()
-
-    for (let section of sections) {
-      generateSection(toc, section)
-    }
-  }
 }

@@ -141,12 +141,24 @@ input[type='checkbox']:focus:not(:focus-visible) {
   }
 }
 
+/* todo: include in design-system after upgrade */
 #footnotes p a {
   @apply accent-link;
 }
 
+/* todo: include in design-system after upgrade */
 #footnotes p code {
   @apply inline-code;
+}
+
+/* todo: include in design-system after upgrade */
+.toc .active code {
+  @apply border-accent-tertiary;
+}
+
+/* todo: include in design-system after upgrade */
+.toc code {
+  @apply ml-[1px] mr-[1px] rounded border px-[3px] align-[1px] border-secondary;
 }
 
 /* todo: include in design-system after upgrade */

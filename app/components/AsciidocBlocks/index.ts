@@ -7,97 +7,19 @@
  */
 
 import { AsciiDocBlocks } from '@oxide/design-system/components/dist'
-import { getText, type AdocTypes, type Options } from '@oxide/react-asciidoc'
+import { type Options } from '@oxide/react-asciidoc'
 
-import CustomDocument, { ui } from './Document'
-import Image from './Image'
+import { CustomDocument } from './Document'
+import { Image } from './Image'
 import Listing from './Listing'
-import Section from './Section'
 
 export const opts: Options = {
   overrides: {
     admonition: AsciiDocBlocks.Admonition,
     table: AsciiDocBlocks.Table,
     image: Image,
+    section: AsciiDocBlocks.Section,
     listing: Listing,
-    section: Section,
   },
   customDocument: CustomDocument,
 }
-
-/**
- * Adds word break opportunities (<wbr/>) after slashes in text, except within HTML tags.
- * This function is used to improve line breaks for long paths or URLs in rendered content.
- * *
- * renderWithBreaks('/path/to/long/file.txt')
- * '/<wbr/>path/<wbr/>to/<wbr/>long/<wbr/>file.txt'
- */
-export const renderWithBreaks = (text: string): string => {
-  return text
-    .split(/(<[^>]*>)/g)
-    .map((segment) => {
-      // if the segment is an HTML tag, leave it unchanged
-      if (segment.startsWith('<') && segment.endsWith('>')) {
-        return segment
-      }
-      // replace slashes that are not surrounded by spaces
-      return segment.replace(/(?:^|(?<=\S))\/(?=\S)/g, '/<wbr/>')
-    })
-    .join('')
-}
-
-// prettier-ignore
-const QUOTE_TAGS: {[key: string]: [string, string, boolean?]} = {
-  "monospaced": ['<code>', '</code>', true],
-  "emphasis": ['<em>', '</em>', true],
-  "strong": ['<strong>', '</strong>', true],
-  "double": ['&#8220;', '&#8221;'],
-  "single": ['&#8216;', '&#8217;'],
-  "mark": ['<mark>', '</mark>', true],
-  "superscript": ['<sup>', '</sup>', true],
-  "subscript": ['<sub>', '</sub>', true],
-  "unquoted": ['<span>', '</span>', true],
-  "asciimath": ['\\$', '\\$'],
-  "latexmath": ['\\(', '\\)'],
-}
-
-const chop = (str: string) => str.substring(0, str.length - 1)
-
-const convertInlineQuoted = (node: AdocTypes.Inline) => {
-  const type = node.getType()
-  const quoteTag = QUOTE_TAGS[type]
-  const [open, close, tag] = quoteTag || ['', '']
-
-  let text = getText(node)
-
-  // Add <wbr> for line breaks with long paths
-  // Ignores a / if there's a space before it
-  if (type === 'monospaced') {
-    text = renderWithBreaks(text)
-  }
-
-  const id = node.getId()
-  const role = node.getRole()
-
-  const idAttr = id ? `id="${id}"` : ''
-  const classAttr = role ? `class="${role}"` : ''
-  const attrs = `${idAttr} ${classAttr}`
-
-  if (id || role) {
-    if (tag) {
-      return `${chop(open)} ${attrs}>${text}${close}`
-    } else {
-      return `<span ${attrs}>${open}${text}${close}</span>`
-    }
-  } else {
-    return `${open}${text}${close}`
-  }
-}
-
-function convertInlineCallout(node: AdocTypes.Inline): string {
-  let text = getText(node)
-
-  return `<i class="conum" data-value="${text}"></i>`
-}
-
-export { ui, convertInlineQuoted, convertInlineCallout }

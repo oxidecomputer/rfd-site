@@ -55,7 +55,7 @@
   }
 
   .asciidoc-body img {
-    @apply bg-inverse;
+    @apply bg-inverse-primary;
   }
 
   .asciidoc-body .transparent-dark img {
