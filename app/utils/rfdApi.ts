@@ -31,8 +31,8 @@ export type RfdApiProvider = 'google' | 'github'
 // internal checks against
 export type RfdApiPermission =
   | 'GetDiscussionsAll'
-  | { 'GetRfd': number }
-  | { 'GetRfds': number[] }
+  | { GetRfd: number }
+  | { GetRfds: number[] }
   | 'GetRfdsAll'
   | 'SearchRfds'
 

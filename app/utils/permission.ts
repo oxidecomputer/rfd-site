@@ -24,8 +24,8 @@ function createChecks(permission: Permission): RfdApiPermission[] {
       checks.push('GetDiscussionsAll')
       break
     case 'ReadRfd':
-      checks.push({ 'GetRfd': permission.v })
-      checks.push({ 'GetRfds': [permission.v] })
+      checks.push({ GetRfd: permission.v })
+      checks.push({ GetRfds: [permission.v] })
       checks.push('GetRfdsAll')
       break
   }
@@ -43,18 +43,19 @@ function simplePermissionCheck(
   permissions: RfdApiPermission[],
   check: RfdApiPermission,
 ): boolean {
-  return permissions.some(
-    (p) => {
-      switch (typeof p) {
-        case 'string':
-          return p === check
-        case 'object':
-          return Object.keys(p)[0] === Object.keys(check)[0] && permissionValue(p) === permissionValue(check)
-        default:
-          return false
-      }
+  return permissions.some((p) => {
+    switch (typeof p) {
+      case 'string':
+        return p === check
+      case 'object':
+        return (
+          Object.keys(p)[0] === Object.keys(check)[0] &&
+          permissionValue(p) === permissionValue(check)
+        )
+      default:
+        return false
     }
-  )
+  })
 }
 
 function listPermissionCheck(
@@ -63,24 +64,24 @@ function listPermissionCheck(
 ): boolean {
   return permissions.some((p) => {
     switch (typeof p) {
-        case 'string':
-          return false
-        case 'object':
-          if (Object.keys(p)[0] === Object.keys(check)[0]) {
-            const existing = permissionValue(p)
-            const expected = permissionValue(check)
+      case 'string':
+        return false
+      case 'object':
+        if (Object.keys(p)[0] === Object.keys(check)[0]) {
+          const existing = permissionValue(p)
+          const expected = permissionValue(check)
 
-            return (
-              Array.isArray(existing) &&
-              Array.isArray(expected) &&
-              expected.every((value) => existing.includes(value))
-            )
-          } else {
-            return false
-          }
-        default:
+          return (
+            Array.isArray(existing) &&
+            Array.isArray(expected) &&
+            expected.every((value) => existing.includes(value))
+          )
+        } else {
           return false
-      }
+        }
+      default:
+        return false
+    }
   })
 }
 
