@@ -21,12 +21,12 @@ function createChecks(permission: Permission): RfdApiPermission[] {
   const checks: RfdApiPermission[] = []
   switch (permission.k) {
     case 'ReadDiscussions':
-      checks.push({ kind: 'GetDiscussionsAll' })
+      checks.push('GetDiscussionsAll')
       break
     case 'ReadRfd':
-      checks.push({ kind: 'GetRfd', value: permission.v })
-      checks.push({ kind: 'GetRfds', value: [permission.v] })
-      checks.push({ kind: 'GetRfdsAll' })
+      checks.push({ 'GetRfd': permission.v })
+      checks.push({ 'GetRfds': [permission.v] })
+      checks.push('GetRfdsAll')
       break
   }
 
@@ -44,7 +44,16 @@ function simplePermissionCheck(
   check: RfdApiPermission,
 ): boolean {
   return permissions.some(
-    (p) => p.kind === check.kind && permissionValue(p) === permissionValue(check),
+    (p) => {
+      switch (typeof p) {
+        case 'string':
+          return p === check
+        case 'object':
+          return Object.keys(p)[0] === Object.keys(check)[0] && permissionValue(p) === permissionValue(check)
+        default:
+          return false
+      }
+    }
   )
 }
 
@@ -53,29 +62,35 @@ function listPermissionCheck(
   check: RfdApiPermission,
 ): boolean {
   return permissions.some((p) => {
-    if (p.kind === check.kind) {
-      const existing = permissionValue(p)
-      const expected = permissionValue(check)
+    switch (typeof p) {
+        case 'string':
+          return false
+        case 'object':
+          if (Object.keys(p)[0] === Object.keys(check)[0]) {
+            const existing = permissionValue(p)
+            const expected = permissionValue(check)
 
-      return (
-        Array.isArray(existing) &&
-        Array.isArray(expected) &&
-        expected.every((value) => existing.includes(value))
-      )
-    } else {
-      return false
-    }
+            return (
+              Array.isArray(existing) &&
+              Array.isArray(expected) &&
+              expected.every((value) => existing.includes(value))
+            )
+          } else {
+            return false
+          }
+        default:
+          return false
+      }
   })
 }
 
-function permissionValue(permission: RfdApiPermission): any | undefined {
-  switch (permission.kind) {
-    case 'GetDiscussionsAll':
-    case 'GetRfdsAll':
+function permissionValue(permission: RfdApiPermission): any[] | undefined {
+  switch (typeof permission) {
+    case 'string':
       return undefined
-    case 'GetRfd':
-      return permission.value
-    case 'GetRfds':
-      return permission.value
+    case 'object':
+      return Object.values(permission)[0]
+    default:
+      return undefined
   }
 }

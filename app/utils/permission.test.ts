@@ -17,7 +17,7 @@ describe('Group Permissions', () => {
     const group: Group = {
       id: 'test',
       name: 'Test',
-      permissions: [{ kind: 'GetRfdsAll' }],
+      permissions: ['GetRfdsAll'],
     }
 
     expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
@@ -27,7 +27,7 @@ describe('Group Permissions', () => {
     const group: Group = {
       id: 'test',
       name: 'Test',
-      permissions: [{ kind: 'GetRfd', value: 123 }],
+      permissions: [{ 'GetRfd': 123 }],
     }
 
     expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
@@ -37,7 +37,7 @@ describe('Group Permissions', () => {
     const group: Group = {
       id: 'test',
       name: 'Test',
-      permissions: [{ kind: 'GetRfds', value: [123] }],
+      permissions: [{ 'GetRfds': [123] }],
     }
 
     expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
@@ -48,12 +48,22 @@ describe('Group Permissions', () => {
       id: 'test',
       name: 'Test',
       permissions: [
-        { kind: 'GetRfd', value: 123 },
-        { kind: 'GetRfds', value: [123] },
-        { kind: 'GetRfdsAll' },
+        { 'GetRfd': 123 },
+        { 'GetRfds': [123] },
+        'GetRfdsAll',
       ],
     }
 
     expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
   })
+
+  it('Validates mapped group permission', () => {
+      const group: Group = {
+        id: 'test',
+        name: 'Test',
+        permissions: ['GetDiscussionsAll'],
+      }
+
+      expect(can(group.permissions, { k: 'ReadDiscussions' })).toBe(true)
+    })
 })

@@ -30,12 +30,11 @@ export type RfdApiProvider = 'google' | 'github'
 // This is an incomplete type, it contains only the permission types that we need to perform
 // internal checks against
 export type RfdApiPermission =
-  | { kind: 'GetDiscussionsAll' }
-  | { kind: 'GetRfd'; value: number }
-  | { kind: 'GetRfds'; value: number[] }
-  | { kind: 'GetRfdsAll' }
-
-export type RfdApiPermissionKind = RfdApiPermission['kind']
+  | 'GetDiscussionsAll'
+  | { 'GetRfd': number }
+  | { 'GetRfds': number[] }
+  | 'GetRfdsAll'
+  | 'SearchRfds'
 
 export type RfdResponse = {
   id: string
