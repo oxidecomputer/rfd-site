@@ -6,16 +6,15 @@
  * Copyright Oxide Computer Company
  */
 
+import {
+  borderRadiusTokens,
+  colorUtilities,
+  elevationUtilities,
+  textUtilities,
+} from '@oxide/design-system/styles/dist/tailwind-tokens'
+import { type Config } from 'tailwindcss'
 import plugin from 'tailwindcss/plugin'
 
-import {
-  textUtilities,
-  colorUtilities,
-  borderRadiusTokens,
-  elevationUtilities,
-} from '@oxide/design-system/styles/dist/tailwind-tokens'
-
-import { type Config } from 'tailwindcss'
 export default {
   corePlugins: {
     fontFamily: false,
