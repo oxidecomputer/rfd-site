@@ -24,6 +24,9 @@
     "@remix-run/node": "2.13.1",
     "@remix-run/react": "2.13.1",
     "@remix-run/serve": "2.13.1",
+    "@monaco-editor/loader": "^1.4.0",
+    "@monaco-editor/react": "^4.6.0",
+    "@shikijs/monaco": "^1.5.1",
     "@tanstack/react-query": "^4.3.9",
     "@vercel/remix": "^2.13.1",
     "classnames": "^2.3.1",
@@ -44,7 +47,7 @@
     "remeda": "^2.17.4",
     "remix-auth": "^3.6.0",
     "remix-auth-oauth2": "^1.11.1",
-    "shiki": "^1.23.1",
+    "shiki": "^1.5.1",
     "simple-text-diff": "^1.7.0",
     "tunnel-rat": "^0.1.2",
     "zod": "^3.22.3"

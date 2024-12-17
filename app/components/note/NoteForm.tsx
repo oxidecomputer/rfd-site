@@ -6,19 +6,22 @@
  * Copyright Oxide Computer Company
  */
 import { useDialogStore, type DialogStore } from '@ariakit/react'
-import { EditorView } from '@codemirror/view'
+// import { StreamLanguage } from '@codemirror/language'
+// import { EditorView } from '@codemirror/view'
+// import Editor from '@monaco-editor/react'
 import Asciidoc, { asciidoctor } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useFetcher, useLoaderData } from '@remix-run/react'
-import CodeMirror, { type ReactCodeMirrorRef } from '@uiw/react-codemirror'
+// import CodeMirror, { basicSetup, type ReactCodeMirrorRef } from '@uiw/react-codemirror'
 import cn from 'classnames'
+// import { asciidoc } from 'codemirror-asciidoc'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { opts } from '~/components/AsciidocBlocks'
 import { DropdownItem, DropdownLink, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
-import { editorTheme } from '~/components/note/EditorTheme'
+// import { editorTheme } from '~/components/note/EditorTheme'
 import { useDebounce } from '~/hooks/use-debounce'
 import { useRootLoaderData } from '~/root'
 
@@ -26,6 +29,7 @@ import { MinimalDocument } from '../AsciidocBlocks/MinimalDocument'
 import Modal from '../Modal'
 import Spinner from '../Spinner'
 import { TextInput } from '../TextInput'
+import EditorWrapper from './Editor'
 import { SidebarIcon } from './Sidebar'
 
 const ad = asciidoctor()
@@ -174,32 +178,17 @@ export const NoteForm = ({
         </div>
         <div className="flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
           <div
-            id="code_mirror_wrapper"
             style={{ width: `${leftPaneWidth}%` }} // Apply dynamic width here
             className="h-full cursor-text overflow-scroll"
-            onClick={(el) => {
-              if ((el.target as HTMLElement).id === 'code_mirror_wrapper') {
-                inputRef.current &&
-                  inputRef.current.editor &&
-                  inputRef.current.editor.focus()
-              }
-            }}
           >
             <input type="hidden" name="body" value={body} />
             <input type="hidden" name="published" value={published} />
-            <CodeMirror
-              ref={inputRef}
-              value={body}
+            <EditorWrapper
+              body={body}
               onChange={(val) => {
                 setStatus('unsaved')
                 setBody(val)
               }}
-              theme={editorTheme}
-              className="!normal-case !tracking-normal text-mono-md"
-              readOnly={false}
-              basicSetup
-              autoFocus
-              extensions={[EditorView.lineWrapping]}
             />
           </div>
           <div

@@ -15,9 +15,11 @@ export const loader = async ({ request }: LoaderArgs) => {
 
   if (!user) throw new Response('Not authorized', { status: 401 })
 
+  console.log(`http://localhost:8000/user/${user.id}`)
+
   const response = await fetch(`http://localhost:8000/user/${user.id}`, {
     headers: {
-      'x-api-key': process.env.TOME_API_KEY || '',
+      'x-api-key': process.env.NOTES_API_KEY || '',
     },
   })
   if (!response.ok) {

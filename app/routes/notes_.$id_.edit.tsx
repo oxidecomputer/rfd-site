@@ -18,7 +18,7 @@ import { isAuthenticated } from '~/services/authn.server'
 export async function loader({ params: { id } }: LoaderArgs) {
   const response = await fetch(`http://localhost:8000/notes/${id}`, {
     headers: {
-      'x-api-key': process.env.TOME_API_KEY || '',
+      'x-api-key': process.env.NOTES_API_KEY || '',
     },
   })
   if (!response.ok) {
@@ -40,7 +40,7 @@ export async function action({ request, params }: ActionArgs) {
     const response = await fetch(`http://localhost:8000/notes/${params.id}`, {
       method: 'PUT',
       headers: {
-        'x-api-key': process.env.TOME_API_KEY || '',
+        'x-api-key': process.env.NOTES_API_KEY || '',
         'Content-Type': 'application/json; charset=utf-8',
       },
       body: JSON.stringify({ title, body }),
@@ -75,8 +75,8 @@ export default function NoteEdit() {
   return (
     <div
       className={cn(
-        'purple-theme grid h-[100dvh] w-full grid-cols-[14.25rem,1fr] overflow-hidden',
-        sidebarOpen ? 'grid-cols-[14.25rem,1fr]' : 'grid-cols-[1fr]',
+        'purple-theme grid h-[100dvh] overflow-hidden',
+        sidebarOpen ? 'grid-cols-[14.25rem,minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
       )}
     >
       {sidebarOpen && <Sidebar />}

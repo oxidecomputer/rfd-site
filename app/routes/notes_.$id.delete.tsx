@@ -17,7 +17,7 @@ export async function action({ request, params }: ActionArgs) {
   const response = await fetch(`http://localhost:8000/notes/${params.id}`, {
     method: 'DELETE',
     headers: {
-      'x-api-key': process.env.TOME_API_KEY || '',
+      'x-api-key': process.env.NOTES_API_KEY || '',
     },
   })
 
