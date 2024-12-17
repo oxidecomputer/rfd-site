@@ -20,7 +20,7 @@ import Container from '~/components/Container'
 import { DropdownItem, DropdownLink, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
 
-import { NoteItem } from './notes_'
+import { type NoteItem } from './notes_'
 import { PropertyRow } from './rfd.$slug'
 
 const ad = asciidoctor()

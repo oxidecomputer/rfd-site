@@ -23,6 +23,7 @@ import {
   useLoaderData,
   useRouteError,
   useRouteLoaderData,
+  type ShouldRevalidateFunction,
 } from '@remix-run/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -40,6 +41,13 @@ import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
+
+export const shouldRevalidate: ShouldRevalidateFunction = ({ currentUrl, nextUrl }) => {
+  if (currentUrl.pathname.startsWith('/notes/') && nextUrl.pathname.startsWith('/notes/')) {
+    return false
+  }
+  return true
+}
 
 export const meta: MetaFunction = () => {
   return [{ title: 'RFD / Oxide' }]

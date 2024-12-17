@@ -8,7 +8,7 @@
 import { Spinner } from '@oxide/design-system'
 import { Asciidoc, prepareDocument } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { useFetcher } from '@remix-run/react'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useState } from 'react'
 
@@ -118,10 +118,6 @@ export const NoteForm = ({
     return prepareDocument(
       ad.load(body, {
         standalone: true,
-        sourcemap: true,
-        attributes: {
-          sectnums: false,
-        },
       }),
     )
   }, [body])
@@ -191,7 +187,7 @@ export const NoteForm = ({
               width: `calc(${100 - leftPaneWidth}% - 2px)`,
             }}
           >
-            <Asciidoc document={doc} options={{ ...opts }} />
+            <Asciidoc document={doc} options={opts} />
           </div>
         </div>
       </fetcher.Form>
@@ -215,7 +211,7 @@ const SavingIndicator = ({
   updated: string
 }) => {
   return (
-    <div className="flex items-center gap-1 text-sans-md text-tertiary">
+    <div className="flex items-center gap-2 text-sans-md text-tertiary">
       {dayjs(updated).format('MMM D YYYY, h:mm A')}
       {status === 'unsaved' ? (
         <TypingIndicator />
