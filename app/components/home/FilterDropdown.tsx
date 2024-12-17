@@ -68,7 +68,7 @@ const FilterDropdown = () => {
   }
 
   return (
-    <div className="flex h-4 items-center text-mono-sm text-secondary">
+    <div className="flex h-4 items-center text-mono-sm text-default">
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger className="-m-2 ml-0 p-2">
           <Icon name="filter" size={12} className="flex-shrink-0" />
@@ -119,7 +119,7 @@ const FilterDropdown = () => {
 
       {(authorNameParam || authorEmailParam) && (
         <>
-          <div className="ml-3 mr-1 block text-quaternary">Author:</div>
+          <div className="ml-3 mr-1 block text-tertiary">Author:</div>
           <FilterBadge onClick={clearAuthor} color="purple">
             {authorNameParam || authorEmailParam}
           </FilterBadge>
@@ -128,7 +128,7 @@ const FilterDropdown = () => {
 
       {labelParam && (
         <>
-          <div className="ml-3 mr-1 block text-quaternary">Label:</div>
+          <div className="ml-3 mr-1 block text-tertiary">Label:</div>
           <FilterBadge onClick={clearLabel} color="blue">
             {labelParam}
           </FilterBadge>

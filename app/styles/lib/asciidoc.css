@@ -29,7 +29,7 @@
   .asciidoc-body h3[data-sectnum]:before,
   .asciidoc-body h4[data-sectnum]:before,
   .asciidoc-body h5[data-sectnum]:before {
-    @apply pointer-events-none top-[6px] mr-2 inline-block text-quaternary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    @apply pointer-events-none top-[6px] mr-2 inline-block text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
     content: attr(data-sectnum);
   }
 
@@ -55,7 +55,7 @@
   }
 
   .asciidoc-body img {
-    @apply bg-inverse;
+    @apply bg-inverse-primary;
   }
 
   .asciidoc-body .transparent-dark img {

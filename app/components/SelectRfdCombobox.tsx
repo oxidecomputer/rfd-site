@@ -40,12 +40,12 @@ const SelectRfdCombobox = ({
   return (
     <div className="flex items-center">
       <div>
-        <div className="text-mono-xs text-quaternary">
+        <div className="text-mono-xs text-tertiary">
           RFD {currentRfd ? currentRfd.number : ''}
         </div>
         <div
           className={cn(
-            'truncate !leading-[14px] text-sans-sm text-secondary 600:max-w-[240px]',
+            'truncate !leading-[14px] text-sans-sm text-default 600:max-w-[240px]',
             isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
           )}
         >
@@ -54,7 +54,7 @@ const SelectRfdCombobox = ({
       </div>
       <button
         onClick={toggleCombobox}
-        className="ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border text-quaternary border-secondary hover:bg-hover 600:ml-6"
+        className="ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border text-tertiary border-secondary hover:bg-hover 600:ml-6"
         aria-label="Select a RFD"
       >
         <Icon name="select-arrows" size={6} className="flex-shrink-0" height={14} />
@@ -166,13 +166,13 @@ const ComboboxWrapper = ({
             }}
             placeholder="Search"
             spellCheck="false"
-            className="mousetrap h-12 w-full appearance-none rounded border-none px-3 text-sans-lg text-default bg-raise focus:outline-none focus:outline-offset-0 600:h-auto 600:py-3 600:text-sans-md"
+            className="mousetrap h-12 w-full appearance-none rounded border-none px-3 text-sans-lg text-raise bg-raise focus:outline-none focus:outline-offset-0 600:h-auto 600:py-3 600:text-sans-md"
           />
           <button
-            className="hover:bg-raise-hover block border-l px-4 text-mono-sm text-tertiary border-l-secondary 600:hidden"
+            className="hover:bg-raise-hover block border-l px-4 text-mono-sm text-secondary border-l-secondary 600:hidden"
             onClick={handleDismiss}
           >
-            <Icon name="close" size={12} className="text-quaternary" />
+            <Icon name="close" size={12} className="text-tertiary" />
           </button>
         </div>
         <div
@@ -196,7 +196,7 @@ const ComboboxWrapper = ({
                 )
               })
             ) : (
-              <div className="px-3 py-2 text-center text-sans-sm text-secondary">
+              <div className="px-3 py-2 text-center text-sans-sm text-default">
                 No matches found
               </div>
             )}
@@ -252,12 +252,12 @@ const ComboboxItem = ({
           'menu-item relative cursor-pointer border-b px-3 py-2 pr-6 text-sans-sm border-secondary',
           selected
             ? 'text-accent bg-accent-secondary hover:bg-accent-secondary-hover'
-            : 'hover:bg-raise-hover text-secondary',
+            : 'hover:bg-raise-hover text-default',
         )}
       >
         {selected && <Outline />}
         <div>RFD {rfd.number}</div>
-        <div className={cn(selected ? 'text-accent-secondary' : 'text-tertiary')}>
+        <div className={cn(selected ? 'text-accent-secondary' : 'text-secondary')}>
           {rfd.title}
         </div>
       </li>

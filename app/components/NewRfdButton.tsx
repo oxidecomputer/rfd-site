@@ -21,7 +21,7 @@ const NewRfdButton = () => {
     <>
       <button
         onClick={dialog.toggle}
-        className="flex h-8 w-8 items-center justify-center rounded border text-quaternary bg-secondary border-secondary elevation-1 hover:bg-tertiary"
+        className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-tertiary"
       >
         <Icon name="add-roundel" size={16} />
       </button>
@@ -50,7 +50,7 @@ const NewRfdButton = () => {
           </p>
           <pre className="mt-4 overflow-x-auto rounded border px-[1.25rem] py-[1rem] text-mono-code border-secondary 800:px-[1.75rem] 800:py-[1.5rem]">
             <code className="!text-[0.825rem] text-mono-code">
-              <span className="mr-2 inline-block select-none text-quinary">$</span>
+              <span className="mr-2 inline-block select-none text-quaternary">$</span>
               scripts/new.sh{' '}
               {newRfdNumber ? newRfdNumber.toString().padStart(4, '0') : '0042'} "My title
               here"

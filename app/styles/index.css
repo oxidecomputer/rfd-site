@@ -14,6 +14,7 @@
 @import '@oxide/design-system/styles/dist/blue.css';
 @import '@oxide/design-system/components/dist/asciidoc.css';
 @import '@oxide/design-system/components/dist/button.css';
+@import '@oxide/design-system/components/dist/spinner.css';
 
 @import './lib/asciidoc.css';
 @import './lib/highlight.css';
@@ -64,7 +65,7 @@ body {
 
 @layer base {
   body {
-    @apply text-sans-sm text-default;
+    @apply text-sans-sm text-raise;
   }
 }
 
@@ -118,39 +119,11 @@ input[type='checkbox']:focus:not(:focus-visible) {
 }
 
 .link-with-underline {
-  @apply text-secondary hover:text-default;
+  @apply text-default hover:text-raise;
   text-decoration: underline;
   text-decoration-color: var(--content-quinary);
 
   &:hover {
     text-decoration-color: var(--content-tertiary);
   }
-}
-
-/* todo: upgrade design-system and grab from there */
-@layer components {
-  .accent-link {
-    @apply text-accent-secondary hover:text-accent;
-    text-decoration: underline;
-    text-decoration-color: var(--content-accent-tertiary);
-  }
-
-  .inline-code {
-    @apply text-secondary;
-    @apply ml-[1px] mr-[1px] rounded border px-[4px] py-[1px] align-[1px] text-[0.825rem] bg-raise border-secondary;
-  }
-}
-
-#footnotes p a {
-  @apply accent-link;
-}
-
-#footnotes p code {
-  @apply inline-code;
-}
-
-/* todo: include in design-system after upgrade */
-.asciidoc-body a:not(:is(h1, h2, h3, h4, h5, h6) a) {
-  text-decoration-color: rgba(var(--content-accent-tertiary-rgb), 0.8);
-  @apply underline text-accent-secondary;
 }

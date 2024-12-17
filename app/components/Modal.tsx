@@ -27,13 +27,13 @@ const Modal = ({
         backdrop={<div className="backdrop" />}
       >
         <div className="flex w-full items-center border-b p-4 bg-secondary border-secondary">
-          <div className="text-semi-lg text-default">{title}</div>
+          <div className="text-semi-lg text-raise">{title}</div>
           <DialogDismiss className="absolute right-2 top-2.5 flex rounded p-2 hover:bg-hover">
-            <Icon name="close" size={12} className="text-secondary" />
+            <Icon name="close" size={12} className="text-default" />
           </DialogDismiss>
         </div>
 
-        <main className="px-4 py-6 text-sans-md text-secondary">{children}</main>
+        <main className="px-4 py-6 text-sans-md text-default">{children}</main>
       </Dialog>
     </>
   )

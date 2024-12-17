@@ -5,8 +5,13 @@
  *
  * Copyright Oxide Computer Company
  */
-
-import Asciidoc, { asciidoctor, type AdocTypes } from '@oxide/react-asciidoc'
+import {
+  DesktopOutline,
+  SmallScreenOutline,
+  useActiveSectionTracking,
+  useIntersectionObserver,
+} from '@oxide/design-system/components/dist'
+import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import {
   defer,
   redirect,
@@ -16,16 +21,19 @@ import {
 import { Await, useLoaderData, useLocation } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { Fragment, Suspense, useMemo } from 'react'
-import { renderToString } from 'react-dom/server'
-
 import {
-  convertInlineCallout,
-  convertInlineQuoted,
-  opts,
-  ui,
-} from '~/components/AsciidocBlocks'
-import Image from '~/components/AsciidocBlocks/Image'
+  Fragment,
+  Suspense,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
+import { flat } from 'remeda'
+
+import { opts } from '~/components/AsciidocBlocks'
+import Footnotes from '~/components/AsciidocBlocks/Footnotes'
 import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import Header from '~/components/Header'
@@ -37,38 +45,19 @@ import RfdPreview from '~/components/rfd/RfdPreview'
 import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { isAuthenticated } from '~/services/authn.server'
-import { fetchDiscussion, fetchGroups, fetchRfd } from '~/services/rfd.server'
+import { fetchDiscussion, fetchGroups, fetchRfd, type RfdItem } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
-const ad = asciidoctor()
-
-class InlineConverter {
-  baseConverter: AdocTypes.Html5Converter
-
-  constructor() {
-    this.baseConverter = new ad.Html5Converter()
-  }
-
-  convert(node: AdocTypes.Block, transform: string) {
-    switch (node.getNodeName()) {
-      case 'inline_image':
-        return renderToString(<Image node={node} hasLightbox={false} />)
-      case 'image':
-        return renderToString(<Image node={node} hasLightbox={false} />)
-      case 'inline_quoted':
-        return convertInlineQuoted(node as unknown as AdocTypes.Inline) // We know this is always inline
-      case 'inline_callout':
-        return convertInlineCallout(node as unknown as AdocTypes.Inline) // We know this is always inline
-      default:
-        break
-    }
-
-    return this.baseConverter.convert(node, transform)
-  }
+function isValue<T>(item: T | null | undefined): item is T {
+  return !!item
 }
 
-ad.ConverterFactory.register(new InlineConverter(), ['html5'])
+const flattenSections = (sections: DocumentSection[]): DocumentSection[] => {
+  return flat(
+    sections.map((section) => [section, ...flattenSections(section.sections || [])]),
+  )
+}
 
 export const resp404 = () => new Response('Not Found', { status: 404 })
 
@@ -135,23 +124,7 @@ export default function Rfd() {
   const { pathname, hash } = useLocation()
 
   const { rfd, groups, discussionPromise } = useLoaderData<typeof loader>()
-  const {
-    rfd: { number, title, state, authors, labels, commit_date, content },
-  } = useLoaderData<typeof loader>()
-
-  const doc = useMemo(() => {
-    return ad.load(content, {
-      standalone: true,
-      sourcemap: true,
-      attributes: {
-        sectlinks: 'true',
-        icons: 'font',
-        rfdnumber: number,
-        stem: 'latexmath',
-        xrefstyle: 'basic',
-      },
-    })
-  }, [number, content])
+  const { number, title, state, authors, labels, commit_date, content } = rfd
 
   const { user, inlineComments } = useRootLoaderData()
 
@@ -159,46 +132,49 @@ export default function Rfd() {
   // which will fail if they try to use
   const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
 
+  const bodyRef = useRef<HTMLDivElement>(null)
+  const [activeItem, setActiveItem] = useState('')
+
+  const onActiveElementUpdate = useCallback(
+    (el: Element | null) => {
+      setActiveItem(el?.id || '')
+    },
+    [setActiveItem],
+  )
+
+  // Connect handlers for managing the active (visible section) of the page
+  const { setSections } = useActiveSectionTracking([], onActiveElementUpdate)
+
+  // Add handler for resetting back to the empty state when the top of the page is reached.
+  useIntersectionObserver(
+    useMemo(
+      () =>
+        typeof document !== 'undefined'
+          ? [document.querySelector('h1')].filter(isValue)
+          : [],
+      [],
+    ),
+    useCallback(
+      (entries) => entries[0].isIntersecting && onActiveElementUpdate(null),
+      [onActiveElementUpdate],
+    ),
+    useMemo(() => ({ rootMargin: '0px 0px -80% 0px' }), []),
+  )
+
+  useEffect(() => {
+    let headings = flattenSections(content.sections)
+      .filter((item) => item.level <= 2)
+      .map((item) => bodyRef.current?.querySelector(`#${item.id}`))
+      .filter(isValue)
+
+    setSections(headings)
+  }, [content.sections, setSections])
+
   return (
     <>
       {/* key makes the search dialog close on selection */}
-      <Header currentRfd={rfd} key={pathname + hash} />
+      <Header currentRfd={rfd as RfdItem} key={pathname + hash} />
       <main className="relative mt-12 800:mt-16 print:mt-0">
-        <ui.In>
-          <Suspense
-            fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
-          >
-            <Await
-              resolve={discussionPromise}
-              errorElement={
-                <CommentCount error={true} isLoading={false} count={0} onClick={() => {}} />
-              }
-            >
-              {(discussion) => {
-                if (!discussion) {
-                  return <></>
-                }
-
-                const { reviews, comments, pullNumber, prComments } = discussion
-
-                return (
-                  <>
-                    {comments && reviews && pullNumber ? (
-                      <RfdDiscussionDialog
-                        rfdNumber={number}
-                        title={title}
-                        pullNumber={pullNumber}
-                        comments={comments}
-                        prComments={prComments}
-                        reviews={reviews}
-                      />
-                    ) : null}
-                  </>
-                )
-              }}
-            </Await>
-          </Suspense>
-        </ui.In>
         {inlineComments && (
           <Suspense fallback={null}>
             <Await resolve={discussionPromise} errorElement={<></>}>
@@ -218,8 +194,8 @@ export default function Rfd() {
             <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 print:hidden">
               <span className="hidden 1200:inline">RFD</span> {number}
             </div>
-            <div className="col-span-12 flex items-baseline 800:col-span-11 1100:col-span-10">
-              <h1 className="w-full pr-4 text-sans-2xl 600:pr-10 800:text-sans-3xl 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
+            <div className="col-span-12 flex items-baseline 800:col-span-11 1200:col-span-10">
+              <h1 className="w-full pr-4 text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
@@ -231,7 +207,6 @@ export default function Rfd() {
             <AccessWarning groups={groups} />
           </div>
         </Container>
-
         <div className="border-b border-secondary print:m-auto print:max-w-1200 print:rounded-lg print:border">
           <PropertyRow
             label="State"
@@ -290,8 +265,69 @@ export default function Rfd() {
           </PropertyRow>
         </div>
 
-        <Asciidoc content={doc} options={opts} />
+        <Container className="mt-12 800:mt-16" isGrid>
+          <div
+            className="col-span-12 flex 800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3"
+            ref={bodyRef}
+          >
+            <Asciidoc document={content as DocumentBlock} options={opts} />
+            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1200:sticky 1200:block print:hidden">
+              <Suspense
+                fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
+              >
+                <Await
+                  resolve={discussionPromise}
+                  errorElement={
+                    <CommentCount
+                      error={true}
+                      isLoading={false}
+                      count={0}
+                      onClick={() => {}}
+                    />
+                  }
+                >
+                  {(discussion) => {
+                    if (!discussion) {
+                      return <></>
+                    }
+
+                    const { reviews, comments, pullNumber, prComments } = discussion
+
+                    return (
+                      <>
+                        {comments && reviews && pullNumber ? (
+                          <RfdDiscussionDialog
+                            rfdNumber={number}
+                            title={title}
+                            pullNumber={pullNumber}
+                            comments={comments}
+                            prComments={prComments}
+                            reviews={reviews}
+                          />
+                        ) : null}
+                      </>
+                    )
+                  }}
+                </Await>
+              </Suspense>
+              <DesktopOutline
+                toc={content.sections}
+                activeItem={activeItem}
+                className="hidden 1200:block"
+              />
+            </div>
+          </div>
+        </Container>
+        <Footnotes doc={content as DocumentBlock} />
       </main>
+      <div className="fixed inset-x-0 bottom-0 children:mb-0">
+        <SmallScreenOutline
+          toc={content.sections}
+          activeItem={activeItem}
+          className="block 1200:hidden"
+          key={pathname}
+        />
+      </div>
     </>
   )
 }
@@ -312,11 +348,11 @@ const PropertyRow = ({
     )}
   >
     <Container isGrid>
-      <div className="relative col-span-4 text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-default">
+      <div className="relative col-span-4 text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
         <div className="absolute -bottom-2 -top-2 right-0 w-px bg-[black]" />
         {label}
       </div>
-      <div className="col-span-8 text-sans-md text-secondary 800:col-span-9 1200:col-span-8 print:col-span-10">
+      <div className="col-span-8 text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">
         {children}
       </div>
     </Container>

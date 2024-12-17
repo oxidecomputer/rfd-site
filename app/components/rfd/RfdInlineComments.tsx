@@ -17,6 +17,7 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
+import { Badge } from '@oxide/design-system/components/dist'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -247,7 +248,7 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
           })}
         </div>
         {users.length > 2 && (
-          <div className="text-mono-sm text-quaternary">+{users.length - 2}</div>
+          <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
         )}
       </button>
 
@@ -296,11 +297,11 @@ const CodeSuggestion = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border text-default border-secondary',
+        'overflow-hidden rounded-lg border text-raise border-secondary',
         isOverlay ? 'bg-default' : 'bg-raise',
       )}
     >
-      <div className="w-full border-b px-2 py-2 text-mono-xs text-quaternary border-b-secondary">
+      <div className="w-full border-b px-2 py-2 text-mono-xs text-tertiary border-b-secondary">
         Suggestion
       </div>
       <CodeLine change="remove" code={textDiff.before} />
@@ -361,26 +362,25 @@ export const CommentThreadBlock = ({
       )}
     >
       {/* Meta */}
-      {/* {isOverlay && ( */}
       <div className="flex items-center justify-between p-3 bg-secondary">
         <a href={htmlUrl} target="_blank" rel="noreferrer" className="hover:opacity-80">
-          <div className="flex items-center !normal-case text-mono-xs">
+          <div className="flex items-center !normal-case text-mono-sm">
             {isOverlay && (
-              <span className="mr-1 text-sans-sm text-tertiary">Comment on </span>
+              <span className="mr-1 text-sans-sm text-secondary">Comment on </span>
             )}
             {path}
 
             {isOutdated && (
-              <div className="ml-2 rounded px-1 py-[1px] text-mono-xs text-notice bg-notice-secondary">
+              <Badge className="ml-1" color="notice">
                 Outdated
-              </div>
+              </Badge>
             )}
           </div>
         </a>
 
         {isOverlay && (
           <button onClick={handleDismiss}>
-            <Icon name="close" size={12} className="text-secondary" />
+            <Icon name="close" size={12} className="text-default" />
           </button>
         )}
       </div>
@@ -460,14 +460,14 @@ export const CommentThreadBlock = ({
                     <div className="text-sans-semi-md">
                       <a
                         href={comment.user.html_url}
-                        className="hover:text-secondary"
+                        className="text-default hover:text-raise"
                         target="_blank"
                         rel="noreferrer"
                       >
                         {comment.user.login}
                       </a>
                     </div>
-                    <div className="ml-1 text-sans-md text-quaternary">
+                    <div className="ml-1 text-sans-md text-secondary">
                       <time dateTime={comment.created_at}>
                         {dayjs(comment.created_at).fromNow()}
                       </time>
@@ -475,7 +475,7 @@ export const CommentThreadBlock = ({
                   </div>
                 </div>
                 <div
-                  className="github-markdown asciidoc-body mt-2 w-full pr-4 text-left text-sans-md text-secondary"
+                  className="github-markdown asciidoc-body mt-2 w-full pr-4 text-left text-sans-md text-default"
                   dangerouslySetInnerHTML={{ __html: marked.parse(comment.body) }}
                 />
 
@@ -524,10 +524,10 @@ const CommentReactions = ({ reactions }: { reactions: Reactions }) => {
         return (
           <div
             key={key}
-            className="flex items-center rounded-lg border p-1 text-mono-sm text-secondary border-secondary"
+            className="flex items-center rounded-lg border p-1 text-mono-sm text-default border-secondary"
           >
             {emoji}
-            <span className="ml-1 inline-block text-mono-sm text-secondary">{count}</span>
+            <span className="ml-1 inline-block text-mono-sm text-default">{count}</span>
           </div>
         )
       })}

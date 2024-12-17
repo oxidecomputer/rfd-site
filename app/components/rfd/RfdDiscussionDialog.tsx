@@ -13,6 +13,7 @@ import {
   useDialogStore,
   type DialogStore,
 } from '@ariakit/react'
+import { Spinner } from '@oxide/design-system/components/dist'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -30,7 +31,6 @@ import type {
 } from '~/services/rfd.server'
 
 import { GotoIcon } from '../CustomIcons'
-import Spinner from '../Spinner'
 import { CommentThreadBlock, matchCommentToBlock } from './RfdInlineComments'
 import { calcOffset } from './RfdPreview'
 
@@ -188,7 +188,7 @@ export const CommentCount = ({
           'flex items-center space-x-2 rounded border p-2 print:hidden',
           error
             ? 'text-error bg-error-secondary border-error-secondary'
-            : 'text-quaternary border-default hover:bg-hover',
+            : 'text-tertiary border-default hover:bg-hover',
         )}
         disabled={isLoading || error}
       >
@@ -230,7 +230,7 @@ const DialogContent = ({
             RFD {rfdNumber} {title}
           </div>
           <DialogDismiss className="-m-2 p-2">
-            <Icon name="close" size={12} className="mt-2 text-tertiary" />
+            <Icon name="close" size={12} className="mt-2 text-secondary" />
           </DialogDismiss>
         </div>
         <a
@@ -238,7 +238,7 @@ const DialogContent = ({
           target="_blank"
           rel="noreferrer"
         >
-          <div className="text-sans-2xl text-tertiary">#{pullNumber}</div>
+          <div className="text-sans-2xl text-secondary">#{pullNumber}</div>
         </a>
       </DialogHeading>
       <DiscussionReviewGroup discussions={discussions} pullNumber={pullNumber} />
@@ -297,12 +297,12 @@ const DiscussionReviewGroup = ({
                 <Icon name="chat" size={16} />
               </div>
               <h2 className="text-semi-lg mt-4">Nothing to see here</h2>
-              <p className="text-md mt-2 text-secondary">
+              <p className="text-md mt-2 text-default">
                 This discussion has no reviews or comments
               </p>
               <a
                 href={`https://github.com/oxidecomputer/rfd/pull/${pullNumber}`}
-                className="mt-6 inline-block rounded border px-2 py-1 text-mono-xs text-tertiary border-default hover:bg-secondary"
+                className="mt-6 inline-block rounded border px-2 py-1 text-mono-xs text-secondary border-default hover:bg-secondary"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -353,14 +353,14 @@ const DiscussionReview = ({
           <div className="text-sans-semi-md">
             <a
               href={data.review.user.html_url}
-              className="hover:text-secondary"
+              className="text-sans-semi-md text-default hover:text-raise"
               target="_blank"
               rel="noreferrer"
             >
               {data.review.user.login}
             </a>
           </div>
-          <div className="ml-1 text-sans-md text-quaternary">
+          <div className="ml-1 text-sans-md text-secondary">
             reviewed on
             <time dateTime={data.review.submitted_at}>
               {' '}
@@ -376,17 +376,17 @@ const DiscussionReview = ({
           <div className="flex items-center border-b p-3 text-sans-md bg-secondary border-b-secondary">
             <a
               href={data.review.user.html_url}
-              className="hover:text-secondary"
+              className="text-sans-semi-md text-default hover:text-raise"
               target="_blank"
               rel="noreferrer"
             >
               {data.review.user.login}
             </a>
-            <span className="ml-1 text-tertiary">left a comment</span>
+            <span className="ml-1 text-secondary">left a comment</span>
           </div>
 
           <div
-            className="github-markdown asciidoc-body w-full p-3 pr-4 text-left text-sans-md text-secondary"
+            className="github-markdown asciidoc-body w-full p-3 pr-4 text-left text-sans-md text-default"
             dangerouslySetInnerHTML={{ __html: marked.parse(data.review.body) }}
           />
         </div>
@@ -404,7 +404,7 @@ const DiscussionReview = ({
                   className="group sticky top-0"
                 >
                   <div className="flex h-6 w-6 items-center justify-center rounded-full border bg-raise border-secondary group-hover:bg-secondary">
-                    <GotoIcon className="text-tertiary" />
+                    <GotoIcon className="text-secondary" />
                   </div>
                 </DialogDismiss>
               </div>
@@ -459,13 +459,13 @@ const DiscussionIssueComment = ({
           <div className="flex items-center border-b p-3 text-sans-md bg-secondary border-b-secondary">
             <a
               href={data.user.html_url}
-              className="hover:text-secondary"
+              className="text-sans-semi-md text-default hover:text-raise"
               target="_blank"
               rel="noreferrer"
             >
               {data.user.login}
             </a>
-            <span className="ml-1 text-tertiary">
+            <span className="ml-1 text-secondary">
               commented on
               <time dateTime={data.created_at}>
                 {' '}
@@ -475,7 +475,7 @@ const DiscussionIssueComment = ({
           </div>
 
           <div
-            className="github-markdown asciidoc-body w-full p-3 pr-4 text-left text-sans-md text-secondary"
+            className="github-markdown asciidoc-body w-full p-3 pr-4 text-left text-sans-md text-default"
             dangerouslySetInnerHTML={{ __html: marked.parse(data.body || '') }}
           />
         </div>

@@ -240,7 +240,7 @@ export default function Index() {
             />
 
             <div className="1000:translate-0 relative flex w-full flex-col items-center justify-start 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[150px]">
-              <h1 className="text-center text-sans-2xl 800:text-sans-3xl">
+              <h1 className="text-center text-sans-2xl text-raise 800:text-sans-3xl">
                 Requests for Discussion
               </h1>
 
@@ -267,7 +267,7 @@ export default function Index() {
                   className="mousetrap overlay-shadow h-full w-full rounded border p-3 text-sans-md bg-raise border-secondary focus:outline-none focus:outline-offset-0 focus:ring-2 focus:ring-accent-secondary"
                   placeholder="Filter by title, number or author"
                 />
-                <div className="pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border text-mono-xs text-secondary border-default">
+                <div className="pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border text-mono-xs text-default border-default">
                   /
                 </div>
               </div>
@@ -282,22 +282,22 @@ export default function Index() {
         </Container>
         <Container className="mb-4 mt-4 flex justify-between">
           <FilterDropdown />
-          <div className="flex text-mono-sm text-secondary">
-            <div className="mr-1 block text-quaternary">Results:</div>
+          <div className="flex text-mono-sm text-default">
+            <div className="mr-1 block text-tertiary">Results:</div>
             {matchedItems.length}
           </div>
         </Container>
         <ul className="space-y-3">
           <Container
             isGrid
-            className="hidden h-10 items-center rounded-lg border px-3 text-mono-xs text-tertiary bg-raise border-secondary 800:grid"
+            className="hidden h-10 items-center rounded-lg border px-3 text-mono-xs text-secondary bg-raise border-secondary 800:grid"
           >
             <div
               className="group col-span-12 flex cursor-pointer select-none content-start pl-2 800:col-span-5"
               onClick={() => submitSortOrder('number')}
             >
               <div className="-ml-1 flex items-center rounded p-1 group-hover:bg-tertiary">
-                Number <span className="mx-1 inline-block text-quinary">/</span> Title
+                Number <span className="mx-1 inline-block text-quaternary">/</span> Title
                 <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
               </div>
             </div>
@@ -335,7 +335,7 @@ const SortIcon = ({
 }) => (
   <div
     className={cn(
-      'ml-2 h-[14px] flex-col justify-between text-tertiary',
+      'ml-2 h-[14px] flex-col justify-between text-secondary',
       isActive ? 'flex' : 'hidden group-hover:!flex group-hover:children:!opacity-40',
     )}
   >
@@ -356,7 +356,7 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
         >
           <div className="-m-2 inline-flex flex-col rounded-lg p-2 800:group-hover:bg-hover">
             <div>RFD {rfd.number}</div>
-            <div className="line-clamp-2 text-secondary">{rfd.title}</div>
+            <div className="line-clamp-2 text-default">{rfd.title}</div>
           </div>
         </Link>
 
@@ -364,7 +364,7 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
           <StatusBadge label={rfd.state} />
         </div>
 
-        <div className="order-3 col-span-12 flex space-x-2 text-sans-md text-secondary 800:col-span-3 800:block 800:space-x-0 1000:col-span-2">
+        <div className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2">
           <ClientOnly
             fallback={
               <>
@@ -375,11 +375,11 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
           >
             {() => (
               <>
-                <div className="text-tertiary 800:text-secondary">
+                <div className="text-secondary 800:text-default">
                   {dayjs(rfd.commit_date).format('MMM D, YYYY')}
                 </div>
-                <div className="text-quinary 800:hidden">/</div>
-                <div className="text-tertiary 800:text-quaternary">
+                <div className="text-quaternary 800:hidden">/</div>
+                <div className="text-secondary 800:text-tertiary">
                   {dayjs(rfd.commit_date).format('h:mm A')}
                 </div>
               </>
@@ -414,7 +414,7 @@ const LabelsInner = ({ labels }: { labels: string }) => {
   return (
     <div
       ref={containerEl}
-      className="relative flex flex-shrink flex-wrap gap-1 overflow-hidden pr-8 text-quaternary"
+      className="relative flex flex-shrink flex-wrap gap-1 overflow-hidden pr-8 text-tertiary"
     >
       {labels ? (
         labels.split(',').map((label) => (
@@ -423,11 +423,11 @@ const LabelsInner = ({ labels }: { labels: string }) => {
           </Link>
         ))
       ) : (
-        <div className="text-sans-md text-quinary">-</div>
+        <div className="text-sans-md text-quaternary">-</div>
       )}
 
       {isOverflow && (
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-mono-sm text-tertiary">
+        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-mono-sm text-secondary">
           +
         </div>
       )}

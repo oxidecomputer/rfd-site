@@ -7,20 +7,15 @@
  */
 
 import * as Ariakit from '@ariakit/react'
-import { CaptionedTitle, type AdocTypes } from '@oxide/react-asciidoc'
+import { type Block, type Inline } from '@asciidoctor/core'
+import { Title, useConverterContext, type ImageBlock } from '@oxide/react-asciidoc'
 import { useState } from 'react'
 
-function nodeIsInline(node: AdocTypes.Block | AdocTypes.Inline): node is AdocTypes.Inline {
+function nodeIsInline(node: Block | Inline): node is Inline {
   return node.isInline()
 }
 
-const Image = ({
-  node,
-  hasLightbox = true,
-}: {
-  node: AdocTypes.Block | AdocTypes.Inline
-  hasLightbox?: boolean
-}) => {
+const InlineImage = ({ node }: { node: Block | Inline }) => {
   const documentAttrs = node.getDocument().getAttributes()
 
   let target = ''
@@ -33,8 +28,6 @@ const Image = ({
   let uri = node.getImageUri(target)
   let url = ''
 
-  const [lightboxOpen, setLightboxOpen] = useState(false)
-
   url = `/rfd/image/${documentAttrs.rfdnumber}/${uri}`
 
   let img = (
@@ -43,7 +36,6 @@ const Image = ({
       alt={node.getAttribute('alt')}
       width={node.getAttribute('width')}
       height={node.getAttribute('height')}
-      className={node.isBlock() && hasLightbox ? '1000:cursor-zoom-in' : ''}
     />
   )
 
@@ -55,51 +47,76 @@ const Image = ({
     )
   }
 
-  if (nodeIsInline(node)) {
-    return (
-      <span
-        className={`image ${
-          node.hasAttribute('align') ? 'text-' + node.getAttribute('align') : ''
-        } ${node.hasAttribute('float') ? node.getAttribute('float') : ''} ${
-          node.getRole() ? node.getRole() : ''
-        }`}
-      >
-        {img}
-      </span>
-    )
-  } else {
-    return (
-      <>
-        <div
-          className={`imageblock ${
-            node.hasAttribute('align') ? 'text-' + node.getAttribute('align') : ''
-          } ${node.hasAttribute('float') ? node.getAttribute('float') : ''} ${
-            node.getRole() ? node.getRole() : ''
-          }`}
-          onClick={() => setLightboxOpen(true)}
-        >
-          <div className="content">{img}</div>
-          <CaptionedTitle node={node} />
-        </div>
-        {hasLightbox && (
-          <Ariakit.Dialog
-            open={lightboxOpen}
-            onClose={() => setLightboxOpen(false)}
-            className="fixed [&_img]:mx-auto"
-            backdrop={<div className="backdrop" />}
-          >
-            <Ariakit.DialogDismiss className="fixed left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 cursor-zoom-out p-20">
-              <img
-                src={url}
-                className={`max-h-full max-w-full rounded object-contain`}
-                alt={node.getAttribute('alt')}
-              />
-            </Ariakit.DialogDismiss>
-          </Ariakit.Dialog>
-        )}
-      </>
-    )
-  }
+  return (
+    <div
+      className={`image ${
+        node.hasAttribute('align') ? 'text-' + node.getAttribute('align') : ''
+      } ${node.hasAttribute('float') ? node.getAttribute('float') : ''} ${
+        node.getRole() ? node.getRole() : ''
+      }`}
+    >
+      {img}
+    </div>
+  )
 }
 
-export default Image
+const Image = ({ node }: { node: ImageBlock }) => {
+  const { document } = useConverterContext()
+  const docAttrs = document.attributes || {}
+
+  let url = ''
+
+  const [lightboxOpen, setLightboxOpen] = useState(false)
+
+  url = `/rfd/image/${docAttrs.rfdnumber}/${node.imageUri}`
+
+  let img = (
+    <img
+      src={url}
+      alt={node.attributes['alt'].toString()}
+      width={node.attributes['width']}
+      height={node.attributes['height']}
+      className="1000:cursor-zoom-in"
+    />
+  )
+
+  if (node.attributes['link']) {
+    img = (
+      <a className="image" href={node.attributes['link'].toString()}>
+        {img}
+      </a>
+    )
+  }
+
+  return (
+    <>
+      <div
+        className={`imageblock ${
+          node.attributes['align'] ? 'text-' + node.attributes['align'] : ''
+        } ${node.attributes['float'] ? node.attributes['float'] : ''} ${
+          node.role ? node.role : ''
+        }`}
+        onClick={() => setLightboxOpen(true)}
+      >
+        <div className="content">{img}</div>
+        <Title text={node.title || ''} />
+      </div>
+      <Ariakit.Dialog
+        open={lightboxOpen}
+        onClose={() => setLightboxOpen(false)}
+        className="fixed [&_img]:mx-auto"
+        backdrop={<div className="backdrop" />}
+      >
+        <Ariakit.DialogDismiss className="fixed left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 cursor-zoom-out p-20">
+          <img
+            src={url}
+            className={`max-h-full max-w-full rounded object-contain`}
+            alt={node.attributes['alt'].toString()}
+          />
+        </Ariakit.DialogDismiss>
+      </Ariakit.Dialog>
+    </>
+  )
+}
+
+export { Image, InlineImage }
