@@ -17,7 +17,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
 
           <ul
             id="footnotes"
-            className="col-span-12 col-start-2 800:pr-16 1100:w-[calc(100%-var(--toc-width))] 1200:col-start-3 print:!col-span-12 print:!col-start-1"
+            className="col-span-12 col-start-2 800:pr-16 1200:col-start-3 1200:w-[calc(100%-var(--toc-width))] print:!col-span-12 print:!col-start-1"
           >
             {doc.footnotes.map((footnote) => (
               <li

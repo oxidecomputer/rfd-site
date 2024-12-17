@@ -240,7 +240,7 @@ export default function Index() {
             />
 
             <div className="1000:translate-0 relative flex w-full flex-col items-center justify-start 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[150px]">
-              <h1 className="text-center text-sans-2xl 800:text-sans-3xl">
+              <h1 className="text-center text-sans-2xl text-raise 800:text-sans-3xl">
                 Requests for Discussion
               </h1>
 
@@ -297,7 +297,7 @@ export default function Index() {
               onClick={() => submitSortOrder('number')}
             >
               <div className="-ml-1 flex items-center rounded p-1 group-hover:bg-tertiary">
-                Number <span className="mx-1 inline-block text-quinary">/</span> Title
+                Number <span className="text-quinary mx-1 inline-block">/</span> Title
                 <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
               </div>
             </div>
@@ -423,7 +423,7 @@ const LabelsInner = ({ labels }: { labels: string }) => {
           </Link>
         ))
       ) : (
-        <div className="text-sans-md text-quinary">-</div>
+        <div className="text-quinary text-sans-md">-</div>
       )}
 
       {isOverflow && (

@@ -257,7 +257,7 @@ const SearchBox = () => {
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
         autoFocus
-        className="w-full bg-transparent px-4 text-sans-lg focus:!outline-none 600:text-sans-2xl"
+        className="w-full bg-transparent px-4 text-sans-lg text-raise focus:!outline-none 600:text-sans-2xl"
         placeholder="Search RFD contents"
       />
       {inputValue !== '' && (
@@ -450,7 +450,7 @@ const RFDPreview = ({ number }: { number: number }) => {
 
           <div className="flex w-full flex-col items-start p-6">
             <StatusBadge label={rfd.state} />
-            <div className="mt-2 !text-[32px] !leading-[1.15] text-sans-3xl">
+            <div className="mt-2 !text-[32px] !leading-[1.15] text-sans-3xl text-raise">
               {rfd.title}
             </div>
             <ul className="mt-6 w-full">

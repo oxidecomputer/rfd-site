@@ -194,8 +194,8 @@ export default function Rfd() {
             <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 print:hidden">
               <span className="hidden 1200:inline">RFD</span> {number}
             </div>
-            <div className="col-span-12 flex items-baseline 800:col-span-11 1100:col-span-10">
-              <h1 className="w-full pr-4 text-sans-2xl 600:pr-10 800:text-sans-3xl 1100:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
+            <div className="col-span-12 flex items-baseline 800:col-span-11 1200:col-span-10">
+              <h1 className="w-full pr-4 text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
@@ -266,17 +266,12 @@ export default function Rfd() {
         </div>
 
         <Container className="mt-12 800:mt-16" isGrid>
-          <SmallScreenOutline
-            toc={content.sections}
-            activeItem={activeItem}
-            title={content.title}
-          />
           <div
             className="col-span-12 flex 800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3"
             ref={bodyRef}
           >
             <Asciidoc document={content as DocumentBlock} options={opts} />
-            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1100:sticky 1100:block print:hidden">
+            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1200:sticky 1200:block print:hidden">
               <Suspense
                 fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
               >
@@ -315,12 +310,24 @@ export default function Rfd() {
                   }}
                 </Await>
               </Suspense>
-              <DesktopOutline toc={content.sections} activeItem={activeItem} />
+              <DesktopOutline
+                toc={content.sections}
+                activeItem={activeItem}
+                className="hidden 1200:block"
+              />
             </div>
           </div>
         </Container>
         <Footnotes doc={content as DocumentBlock} />
       </main>
+      <div className="fixed inset-x-0 bottom-0 children:mb-0">
+        <SmallScreenOutline
+          toc={content.sections}
+          activeItem={activeItem}
+          className="block max-h-[66vh] 1200:hidden"
+          key={pathname}
+        />
+      </div>
     </>
   )
 }

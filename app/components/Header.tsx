@@ -88,7 +88,6 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
                 <span className="ml-2 hidden text-sans-sm text-secondary 600:block">
                   {user.displayName || user.email}
                 </span>
-                <Icon name="carat-down" size={12} className="ml-4 hidden 600:block" />
               </Dropdown.Trigger>
 
               <DropdownMenu>
