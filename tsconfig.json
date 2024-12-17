@@ -1,5 +1,6 @@
 {
   "include": ["vite.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["notes/**"],
   "compilerOptions": {
     "incremental": true,
     "lib": ["DOM", "DOM.Iterable", "ES2021"],
