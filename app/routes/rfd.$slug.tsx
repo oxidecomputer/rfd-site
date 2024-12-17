@@ -348,11 +348,11 @@ const PropertyRow = ({
     )}
   >
     <Container isGrid>
-      <div className="relative col-span-4 text-mono-sm text-quaternary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-default">
+      <div className="relative col-span-4 text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
         <div className="absolute -bottom-2 -top-2 right-0 w-px bg-[black]" />
         {label}
       </div>
-      <div className="col-span-8 text-sans-md text-secondary 800:col-span-9 1200:col-span-8 print:col-span-10">
+      <div className="col-span-8 text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">
         {children}
       </div>
     </Container>

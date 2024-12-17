@@ -198,11 +198,11 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
         <SearchBox />
 
         <button
-          className="hover:bg-raise-hover block h-full border-l px-4 text-mono-sm text-tertiary border-l-secondary"
+          className="hover:bg-raise-hover block h-full border-l px-4 text-mono-sm text-secondary border-l-secondary"
           onClick={dismissSearch}
         >
           <span className="hidden 600:block">Dismiss</span>
-          <Icon name="close" size={12} className="block text-quaternary 600:hidden" />
+          <Icon name="close" size={12} className="block text-tertiary 600:hidden" />
         </button>
       </div>
 
@@ -214,7 +214,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
                 <div className="mb-4 rounded p-1 bg-accent-secondary">
                   <Icon name="search" size={16} className="text-accent" />
                 </div>
-                <div className="text-tertiary">
+                <div className="text-secondary">
                   No results for “
                   <span className="text-sans-lg text-default">{results.query}</span>”
                 </div>
@@ -228,7 +228,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
             )}
           </div>
 
-          <div className="hidden justify-between rounded-b-lg px-4 py-2 text-secondary bg-tertiary 600:flex">
+          <div className="hidden justify-between rounded-b-lg px-4 py-2 text-default bg-tertiary 600:flex">
             <ActionMenuHotkey keys={['Enter']} action="submit" />
             <ActionMenuHotkey keys={['Arrow Up', 'Arrow Down']} action="select" />
             <ActionMenuHotkey keys={['Esc']} action="close" />
@@ -265,7 +265,7 @@ const SearchBox = () => {
           className="absolute right-0 top-1/2 hidden -translate-y-1/2 p-4 600:block"
           onClick={() => setInputValue('')}
         >
-          <Icon name="close" size={12} className="text-quaternary" />
+          <Icon name="close" size={12} className="text-tertiary" />
         </button>
       )}
     </div>
@@ -345,7 +345,7 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
               {isNewSection && (
                 <h3
                   className={cn(
-                    'line-clamp-1 h-6 rounded-t-sm px-3 !leading-6 text-mono-xs text-tertiary bg-tertiary',
+                    'line-clamp-1 h-6 rounded-t-sm px-3 !leading-6 text-mono-xs text-secondary bg-tertiary',
                     sectionIsSelected && '600:!text-inverse 600:!bg-accent',
                   )}
                 >
@@ -389,7 +389,7 @@ const HitItem = ({ hit, isSelected }: { hit: RFDHit; isSelected: boolean }) => {
                 highlightedTagName="span"
                 classNames={{
                   root: `break-words ${
-                    isSelected ? '600:text-accent-tertiary' : '600:text-tertiary'
+                    isSelected ? '600:text-accent-tertiary' : '600:text-secondary'
                   }`,
                   highlighted: isSelected ? 'text-accent 600:underline' : 'text-accent',
                   nonHighlighted: isSelected ? '600:text-accent' : 'text-default',
@@ -403,12 +403,12 @@ const HitItem = ({ hit, isSelected }: { hit: RFDHit; isSelected: boolean }) => {
               highlightedTagName="span"
               classNames={{
                 root: `break-words line-clamp-2 ${
-                  isSelected ? '600:text-accent-tertiary' : '600:text-tertiary'
+                  isSelected ? '600:text-accent-tertiary' : '600:text-secondary'
                 }`,
                 highlighted: isSelected ? 'text-accent 600:underline' : 'text-accent',
                 nonHighlighted: isSelected
-                  ? 'text-tertiary 600:text-accent-tertiary'
-                  : 'text-tertiary',
+                  ? 'text-secondary 600:text-accent-tertiary'
+                  : 'text-secondary',
               }}
             />
           </DialogDismiss>
@@ -442,8 +442,8 @@ const RFDPreview = ({ number }: { number: number }) => {
       {rfd ? (
         <>
           <div className="flex h-6 items-center border-b px-3 text-mono-xs border-b-secondary">
-            <div className="text-quinary">Updated:</div>
-            <div className="ml-1 text-secondary">
+            <div className="text-quaternary">Updated:</div>
+            <div className="ml-1 text-default">
               {dayjs(rfd.commit_date).format('YYYY/MM/DD h:mm A')}
             </div>
           </div>
@@ -465,7 +465,7 @@ const RFDPreview = ({ number }: { number: number }) => {
                       >
                         <DialogDismiss className="text-left">
                           <li
-                            className="text-sans-sm text-secondary hover:text-default children:!text-sans-sm"
+                            className="text-sans-sm text-default hover:text-default children:!text-sans-sm"
                             dangerouslySetInnerHTML={{ __html: item.title }}
                           />
                         </DialogDismiss>
@@ -510,13 +510,13 @@ export const ActionMenuHotkey = ({ keys, action }: ActionMenuHotkeyProps) => (
       {keys.map((hotkey) => (
         <kbd
           key={hotkey}
-          className="mr-1 inline-block rounded px-2 py-1 text-mono-xs text-secondary bg-secondary"
+          className="mr-1 inline-block rounded px-2 py-1 text-mono-xs text-default bg-secondary"
         >
           {hotkey}
         </kbd>
       ))}
     </div>
-    <span className="text-sans-sm text-tertiary">to {action}</span>
+    <span className="text-sans-sm text-secondary">to {action}</span>
   </div>
 )
 

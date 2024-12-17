@@ -221,7 +221,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
         <Link
           prefetch="intent"
           to={`/rfd/${number_string}`}
-          className="mb-1 block text-sans-lg hover:text-secondary"
+          className="mb-1 block text-sans-lg hover:text-default"
         >
           {title}
         </Link>
@@ -247,7 +247,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
         </div>
         <div className="flex space-x-1 text-sans-sm text-tertiary">
           <div>{state.charAt(0).toUpperCase() + state.slice(1)}</div>
-          <span className="text-quinary">•</span>
+          <span className="text-quaternary">•</span>
           <div>{dayjs(commit_date).fromNow()}</div>
         </div>
       </div>

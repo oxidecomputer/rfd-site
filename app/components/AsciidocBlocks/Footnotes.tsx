@@ -18,7 +18,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
     return (
       <div id="footnotes" className="mt-12 border-t pt-4 border-secondary 800:mt-16">
         <Container isGrid>
-          <div className="col-span-12 col-start-2 text-mono-xs text-quaternary 1200:col-span-2 1200:col-start-1">
+          <div className="col-span-12 col-start-2 text-mono-xs text-tertiary 1200:col-span-2 1200:col-start-1">
             Footnotes
           </div>
 
@@ -32,10 +32,10 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
                 id={`_footnotedef_${footnote.index}`}
                 className="relative mb-2"
               >
-                <div className="absolute -left-12 -top-[2px] flex flex-shrink-0 items-center justify-center rounded-full px-[4px] py-[2px] !tracking-normal text-mono-xs text-secondary bg-tertiary">
+                <div className="absolute -left-12 -top-[2px] flex flex-shrink-0 items-center justify-center rounded-full px-[4px] py-[2px] !tracking-normal text-mono-xs text-default bg-tertiary">
                   {footnote.index}
                 </div>
-                <div className="text-sans-md text-secondary">
+                <div className="text-sans-md text-default">
                   <p
                     dangerouslySetInnerHTML={{ __html: footnote.text || '' }}
                     className="inline"

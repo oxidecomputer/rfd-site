@@ -63,7 +63,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           <Link
             to="/"
             prefetch="intent"
-            className="flex h-8 w-8 items-center justify-center rounded border text-quaternary bg-secondary border-secondary elevation-1 hover:bg-hover"
+            className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover"
             aria-label="Back to index"
           >
             <Icon name="logs" size={16} />
@@ -73,7 +73,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
 
         <div className="flex space-x-2">
           <button
-            className="flex h-8 w-8 items-center justify-center rounded border text-quaternary bg-secondary border-secondary elevation-1 hover:bg-hover"
+            className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover"
             onClick={toggleSearchMenu}
           >
             <Icon name="search" size={16} />
@@ -83,9 +83,9 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
 
           {user ? (
             <Dropdown.Root modal={false}>
-              <Dropdown.Trigger className="flex h-8 w-8 items-center justify-center rounded border text-quaternary bg-secondary border-secondary elevation-1 hover:bg-hover 600:w-auto 600:px-3">
+              <Dropdown.Trigger className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover 600:w-auto 600:px-3">
                 <Icon name="profile" size={16} className="flex-shrink-0" />
-                <span className="ml-2 hidden text-sans-sm text-secondary 600:block">
+                <span className="ml-2 hidden text-sans-sm text-default 600:block">
                   {user.displayName || user.email}
                 </span>
               </Dropdown.Trigger>

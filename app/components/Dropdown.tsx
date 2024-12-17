@@ -13,7 +13,7 @@ import type { ReactNode } from 'react'
 import Icon from '~/components/Icon'
 
 export const dropdownOuterStyles =
-  'menu-item relative text-sans-md text-secondary border-b border-secondary cursor-pointer'
+  'menu-item relative text-sans-md text-default border-b border-secondary cursor-pointer'
 
 export const dropdownInnerStyles = `focus:outline-0 focus:bg-hover px-3 py-2 pr-6`
 
@@ -52,7 +52,7 @@ export const DropdownSubTrigger = ({
     <Icon
       name="carat-down"
       size={12}
-      className="absolute right-3 top-1/2 -translate-y-1/2 -rotate-90 text-quaternary"
+      className="absolute right-3 top-1/2 -translate-y-1/2 -rotate-90 text-tertiary"
     />
   </Dropdown.SubTrigger>
 )

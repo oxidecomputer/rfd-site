@@ -17,7 +17,7 @@
 
   & ul,
   & ol {
-    @apply normal-case text-sans-md text-secondary;
+    @apply normal-case text-sans-md text-default;
   }
 
   & blockquote {

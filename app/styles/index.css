@@ -65,7 +65,7 @@ body {
 
 @layer base {
   body {
-    @apply text-sans-sm text-default;
+    @apply text-sans-sm text-raise;
   }
 }
 
@@ -119,7 +119,7 @@ input[type='checkbox']:focus:not(:focus-visible) {
 }
 
 .link-with-underline {
-  @apply text-secondary hover:text-default;
+  @apply text-default hover:text-raise;
   text-decoration: underline;
   text-decoration-color: var(--content-quinary);
 
