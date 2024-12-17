@@ -324,7 +324,7 @@ export default function Rfd() {
         <SmallScreenOutline
           toc={content.sections}
           activeItem={activeItem}
-          className="block max-h-[66vh] 1200:hidden"
+          className="block 1200:hidden"
           key={pathname}
         />
       </div>
