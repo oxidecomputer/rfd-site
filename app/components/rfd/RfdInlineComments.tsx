@@ -17,6 +17,7 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
+import { Badge } from '@oxide/design-system/components/dist'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -361,19 +362,18 @@ export const CommentThreadBlock = ({
       )}
     >
       {/* Meta */}
-      {/* {isOverlay && ( */}
       <div className="flex items-center justify-between p-3 bg-secondary">
         <a href={htmlUrl} target="_blank" rel="noreferrer" className="hover:opacity-80">
-          <div className="flex items-center !normal-case text-mono-xs">
+          <div className="flex items-center !normal-case text-mono-sm">
             {isOverlay && (
               <span className="mr-1 text-sans-sm text-tertiary">Comment on </span>
             )}
             {path}
 
             {isOutdated && (
-              <div className="ml-2 rounded px-1 py-[1px] text-mono-xs text-notice bg-notice-secondary">
+              <Badge className="ml-1" color="notice">
                 Outdated
-              </div>
+              </Badge>
             )}
           </div>
         </a>
@@ -460,14 +460,14 @@ export const CommentThreadBlock = ({
                     <div className="text-sans-semi-md">
                       <a
                         href={comment.user.html_url}
-                        className="hover:text-secondary"
+                        className="text-raise hover:text-default"
                         target="_blank"
                         rel="noreferrer"
                       >
                         {comment.user.login}
                       </a>
                     </div>
-                    <div className="ml-1 text-sans-md text-quaternary">
+                    <div className="ml-1 text-sans-md text-tertiary">
                       <time dateTime={comment.created_at}>
                         {dayjs(comment.created_at).fromNow()}
                       </time>

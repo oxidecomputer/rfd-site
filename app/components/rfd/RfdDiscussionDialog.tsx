@@ -13,6 +13,7 @@ import {
   useDialogStore,
   type DialogStore,
 } from '@ariakit/react'
+import { Spinner } from '@oxide/design-system/components/dist'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -30,7 +31,6 @@ import type {
 } from '~/services/rfd.server'
 
 import { GotoIcon } from '../CustomIcons'
-import Spinner from '../Spinner'
 import { CommentThreadBlock, matchCommentToBlock } from './RfdInlineComments'
 import { calcOffset } from './RfdPreview'
 
@@ -353,14 +353,14 @@ const DiscussionReview = ({
           <div className="text-sans-semi-md">
             <a
               href={data.review.user.html_url}
-              className="hover:text-secondary"
+              className="text-sans-semi-md text-raise hover:text-default"
               target="_blank"
               rel="noreferrer"
             >
               {data.review.user.login}
             </a>
           </div>
-          <div className="ml-1 text-sans-md text-quaternary">
+          <div className="ml-1 text-sans-md text-tertiary">
             reviewed on
             <time dateTime={data.review.submitted_at}>
               {' '}
@@ -376,7 +376,7 @@ const DiscussionReview = ({
           <div className="flex items-center border-b p-3 text-sans-md bg-secondary border-b-secondary">
             <a
               href={data.review.user.html_url}
-              className="hover:text-secondary"
+              className="text-sans-semi-md text-raise hover:text-default"
               target="_blank"
               rel="noreferrer"
             >
@@ -459,7 +459,7 @@ const DiscussionIssueComment = ({
           <div className="flex items-center border-b p-3 text-sans-md bg-secondary border-b-secondary">
             <a
               href={data.user.html_url}
-              className="hover:text-secondary"
+              className="text-sans-semi-md text-raise hover:text-default"
               target="_blank"
               rel="noreferrer"
             >
