@@ -64,8 +64,8 @@ test('Header filter box', async ({ page }) => {
 
   await expect(page.getByPlaceholder('Search')).toBeHidden()
   await page.getByRole('button', { name: 'Select a RFD' }).click()
-  await page.getByPlaceholder('Search').fill('User Networking API')
-  await page.getByPlaceholder('Search').press('Enter')
+  await page.getByRole('banner').getByPlaceholder('Search').fill('User Networking API')
+  await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
 
   await expect(page.getByRole('heading', { name: 'User Networking API' })).toBeVisible()
 })
