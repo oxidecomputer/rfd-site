@@ -62,7 +62,7 @@ test('Header filter box', async ({ page }) => {
     page.getByRole('heading', { name: 'Mission, Principles and Values' }),
   ).toBeVisible()
 
-  await expect(page.getByPlaceholder('Search')).toBeHidden()
+  await expect(page.getByRole('banner').getByPlaceholder('Search')).toBeHidden()
   await page.getByRole('button', { name: 'Select a RFD' }).click()
   await page.getByRole('banner').getByPlaceholder('Search').fill('User Networking API')
   await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
