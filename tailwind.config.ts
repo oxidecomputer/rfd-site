@@ -5,17 +5,16 @@
  *
  * Copyright Oxide Computer Company
  */
- import { type Config } from 'tailwindcss'
- import plugin from 'tailwindcss/plugin'
+import {
+  borderRadiusTokens,
+  colorUtilities,
+  elevationUtilities,
+  textUtilities,
+} from '@oxide/design-system/styles/dist/tailwind-tokens.ts'
+import { type Config } from 'tailwindcss'
+import plugin from 'tailwindcss/plugin'
 
- import {
-   borderRadiusTokens,
-   colorUtilities,
-   elevationUtilities,
-   textUtilities,
- } from '@oxide/design-system/styles/dist/tailwind-tokens.ts'
-
- module.exports = {
+module.exports = {
   corePlugins: {
     fontFamily: false,
     fontSize: true,
@@ -81,4 +80,4 @@
       translate: ['group-hover'],
     },
   },
- } satisfies Config
+} satisfies Config
