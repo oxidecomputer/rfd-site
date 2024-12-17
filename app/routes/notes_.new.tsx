@@ -5,11 +5,11 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, redirect, type ActionArgs, type LoaderArgs } from '@remix-run/node'
+import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 
-export async function action({ request }: ActionArgs) {
+export const action: ActionFunction = async ({ request }) => {
   const user = await isAuthenticated(request)
 
   if (!user) throw new Response('User not found', { status: 401 })
@@ -32,6 +32,6 @@ export async function action({ request }: ActionArgs) {
   }
 }
 
-export async function loader(args: LoaderArgs) {
+export const loader: LoaderFunction = async (args) => {
   return action(args)
 }

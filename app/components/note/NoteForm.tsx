@@ -5,38 +5,26 @@
  *
  * Copyright Oxide Computer Company
  */
-import { useDialogStore, type DialogStore } from '@ariakit/react'
-// import { StreamLanguage } from '@codemirror/language'
-// import { EditorView } from '@codemirror/view'
-// import Editor from '@monaco-editor/react'
-import Asciidoc, { asciidoctor } from '@oxide/react-asciidoc'
+import { Spinner } from '@oxide/design-system'
+import { Asciidoc, prepareDocument } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useFetcher, useLoaderData } from '@remix-run/react'
-// import CodeMirror, { basicSetup, type ReactCodeMirrorRef } from '@uiw/react-codemirror'
-import cn from 'classnames'
-// import { asciidoc } from 'codemirror-asciidoc'
 import dayjs from 'dayjs'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { opts } from '~/components/AsciidocBlocks'
 import { DropdownItem, DropdownLink, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
-// import { editorTheme } from '~/components/note/EditorTheme'
 import { useDebounce } from '~/hooks/use-debounce'
-import { useRootLoaderData } from '~/root'
+import { ad } from '~/utils/asciidoctor'
 
-import { MinimalDocument } from '../AsciidocBlocks/MinimalDocument'
-import Modal from '../Modal'
-import Spinner from '../Spinner'
-import { TextInput } from '../TextInput'
 import EditorWrapper from './Editor'
 import { SidebarIcon } from './Sidebar'
-
-const ad = asciidoctor()
 
 type EditorStatus = 'idle' | 'unsaved' | 'saving' | 'saved' | 'error'
 
 export const NoteForm = ({
+  id,
   initialTitle = '',
   initialBody = '',
   updated,
@@ -46,6 +34,7 @@ export const NoteForm = ({
   sidebarOpen,
   setSidebarOpen,
 }: {
+  id: string
   initialTitle?: string
   initialBody?: string
   updated: string
@@ -58,12 +47,9 @@ export const NoteForm = ({
   const [status, setStatus] = useState<EditorStatus>('idle')
   const [body, setBody] = useState(initialBody)
   const [title, setTitle] = useState(initialTitle)
-  const inputRef = useRef<ReactCodeMirrorRef>(null)
 
   const debouncedBody = useDebounce(body, 750)
   const debouncedTitle = useDebounce(title, 750)
-
-  const createRfdDialog = useDialogStore()
 
   useEffect(() => {
     const hasChanges = body !== initialBody || title !== initialTitle
@@ -129,19 +115,21 @@ export const NoteForm = ({
   )
 
   const doc = useMemo(() => {
-    return ad.load(body, {
-      standalone: true,
-      sourcemap: true,
-      attributes: {
-        sectnums: false,
-      },
-    })
+    return prepareDocument(
+      ad.load(body, {
+        standalone: true,
+        sourcemap: true,
+        attributes: {
+          sectnums: false,
+        },
+      }),
+    )
   }, [body])
 
   return (
     <>
       <fetcher.Form method="post" action="/notes/edit">
-        <div className="flex h-[60px] w-full items-center justify-between border-b px-6 border-b-secondary">
+        <div className="flex h-14 w-full items-center justify-between border-b px-6 border-b-secondary">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -163,11 +151,11 @@ export const NoteForm = ({
                 name="title"
                 placeholder="Title..."
                 required
-                className="absolute left-1 w-full bg-transparent p-0 text-sans-xl text-default placeholder:text-quaternary focus:outline-none"
+                className="absolute left-1 w-full bg-transparent p-0 text-sans-xl text-raise placeholder:text-tertiary focus:outline-none"
               />
             </div>
 
-            <MoreDropdown dialog={createRfdDialog} />
+            <MoreDropdown id={id} published={published} />
 
             {fetcher.data?.status === 'error' && (
               <div className="text-sans-md text-error">{fetcher.data.error}</div>
@@ -203,19 +191,10 @@ export const NoteForm = ({
               width: `calc(${100 - leftPaneWidth}% - 2px)`,
             }}
           >
-            <Asciidoc
-              content={doc}
-              options={{ ...opts, customDocument: MinimalDocument }}
-            />
+            <Asciidoc document={doc} options={{ ...opts }} />
           </div>
         </div>
       </fetcher.Form>
-      <CreateRfdModal
-        key={title}
-        initialTitle={title !== 'Untitled' ? title : ''}
-        dialog={createRfdDialog}
-        body={body}
-      />
     </>
   )
 }
@@ -236,7 +215,7 @@ const SavingIndicator = ({
   updated: string
 }) => {
   return (
-    <div className="flex items-center gap-1 text-sans-md text-quaternary">
+    <div className="flex items-center gap-1 text-sans-md text-tertiary">
       {dayjs(updated).format('MMM D YYYY, h:mm A')}
       {status === 'unsaved' ? (
         <TypingIndicator />
@@ -247,23 +226,22 @@ const SavingIndicator = ({
       ) : status === 'saving' ? (
         <Spinner />
       ) : (
-        <Icon name="success" size={12} className="text-quaternary" />
+        <Icon name="success" size={12} className="text-tertiary" />
       )}
     </div>
   )
 }
 
-const MoreDropdown = ({ dialog }: { dialog: DialogStore }) => {
-  const note = useLoaderData()
+const MoreDropdown = ({ id, published }: { id: string; published: 1 | 0 }) => {
   const fetcher = useFetcher()
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       fetcher.submit(
-        { id: note.id },
+        { id: id },
         {
           method: 'post',
-          action: `/notes/${note.id}/delete`,
+          action: `/notes/${id}/delete`,
           encType: 'application/x-www-form-urlencoded',
         },
       )
@@ -271,7 +249,7 @@ const MoreDropdown = ({ dialog }: { dialog: DialogStore }) => {
   }
 
   const handlePublish = async () => {
-    const isPublished = note.published === 1
+    const isPublished = published === 1
     const confirmationMessage = isPublished
       ? 'Are you sure you want to unpublish this note?'
       : 'Are you sure you want to publish this note?'
@@ -281,7 +259,7 @@ const MoreDropdown = ({ dialog }: { dialog: DialogStore }) => {
         { publish: isPublished ? 0 : 1 },
         {
           method: 'post',
-          action: `/notes/${note.id}/publish`,
+          action: `/notes/${id}/publish`,
           encType: 'application/json',
         },
       )
@@ -291,105 +269,18 @@ const MoreDropdown = ({ dialog }: { dialog: DialogStore }) => {
   return (
     <Dropdown.Root modal={false}>
       <Dropdown.Trigger className="rounded border p-2 align-[3px] border-default hover:bg-hover">
-        <Icon name="more" size={12} className="text-secondary" />
+        <Icon name="more" size={12} className="text-default" />
       </Dropdown.Trigger>
 
       <DropdownMenu>
-        <DropdownLink to={`/notes/${note.id}`}>View</DropdownLink>
+        <DropdownLink to={`/notes/${id}`}>View</DropdownLink>
         <DropdownItem onSelect={handlePublish}>
-          {note.published ? 'Unpublish' : 'Publish'}
-        </DropdownItem>
-        <DropdownItem
-          onSelect={() => {
-            dialog.setOpen(true)
-          }}
-        >
-          Create RFD from note
+          {published ? 'Unpublish' : 'Publish'}
         </DropdownItem>
         <DropdownItem className="text-error" onSelect={handleDelete}>
           Delete
         </DropdownItem>
       </DropdownMenu>
     </Dropdown.Root>
-  )
-}
-
-const CreateRfdModal = ({
-  initialTitle = '',
-  dialog,
-  body,
-}: {
-  initialTitle?: string
-  dialog: DialogStore
-  body: string
-}) => {
-  const [title, setTitle] = useState(initialTitle)
-  const newRfdNumber = useRootLoaderData().newRfdNumber
-  const fetcher = useFetcher()
-
-  const handleSubmit = () => {
-    fetcher.submit(
-      { title, body },
-      {
-        method: 'post',
-        action: `/notes/create-rfd`,
-        encType: 'application/json',
-      },
-    )
-  }
-
-  const formDisabled = fetcher.state !== 'idle'
-
-  return (
-    <Modal
-      dialogStore={dialog}
-      title="Create new RFD"
-      onSubmit={handleSubmit}
-      disabled={formDisabled}
-      isLoading={fetcher.state === 'loading' || fetcher.state === 'submitting'}
-    >
-      <fetcher.Form className="space-y-4">
-        <TextInput
-          name="title"
-          placeholder="RFD title"
-          value={title}
-          onChange={(el) => setTitle(el.target.value)}
-          disabled={formDisabled}
-        />
-
-        <pre
-          className={cn(
-            'relative max-h-[200px] select-none overflow-hidden rounded-lg border p-4',
-            formDisabled
-              ? 'text-quaternary bg-disabled border-default'
-              : 'bg-default border-secondary',
-          )}
-        >
-          {`:state: prediscussion 
-:discussion:
-:authors:
-
-`}
-          = RFD {newRfdNumber} {title ? title : '{title}'}
-          {`
-
-`}
-          {body}
-          <div
-            className="absolute left-0 bottom-0 h-[100px] w-full"
-            style={{
-              background: `linear-gradient(0, ${
-                formDisabled ? 'var(--surface-disabled)' : 'var(--surface-default)'
-              } 0%, rgba(8, 15, 17, 0) 100%)`,
-            }}
-          />
-        </pre>
-        {fetcher.type === 'done' && !fetcher.data.ok && fetcher.data.message && (
-          <div className="my-2 text-sans-lg text-error-secondary ">
-            {fetcher.data.message}
-          </div>
-        )}
-      </fetcher.Form>
-    </Modal>
   )
 }

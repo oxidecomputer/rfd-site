@@ -11,7 +11,7 @@ const EditorWrapper = ({
   onChange,
 }: {
   body: string
-  onChange: (string) => void
+  onChange: (string: string | undefined) => void
 }) => {
   const monaco = useMonaco()
 
@@ -37,69 +37,20 @@ const EditorWrapper = ({
     <Editor
       value={body}
       onChange={onChange}
-      theme="vs-dark"
+      theme="oxide-dark"
       language="asciidoc"
-      options={{ minimap: { enabled: false }, fontFamily: 'GT America Mono', fontSize: 13 }}
+      options={{
+        minimap: { enabled: false },
+        fontFamily: 'GT America Mono',
+        fontSize: 13,
+        wordWrap: 'on',
+        quickSuggestions: false,
+        suggestOnTriggerCharacters: false,
+        acceptSuggestionOnEnter: 'off',
+        snippetSuggestions: 'none',
+      }}
     />
   )
 }
 
 export default EditorWrapper
-
-// import loader from '@monaco-editor/loader'
-// import { shikiToMonaco } from '@shikijs/monaco'
-// import { type editor } from 'monaco-editor'
-// import type * as Monaco from 'monaco-editor/esm/vs/editor/editor.api'
-// import { useCallback, useEffect, useRef, useState } from 'react'
-// import { getHighlighter } from 'shiki'
-
-// const Editor = () => {
-//   const containerRef = useRef<HTMLDivElement>(null)
-//   const monacoRef = useRef<typeof Monaco | null>(null)
-//   const [isMonacoMounting, setIsMonacoMounting] = useState(true)
-//   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
-//   const preventCreation = useRef(false)
-//   const [isEditorReady, setIsEditorReady] = useState(false)
-
-//   useEffect(() => {
-//     const cancelable = loader.init()
-
-//     cancelable
-//       .then((monaco) => (monacoRef.current = monaco) && setIsMonacoMounting(false))
-//       .catch(
-//         (error) =>
-//           error?.type !== 'cancelation' &&
-//           console.error('Monaco initialization: error:', error),
-//       )
-
-//     return () => (editorRef.current ? editorRef.current!.dispose() : cancelable.cancel())
-//   }, [containerRef])
-
-//   const createEditor = useCallback(() => {
-//     if (!containerRef.current || !monacoRef.current) return
-//     if (!preventCreation.current) {
-//       editorRef.current = monacoRef.current?.editor.create(containerRef.current, {
-//         automaticLayout: true,
-//       })
-
-//       monacoRef.current.editor.setTheme('vs-dark')
-
-//       setIsEditorReady(true)
-//       preventCreation.current = true
-//     }
-//   }, [])
-
-//   useEffect(() => {
-//     !isMonacoMounting && !isEditorReady && createEditor()
-//   }, [isMonacoMounting, isEditorReady, createEditor])
-
-//   console.log(monacoRef, containerRef)
-
-//   return (
-//     <div className="h-full w-full">
-//       <div ref={containerRef} className="h-full w-full" />
-//     </div>
-//   )
-// }
-
-// export default Editor

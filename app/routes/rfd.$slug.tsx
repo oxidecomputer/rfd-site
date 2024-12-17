@@ -332,7 +332,7 @@ export default function Rfd() {
   )
 }
 
-const PropertyRow = ({
+export const PropertyRow = ({
   label,
   children,
   className,

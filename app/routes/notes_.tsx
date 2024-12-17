@@ -6,12 +6,12 @@
  * Copyright Oxide Computer Company
  */
 
-import { type LoaderArgs } from '@remix-run/node'
+import { type LoaderFunction } from '@remix-run/node'
 import { Outlet } from '@remix-run/react'
 
 import { isAuthenticated } from '~/services/authn.server'
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const user = await isAuthenticated(request)
 
   if (!user) throw new Response('Not authorized', { status: 401 })

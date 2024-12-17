@@ -21,8 +21,6 @@
 @import './lib/github-markdown.css';
 @import './lib/loading-bar.css';
 
-@import '../components/spinner.css';
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -131,14 +129,4 @@ button:focus:not(:focus-visible),
 input[type='radio']:focus:not(:focus-visible),
 input[type='checkbox']:focus:not(:focus-visible) {
   @apply outline-0 ring-0;
-}
-
-.link-with-underline {
-  @apply text-default hover:text-raise;
-  text-decoration: underline;
-  text-decoration-color: var(--content-quinary);
-
-  &:hover {
-    text-decoration-color: var(--content-tertiary);
-  }
 }

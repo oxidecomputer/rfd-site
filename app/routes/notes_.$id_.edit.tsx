@@ -5,7 +5,7 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, type ActionArgs, type LoaderArgs } from '@remix-run/node'
+import { json, type ActionFunction, type LoaderFunction } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import { makePatches, stringifyPatches } from '@sanity/diff-match-patch'
 import cn from 'classnames'
@@ -15,7 +15,7 @@ import { NoteForm } from '~/components/note/NoteForm'
 import { Sidebar } from '~/components/note/Sidebar'
 import { isAuthenticated } from '~/services/authn.server'
 
-export async function loader({ params: { id } }: LoaderArgs) {
+export const loader: LoaderFunction = async ({ params: { id } }) => {
   const response = await fetch(`http://localhost:8000/notes/${id}`, {
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',
@@ -28,7 +28,7 @@ export async function loader({ params: { id } }: LoaderArgs) {
   return data
 }
 
-export async function action({ request, params }: ActionArgs) {
+export const action: ActionFunction = async ({ request, params }) => {
   try {
     const formData = await request.formData()
     const title = formData.get('title')
@@ -61,7 +61,7 @@ export async function action({ request, params }: ActionArgs) {
 }
 
 export default function NoteEdit() {
-  const data = useLoaderData()
+  const data = useLoaderData<typeof loader>()
   const fetcher = useFetcher<typeof loader>()
 
   const [sidebarOpen, setSidebarOpen] = useState(true)
@@ -81,6 +81,7 @@ export default function NoteEdit() {
     >
       {sidebarOpen && <Sidebar />}
       <NoteForm
+        id={data.id}
         key={data.id}
         initialTitle={data.title}
         initialBody={data.body}

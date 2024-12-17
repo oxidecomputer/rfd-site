@@ -5,26 +5,27 @@
  *
  * Copyright Oxide Computer Company
  */
+import asciidoctor from '@asciidoctor/core'
 import { Badge } from '@oxide/design-system'
-import Asciidoc, { asciidoctor } from '@oxide/react-asciidoc'
+import { Asciidoc } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { type LoaderArgs } from '@remix-run/node'
+import { type LoaderFunction } from '@remix-run/node'
 import { useFetcher, useLoaderData } from '@remix-run/react'
 import dayjs from 'dayjs'
 import { useMemo } from 'react'
-import { ClientOnly } from 'remix-utils'
 
 import { opts } from '~/components/AsciidocBlocks'
-import { CustomDocument } from '~/components/AsciidocBlocks/CustomDocument'
+import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import { DropdownItem, DropdownLink, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
 
+import { NoteItem } from './notes_'
 import { PropertyRow } from './rfd.$slug'
 
 const ad = asciidoctor()
 
-export async function loader({ params: { id } }: LoaderArgs) {
+export const loader: LoaderFunction = async ({ params: { id } }) => {
   const response = await fetch(`http://localhost:8000/notes/${id}`, {
     headers: {
       'x-api-key': 'abcdef',
@@ -38,7 +39,7 @@ export async function loader({ params: { id } }: LoaderArgs) {
 }
 
 export default function Note() {
-  const note = useLoaderData()
+  const note = useLoaderData<typeof loader>()
 
   const doc = useMemo(() => {
     return ad.load(note.body, {
@@ -62,7 +63,7 @@ export default function Note() {
           </h1>
 
           <div className="print:hidden">
-            <MoreDropdown />
+            <MoreDropdown note={note} />
           </div>
         </div>
       </Container>
@@ -83,13 +84,12 @@ export default function Note() {
         </PropertyRow>
       </div>
 
-      <Asciidoc content={doc} options={{ ...opts, customDocument: CustomDocument }} />
+      <Asciidoc document={doc} options={{ ...opts, customDocument: CustomDocument }} />
     </div>
   )
 }
 
-const MoreDropdown = () => {
-  const note = useLoaderData()
+const MoreDropdown = ({ note }: { note: NoteItem }) => {
   const fetcher = useFetcher() // Initialize the fetcher
 
   const handleDelete = () => {

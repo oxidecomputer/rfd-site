@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { type ReactNode } from 'react'
 
 import Icon from '~/components/Icon'
-import { type NoteItem } from '~/routes/note_'
+import { type NoteItem } from '~/routes/notes_'
 
 const navLinkStyles = ({ isActive }: { isActive: boolean }) => {
   const activeStyle = isActive
@@ -38,35 +38,21 @@ export const SidebarIcon = () => (
 export const Sidebar = () => {
   const matches = useMatches()
 
-  const notes = matches[1].data.notes as NoteItem[]
+  const notes = matches && matches[1] && (matches[1].data.notes as NoteItem[])
 
   return (
-    <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col justify-between space-y-6 border-r py-4 !bg-default border-secondary elevation-2 800:elevation-0 print:hidden">
+    <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col justify-between space-y-6 border-r pb-4 border-secondary elevation-2 800:elevation-0 print:hidden">
       <div className="flex flex-col">
         {notes && (
-          <div className="relative !mt-0 space-y-6 overflow-y-auto overflow-x-hidden pb-8">
-            <div className="px-4">
-              <button className="relative flex w-full items-center justify-between rounded border p-2 text-mono-sm text-tertiary border-secondary hover:bg-raise">
-                <div className="flex items-center text-quaternary">
-                  <Icon name="search" size={16} className="mr-2 text-quinary" />
-                  Search
-                </div>
-                <div className="text-quaternary">
-                  {matches[1].data.isMac ? 'CMD' : 'CTRL'}+k
-                </div>
-              </button>
-            </div>
-
-            <div className="px-4">
+          <div className="relative space-y-6 overflow-y-auto overflow-x-hidden pb-8">
+            <div className="mt-0 flex h-14 items-center border-b px-4 border-secondary">
               <NavLink
                 to="/"
                 className="flex items-center gap-2 text-sans-md text-secondary"
               >
-                <Icon name="document" size={16} className="text-quinary" /> Back to RFDs
+                <Icon name="prev-arrow" size={12} className="text-tertiary" /> Back to RFDs
               </NavLink>
             </div>
-
-            <Divider />
 
             <LinkSection label="Published">
               {notes.map(
@@ -77,7 +63,7 @@ export const Sidebar = () => {
                       to={`/notes/${note.id}/edit`}
                       className={navLinkStyles}
                     >
-                      <div className="text-ellipsis line-clamp-2">{note.title}</div>
+                      <div className="line-clamp-2 text-ellipsis">{note.title}</div>
                     </NavLink>
                   ),
               )}
@@ -92,7 +78,7 @@ export const Sidebar = () => {
                       to={`/notes/${note.id}/edit`}
                       className={navLinkStyles}
                     >
-                      <div className="text-ellipsis line-clamp-2">{note.title}</div>
+                      <div className="line-clamp-2 text-ellipsis">{note.title}</div>
                     </NavLink>
                   ),
               )}
@@ -107,7 +93,7 @@ export const Sidebar = () => {
           className={cn(buttonStyle({ variant: 'secondary', size: 'sm' }), 'w-full')}
         >
           <div className="flex items-center gap-1">
-            <Icon name="add-roundel" size={12} className="text-quinary" /> New
+            <Icon name="add-roundel" size={12} className="text-quaternary" /> New
           </div>
         </Link>
       </div>

@@ -6,11 +6,11 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type LoaderArgs } from '@remix-run/node'
+import { redirect, type LoaderFunction } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 
-export const loader = async ({ request }: LoaderArgs) => {
+export const loader: LoaderFunction = async ({ request }) => {
   const user = await isAuthenticated(request)
 
   if (!user) throw new Response('Not authorized', { status: 401 })
@@ -32,13 +32,4 @@ export const loader = async ({ request }: LoaderArgs) => {
   } else {
     return redirect('/notes/new')
   }
-}
-
-export type Note = {
-  id: string
-  title: string
-  user: string
-  body: string
-  created: string
-  updated: string
 }
