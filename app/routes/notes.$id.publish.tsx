@@ -5,11 +5,11 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, type ActionArgs } from '@remix-run/node'
+import { json, type ActionFunction } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 
-export async function action({ request, params }: ActionArgs) {
+export const action: ActionFunction = async ({ request, params }) => {
   const user = await isAuthenticated(request)
 
   if (!user) throw new Response('User not found', { status: 401 })

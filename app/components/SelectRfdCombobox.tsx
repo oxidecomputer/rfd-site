@@ -220,7 +220,7 @@ const ComboboxItem = ({
 }) => {
   const [shouldPrefetch, setShouldPrefetch] = useState(false)
 
-  const timer = useRef<NodeJS.Timeout | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function clear() {
     if (timer.current) clearTimeout(timer.current)

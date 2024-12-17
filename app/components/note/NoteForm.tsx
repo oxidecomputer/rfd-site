@@ -171,7 +171,7 @@ export const NoteForm = ({
               body={body}
               onChange={(val) => {
                 setStatus('unsaved')
-                setBody(val)
+                setBody(val || '')
               }}
             />
           </div>

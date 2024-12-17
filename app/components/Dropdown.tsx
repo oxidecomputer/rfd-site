@@ -47,7 +47,7 @@ export const DropdownSubTrigger = ({
   children: JSX.Element | string
   className?: string
 }) => (
-  <Dropdown.SubTrigger className={cn(dropdownOuterStyles, classNames, dropdownInnerStyles)}>
+  <Dropdown.SubTrigger className={cn(dropdownOuterStyles, className, dropdownInnerStyles)}>
     {children}
     <Icon
       name="carat-down"
