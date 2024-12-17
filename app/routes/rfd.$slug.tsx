@@ -8,7 +8,6 @@
 import {
   DesktopOutline,
   SmallScreenOutline,
-  Spinner,
   useActiveSectionTracking,
   useIntersectionObserver,
 } from '@oxide/design-system/components/dist'
