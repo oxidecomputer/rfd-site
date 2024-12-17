@@ -79,6 +79,12 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
             <Icon name="search" size={16} />
           </button>
           <Search open={open} onClose={() => setOpen(false)} />
+          <Link
+            to="/notes"
+            className="flex h-8 w-8 items-center justify-center rounded border text-quaternary bg-secondary border-secondary elevation-1 hover:bg-hover"
+          >
+            <Icon name="edit" size={16} />
+          </Link>
           <NewRfdButton />
 
           {user ? (
