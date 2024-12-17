@@ -1,7 +1,7 @@
-import { applyPatches, parsePatch, type Patch } from '@sanity/diff-match-patch'
+import { applyPatches, parsePatch } from '@sanity/diff-match-patch'
 import { Database } from 'bun:sqlite'
 import { nanoid } from 'nanoid'
-import { z } from 'zod'
+import z from 'zod'
 
 const db = new Database('./db/notes.db')
 
@@ -27,10 +27,10 @@ export const addNote = async (title: string, user: string, body: string) => {
   const created = new Date().toISOString()
   const updated = created
 
-  const statement = await db.prepare(
+  const statement = db.prepare(
     'INSERT INTO notes (id, title, created, updated, user, body, published) VALUES (?, ?, ?, ?, ?, ?, ?)',
   )
-  await statement.run(id, title, created, updated, user, body, 0)
+  statement.run(id, title, created, updated, user, body, 0)
 
   return id
 }
@@ -44,7 +44,7 @@ const noteUpdateSchema = z.object({
   title: z.string().min(1, 'Title must not be empty'),
 })
 
-export const updateNote = async (id: string, title: string, body: Patch[]) => {
+export const updateNote = async (id: string, title: string, body: string) => {
   const validationResult = noteUpdateSchema.safeParse({ title })
   if (!validationResult.success) {
     throw new Error(`Validation failed: ${validationResult.error.message}`)
@@ -58,26 +58,26 @@ export const updateNote = async (id: string, title: string, body: Patch[]) => {
 
   const updated = new Date().toISOString()
 
-  const statement = await db.prepare(
+  const statement = db.prepare(
     'UPDATE notes SET title = ?, updated = ?, body = ? WHERE id = ?',
   )
-  await statement.run(title, updated, newBody, id)
+  statement.run(title, updated, newBody, id)
 }
 
 export const updateNotePublished = async (id: string, publish: boolean) => {
   const published = publish ? 1 : 0 // Convert boolean to integer for SQL
-  const statement = await db.prepare('UPDATE notes SET published = ? WHERE id = ?')
-  await statement.run(published, id)
+  const statement = db.prepare('UPDATE notes SET published = ? WHERE id = ?')
+  statement.run(published, id)
 }
 
 export const deleteNote = async (id: string) => {
-  const statement = await db.prepare('DELETE FROM notes WHERE id = ?')
-  await statement.run(id)
+  const statement = db.prepare('DELETE FROM notes WHERE id = ?')
+  statement.run(id)
 }
 
 export const listNotes = async (userId: string) => {
   const query = db.query('SELECT * FROM notes WHERE user = $userId')
-  const notes = await query.all({ $userId: userId })
+  const notes = query.all({ $userId: userId })
 
   // We only want the first 20 lines so we're not sending a huge response
   const trimmedNotes = notes.map((note) => ({

@@ -3,7 +3,6 @@ import { shikiToMonaco } from '@shikijs/monaco'
 import { useEffect } from 'react'
 import { getHighlighter } from 'shiki'
 
-// import asciidocLang from './asciidoc-lang.json'
 import theme from './oxide-dark.json'
 
 const EditorWrapper = ({

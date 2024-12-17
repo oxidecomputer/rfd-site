@@ -16,7 +16,7 @@ import { Sidebar } from '~/components/note/Sidebar'
 import { isAuthenticated } from '~/services/authn.server'
 
 export const loader: LoaderFunction = async ({ params: { id } }) => {
-  const response = await fetch(`http://localhost:8000/notes/${id}`, {
+  const response = await fetch(`${process.env.NOTES_API}/notes/${id}`, {
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',
     },
@@ -37,7 +37,7 @@ export const action: ActionFunction = async ({ request, params }) => {
     const user = await isAuthenticated(request)
     if (!user) throw new Response('User not found', { status: 401 })
 
-    const response = await fetch(`http://localhost:8000/notes/${params.id}`, {
+    const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
       method: 'PUT',
       headers: {
         'x-api-key': process.env.NOTES_API_KEY || '',

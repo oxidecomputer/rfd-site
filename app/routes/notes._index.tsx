@@ -15,9 +15,9 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   if (!user) throw new Response('Not authorized', { status: 401 })
 
-  console.log(`http://localhost:8000/user/${user.id}`)
+  console.log(`${process.env.NOTES_API}/user/${user.id}`)
 
-  const response = await fetch(`http://localhost:8000/user/${user.id}`, {
+  const response = await fetch(`${process.env.NOTES_API}/user/${user.id}`, {
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',
     },
@@ -26,6 +26,8 @@ export const loader: LoaderFunction = async ({ request }) => {
     throw new Error(`Error fetching: ${response.statusText}`)
   }
   const data = await response.json()
+
+  console.log('REDIRECT')
 
   if (data.length > 0) {
     return redirect(`/notes/${data[0].id}/edit`)

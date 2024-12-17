@@ -4,7 +4,7 @@ import cn from 'classnames'
 import { type ReactNode } from 'react'
 
 import Icon from '~/components/Icon'
-import { type NoteItem } from '~/routes/notes_'
+import { type NoteItem } from '~/routes/notes'
 
 const navLinkStyles = ({ isActive }: { isActive: boolean }) => {
   const activeStyle = isActive
@@ -35,10 +35,15 @@ export const SidebarIcon = () => (
   </svg>
 )
 
+interface HandleData {
+  notes: NoteItem[]
+}
+
 export const Sidebar = () => {
   const matches = useMatches()
 
-  const notes = matches && matches[1] && (matches[1].data.notes as NoteItem[])
+  const data = matches[1]?.data as HandleData
+  const notes = data.notes || undefined
 
   return (
     <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col justify-between space-y-6 border-r pb-4 border-secondary elevation-2 800:elevation-0 print:hidden">
@@ -46,12 +51,9 @@ export const Sidebar = () => {
         {notes && (
           <div className="relative space-y-6 overflow-y-auto overflow-x-hidden pb-8">
             <div className="mt-0 flex h-14 items-center border-b px-4 border-secondary">
-              <NavLink
-                to="/"
-                className="flex items-center gap-2 text-sans-md text-secondary"
-              >
+              <Link to="/" className="flex items-center gap-2 text-sans-md text-secondary">
                 <Icon name="prev-arrow" size={12} className="text-tertiary" /> Back to RFDs
-              </NavLink>
+              </Link>
             </div>
 
             <LinkSection label="Published">

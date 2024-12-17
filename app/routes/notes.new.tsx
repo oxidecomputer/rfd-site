@@ -5,26 +5,33 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, redirect, type ActionFunction } from '@remix-run/node'
+import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
 
-export const action: ActionFunction = async ({ request, params }) => {
+export const action: ActionFunction = async ({ request }) => {
   const user = await isAuthenticated(request)
 
   if (!user) throw new Response('User not found', { status: 401 })
 
-  const response = await fetch(`http://localhost:8000/notes/${params.id}`, {
-    method: 'DELETE',
+  const response = await fetch('${process.env.NOTES_API}/notes', {
+    method: 'POST',
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',
+      'Content-Type': 'application/json; charset=utf-8',
     },
+    body: JSON.stringify({ title: 'Untitled', user: user.id, body: '' }),
   })
 
+  const result = await response.json()
+
   if (response.ok) {
-    return redirect(`/notes`)
+    return redirect(`/notes/${result.id}/edit`)
   } else {
-    const result = await response.json()
     return json({ error: result.error }, { status: response.status })
   }
+}
+
+export const loader: LoaderFunction = async (args) => {
+  return action(args)
 }

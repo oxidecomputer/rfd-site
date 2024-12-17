@@ -16,7 +16,7 @@ export const loader: LoaderFunction = async ({ request }) => {
 
   if (!user) throw new Response('Not authorized', { status: 401 })
 
-  const response = await fetch(`http://localhost:8000/user/${user.id}`, {
+  const response = await fetch(`${process.env.NOTES_API}/user/${user.id}`, {
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',
     },
@@ -28,7 +28,6 @@ export const loader: LoaderFunction = async ({ request }) => {
   const data = await response.json()
   return {
     notes: data,
-    isMac: /Macintosh/i.test(request.headers.get('User-Agent') || ''),
     user,
   }
 }

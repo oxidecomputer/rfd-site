@@ -16,7 +16,7 @@ export async function action({ request, params }: ActionArgs) {
 
   const { publish } = await request.json()
 
-  const response = await fetch(`http://localhost:8000/notes/${params.id}/publish`, {
+  const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}/publish`, {
     method: 'POST',
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',

@@ -1,5 +1,6 @@
 import { Elysia } from 'elysia'
 
+import { API_KEYS } from './auth'
 import {
   addNote,
   deleteNote,
@@ -11,17 +12,19 @@ import {
   type NoteBody,
 } from './main'
 
-const API_KEY = 'abcdef'
-
 const ServerError = { error: 'Something went wrong' }
+
+const validateApiKey = (request: Request) => {
+  const apiKey = request.headers.get('x-api-key')
+  return API_KEYS.has(apiKey ?? '')
+}
 
 export const run = () => {
   new Elysia()
     .onRequest(({ request, set }) => {
-      const apiKey = request.headers.get('x-api-key')
-      if (apiKey !== API_KEY) {
+      if (!validateApiKey(request)) {
         set.status = 401
-        return 'Not Authorized'
+        return { error: 'Not Authorized' }
       }
     })
     .get('/user/:userId', async ({ params: { userId }, set }) => {
