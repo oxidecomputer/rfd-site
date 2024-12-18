@@ -9,10 +9,13 @@
 import { type LoaderFunction } from '@remix-run/node'
 import { Outlet } from '@remix-run/react'
 
-import { isAuthenticated } from '~/services/authn.server'
+// import { isAuthenticated } from '~/services/authn.server'
 
-export const loader: LoaderFunction = async ({ request }) => {
-  const user = await isAuthenticated(request)
+export const loader: LoaderFunction = async () => {
+  // const user = await isAuthenticated(request)
+  const user = {
+    id: process.env.NOTES_TEST_USER_ID || '',
+  }
 
   if (!user) throw new Response('Not authorized', { status: 401 })
 
