@@ -15,5 +15,10 @@
     "nanoid": "^5.0.7",
     "tsc": "",
     "zod": "^3.22.4"
+  },
+  "scripts": {
+    "start": "bun run index.ts",
+    "drop": "cd db && ./drop.sh",
+    "seed": "cd db && ./init.sh"
   }
 }

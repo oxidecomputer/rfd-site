@@ -13,7 +13,8 @@ import { useState } from 'react'
 
 import { NoteForm } from '~/components/note/NoteForm'
 import { Sidebar } from '~/components/note/Sidebar'
-import { isAuthenticated } from '~/services/authn.server'
+
+// import { isAuthenticated } from '~/services/authn.server'
 
 export const loader: LoaderFunction = async ({ params: { id } }) => {
   const response = await fetch(`${process.env.NOTES_API}/notes/${id}`, {
@@ -34,7 +35,10 @@ export const action: ActionFunction = async ({ request, params }) => {
     const title = formData.get('title')
     const body = formData.get('body')
 
-    const user = await isAuthenticated(request)
+    // const user = await isAuthenticated(request)
+    const user = {
+      id: process.env.NOTES_TEST_USER_ID || '',
+    }
     if (!user) throw new Response('User not found', { status: 401 })
 
     const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
