@@ -164,7 +164,7 @@ export default function Rfd() {
   useEffect(() => {
     let headings = flattenSections(content.sections)
       .filter((item) => item.level <= 2)
-      .map((item) => bodyRef.current?.querySelector(`#${item.id}`))
+      .map((item) => document.getElementById(item.id))
       .filter(isValue)
 
     setSections(headings)
