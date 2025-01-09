@@ -7,12 +7,7 @@
  */
 
 import { Badge } from '@oxide/design-system'
-import {
-  json,
-  redirect,
-  type ActionFunctionArgs,
-  type LoaderFunctionArgs,
-} from '@remix-run/node'
+import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
 import {
   Link,
   useFetcher,
@@ -43,7 +38,7 @@ import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')
-  return json(parseSortOrder(await rfdSortCookie.parse(cookieHeader)))
+  return parseSortOrder(await rfdSortCookie.parse(cookieHeader))
 }
 
 // only for setting the sort order cookie
@@ -130,7 +125,7 @@ export default function Index() {
       .go(input, rfds, {
         threshold: -10000,
         all: true, // If true, returns all results for an empty search
-        keys: ['title', 'number_string', 'authors'],
+        keys: ['title', 'formattedNumber', 'authors.name', 'authors.email'],
       })
       .map((result) => {
         return result.obj
@@ -145,7 +140,7 @@ export default function Index() {
         sortAttr === 'number'
           ? rfd.number
           : rfd.committedAt
-            ? new Date(rfd.committedAt).getTime()
+            ? rfd.committedAt.getTime()
             : new Date().getTime()
       const mult = sortDir === 'asc' ? 1 : -1
       return sortVal * mult

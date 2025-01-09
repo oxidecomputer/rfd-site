@@ -7,7 +7,6 @@
  */
 
 import {
-  json,
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -59,7 +58,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const authors: Author[] = rfds ? getAuthors(rfds) : []
     const labels: string[] = rfds ? getLabels(rfds) : []
 
-    return json({
+    return {
       // Any data added to the ENV key of this loader will be injected into the
       // global window object (window.ENV)
       theme,
@@ -70,11 +69,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       labels,
       localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
-    })
+    }
   } catch (err) {
     // The only error that should be caught here is the unauthenticated error.
     // And if that occurs we need to log the user out
     await auth.logout(request, { redirectTo: '/' })
+  }
+
+  // Convince remix that a return type will always be provided
+  return {
+    theme,
+    inlineComments,
+    user,
+    rfds: [],
+    authors: [],
+    labels: [],
+    localMode: isLocalMode(),
+    newRfdNumber: undefined,
   }
 }
 

@@ -12,12 +12,7 @@ import {
   useIntersectionObserver,
 } from '@oxide/design-system/components/dist'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
-import {
-  defer,
-  redirect,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Await, useLoaderData, useLocation } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
@@ -106,12 +101,12 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
     groups.unshift('public')
   }
 
-  return defer({
+  return {
     rfd,
     groups,
     // this must not be awaited, it is being deferred
     discussionPromise: fetchDiscussion(num, rfd?.discussion, user),
-  })
+  }
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
