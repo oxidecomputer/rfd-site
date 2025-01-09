@@ -1,3 +1,11 @@
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, you can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright Oxide Computer Company
+ */
+
 import { handleDocument } from '@oxide/design-system/components/dist'
 import type { DocumentBlock, DocumentSection } from '@oxide/react-asciidoc'
 import type { RfdWithoutContent, RfdWithRaw } from '@oxide/rfd.ts/client'
