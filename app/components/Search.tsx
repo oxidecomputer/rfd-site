@@ -444,35 +444,36 @@ const RFDPreview = ({ number }: { number: number }) => {
           <div className="flex h-6 items-center border-b px-3 text-mono-xs border-b-secondary">
             <div className="text-quaternary">Updated:</div>
             <div className="ml-1 text-default">
-              {dayjs(rfd.commit_date).format('YYYY/MM/DD h:mm A')}
+              {dayjs(rfd.committedAt).format('YYYY/MM/DD h:mm A')}
             </div>
           </div>
 
           <div className="flex w-full flex-col items-start p-6">
-            <StatusBadge label={rfd.state} />
+            {rfd.state && <StatusBadge label={rfd.state} />}
             <div className="mt-2 !text-[32px] !leading-[1.15] text-sans-3xl text-raise">
               {rfd.title}
             </div>
             <ul className="mt-6 w-full">
-              {rfd.toc.map(
-                (item) =>
-                  item.level === 1 && (
-                    <div className="w-full border-b py-2 border-b-default" key={item.id}>
-                      <Link
-                        to={`/rfd/${rfd.number}#${item.id}`}
-                        className="block"
-                        prefetch="intent"
-                      >
-                        <DialogDismiss className="text-left">
-                          <li
-                            className="text-sans-sm text-default hover:text-default children:!text-sans-sm"
-                            dangerouslySetInnerHTML={{ __html: item.title }}
-                          />
-                        </DialogDismiss>
-                      </Link>
-                    </div>
-                  ),
-              )}
+              {rfd.toc &&
+                rfd.toc.map(
+                  (item) =>
+                    item.level === 1 && (
+                      <div className="w-full border-b py-2 border-b-default" key={item.id}>
+                        <Link
+                          to={`/rfd/${rfd.number}#${item.id}`}
+                          className="block"
+                          prefetch="intent"
+                        >
+                          <DialogDismiss className="text-left">
+                            <li
+                              className="text-sans-sm text-default hover:text-default children:!text-sans-sm"
+                              dangerouslySetInnerHTML={{ __html: item.title }}
+                            />
+                          </DialogDismiss>
+                        </Link>
+                      </div>
+                    ),
+                )}
             </ul>
           </div>
         </>

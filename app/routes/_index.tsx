@@ -84,11 +84,17 @@ export default function Index() {
 
         let isMatch = false
 
-        if (authorEmailParam && rfd.authors.includes(authorEmailParam)) {
+        if (
+          authorEmailParam &&
+          rfd.authors?.some((author) => author.email === authorEmailParam)
+        ) {
           isMatch = true
         }
 
-        if (authorNameParam && rfd.authors.includes(authorNameParam)) {
+        if (
+          authorNameParam &&
+          rfd.authors?.some((author) => author.name === authorNameParam)
+        ) {
           isMatch = true
         }
 
@@ -102,10 +108,7 @@ export default function Index() {
           return false
         }
 
-        return rfd.labels
-          .split(',')
-          .map((label) => label.trim())
-          .includes(labelParam)
+        return rfd.labels.map((label) => label.trim()).includes(labelParam)
       })
     }
 
@@ -139,7 +142,11 @@ export default function Index() {
 
     const sortedRfds = sortBy(filteredRfds, (rfd) => {
       const sortVal =
-        sortAttr === 'number' ? rfd.number : new Date(rfd.commit_date).getTime()
+        sortAttr === 'number'
+          ? rfd.number
+          : rfd.committedAt
+            ? new Date(rfd.committedAt).getTime()
+            : new Date().getTime()
       const mult = sortDir === 'asc' ? 1 : -1
       return sortVal * mult
     })
@@ -258,8 +265,8 @@ export default function Index() {
                       navigate(
                         `/rfd/${
                           exactMatch
-                            ? exactMatch.number_string
-                            : matchedItems[0].number_string
+                            ? exactMatch.formattedNumber
+                            : matchedItems[0].formattedNumber
                         }`,
                       )
                     }
@@ -318,7 +325,7 @@ export default function Index() {
           </Container>
 
           {matchedItems.map((rfd) => (
-            <RfdRow key={rfd.number_string} rfd={rfd} />
+            <RfdRow key={rfd.formattedNumber} rfd={rfd} />
           ))}
         </ul>
       </div>
@@ -349,8 +356,8 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
     <Container className="relative rounded-lg border text-sans-md border-secondary 800:h-20">
       <div className="grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4 800:gap-6 800:py-0">
         <Link
-          to={`/rfd/${rfd.number_string}`}
-          key={rfd.number_string}
+          to={`/rfd/${rfd.formattedNumber}`}
+          key={rfd.formattedNumber}
           prefetch="intent"
           className="group order-2 col-span-12 -m-4 p-4 pr-10 text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md"
         >
@@ -361,7 +368,7 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
         </Link>
 
         <div className="order-1 col-span-12 flex flex-col items-start 800:order-2 800:col-span-3 1000:col-span-2">
-          <StatusBadge label={rfd.state} />
+          {rfd.state && <StatusBadge label={rfd.state} />}
         </div>
 
         <div className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2">
@@ -376,24 +383,24 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
             {() => (
               <>
                 <div className="text-secondary 800:text-default">
-                  {dayjs(rfd.commit_date).format('MMM D, YYYY')}
+                  {rfd.committedAt && dayjs(rfd.committedAt).format('MMM D, YYYY')}
                 </div>
                 <div className="text-quaternary 800:hidden">/</div>
                 <div className="text-secondary 800:text-tertiary">
-                  {dayjs(rfd.commit_date).format('h:mm A')}
+                  {rfd.committedAt && dayjs(rfd.committedAt).format('h:mm A')}
                 </div>
               </>
             )}
           </ClientOnly>
         </div>
 
-        <Labels labels={rfd.labels} />
+        {rfd.labels && <Labels labels={rfd.labels} />}
       </div>
     </Container>
   )
 }
 
-const Labels = ({ labels }: { labels: string }) => (
+const Labels = ({ labels }: { labels: string[] }) => (
   <div className="order-4 col-span-3 hidden max-h-[2.5rem] 1000:flex">
     <ClientOnly
       fallback={
@@ -408,7 +415,7 @@ const Labels = ({ labels }: { labels: string }) => (
   </div>
 )
 
-const LabelsInner = ({ labels }: { labels: string }) => {
+const LabelsInner = ({ labels }: { labels: string[] }) => {
   const containerEl = useRef<HTMLDivElement>(null)
   const { isOverflow } = useIsOverflow(containerEl)
   return (
@@ -417,7 +424,7 @@ const LabelsInner = ({ labels }: { labels: string }) => {
       className="relative flex flex-shrink flex-wrap gap-1 overflow-hidden pr-8 text-tertiary"
     >
       {labels ? (
-        labels.split(',').map((label) => (
+        labels.map((label) => (
           <Link key={label} to={`/?label=${label.trim()}`}>
             <Badge color="neutral">{label.trim()}</Badge>
           </Link>

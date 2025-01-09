@@ -6,42 +6,64 @@
  * Copyright Oxide Computer Company
  */
 
-import type { RfdApiPermission } from './rfdApi'
+import type { RfdPermission } from '@oxide/rfd.ts/client'
 
-export type Permission = { k: 'ReadDiscussions' } | { k: 'ReadRfd'; v: number }
-
-export function can(allPermissions: RfdApiPermission[], permission: Permission): boolean {
+export function can(allPermissions: RfdPermission[], permission: RfdPermission): boolean {
   const checks = createChecks(permission)
   const allowed = checks.some((check) => performCheck(allPermissions, check))
 
   return allowed
 }
 
-function createChecks(permission: Permission): RfdApiPermission[] {
-  const checks: RfdApiPermission[] = []
-  switch (permission.k) {
-    case 'ReadDiscussions':
-      checks.push('GetDiscussionsAll')
-      break
-    case 'ReadRfd':
-      checks.push({ GetRfd: permission.v })
-      checks.push({ GetRfds: [permission.v] })
-      checks.push('GetRfdsAll')
-      break
+export function any(
+  allPermissions: RfdPermission[],
+  permissions: RfdPermission[],
+): boolean {
+  return permissions.some((permission) => can(allPermissions, permission))
+}
+
+function createChecks(permission: RfdPermission): RfdPermission[] {
+  const checks: RfdPermission[] = []
+  checks.push(permission)
+
+  if (typeof permission === 'string') {
+    switch (permission) {
+      case 'GetDiscussionsAll':
+        checks.push('GetDiscussionsAll')
+        break
+    }
+  } else if (typeof permission === 'object') {
+    const key = Object.keys(permission)[0]
+    switch (key) {
+      case 'GetDiscussion':
+        checks.push({ GetDiscussions: [Object.values(permission)[0]] })
+        checks.push('GetDiscussionsAll')
+        break
+      case 'GetDiscussions':
+        checks.push('GetDiscussionsAll')
+        break
+      case 'GetRfd':
+        checks.push({ GetRfds: [Object.values(permission)[0]] })
+        checks.push('GetRfdsAll')
+        break
+      case 'GetRfds':
+        checks.push('GetRfdsAll')
+        break
+    }
   }
 
   return checks
 }
 
-function performCheck(permissions: RfdApiPermission[], check: RfdApiPermission): boolean {
+function performCheck(permissions: RfdPermission[], check: RfdPermission): boolean {
   return (
     simplePermissionCheck(permissions, check) || listPermissionCheck(permissions, check)
   )
 }
 
 function simplePermissionCheck(
-  permissions: RfdApiPermission[],
-  check: RfdApiPermission,
+  permissions: RfdPermission[],
+  check: RfdPermission,
 ): boolean {
   return permissions.some((p) => {
     switch (typeof p) {
@@ -58,10 +80,7 @@ function simplePermissionCheck(
   })
 }
 
-function listPermissionCheck(
-  permissions: RfdApiPermission[],
-  check: RfdApiPermission,
-): boolean {
+function listPermissionCheck(permissions: RfdPermission[], check: RfdPermission): boolean {
   return permissions.some((p) => {
     switch (typeof p) {
       case 'string':
@@ -85,7 +104,7 @@ function listPermissionCheck(
   })
 }
 
-function permissionValue(permission: RfdApiPermission): any[] | undefined {
+function permissionValue(permission: RfdPermission): any[] | undefined {
   switch (typeof permission) {
     case 'string':
       return undefined
