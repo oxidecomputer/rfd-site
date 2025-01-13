@@ -7,11 +7,13 @@
  */
 import { useDelegatedReactRouterLinks } from '@oxide/design-system/components/dist'
 import { Content, type DocumentBlock } from '@oxide/react-asciidoc'
+import { useNavigate } from '@remix-run/react'
 import { useRef } from 'react'
 
 const CustomDocument = ({ document }: { document: DocumentBlock }) => {
   let ref = useRef<HTMLDivElement>(null)
-  useDelegatedReactRouterLinks(ref, document.title)
+  const navigate = useNavigate()
+  useDelegatedReactRouterLinks(navigate, ref, document.title)
 
   return (
     <div
