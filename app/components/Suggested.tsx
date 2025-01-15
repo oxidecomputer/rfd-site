@@ -11,7 +11,7 @@ import cn from 'classnames'
 import { cloneElement, type ReactElement, type ReactNode } from 'react'
 
 import Icon from '~/components/Icon'
-import { type RfdListItem } from '~/services/rfd.server'
+import type { RfdListItem } from '~/services/rfd.server'
 
 import type { Author } from './rfd/RfdPreview'
 
@@ -71,7 +71,7 @@ export const ExactMatch = ({ rfd }: { rfd: RfdListItem }) => (
       RFD {rfd.number}:{' '}
       <Link
         key={rfd.number}
-        to={`/rfd/${rfd.number_string}`}
+        to={`/rfd/${rfd.formattedNumber}`}
         state={{ shouldClearInput: true }}
         className="text-semi-sm underline"
       >

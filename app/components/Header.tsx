@@ -27,7 +27,7 @@ export type SmallRfdItems = {
 }
 
 export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
-  const { user, rfds, isLocalMode, inlineComments } = useRootLoaderData()
+  const { user, rfds, localMode, inlineComments } = useRootLoaderData()
 
   const fetcher = useFetcher()
 
@@ -43,7 +43,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
     fetcher.submit({}, { method: 'post', action: '/logout' })
   }
 
-  const returnTo = currentRfd ? `/rfd/${currentRfd.number_string}` : '/'
+  const returnTo = currentRfd ? `/rfd/${currentRfd.formattedNumber}` : '/'
 
   const [open, setOpen] = useState(false)
 
@@ -95,11 +95,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
                 <DropdownItem onSelect={toggleInlineComments}>
                   {inlineComments ? 'Hide' : 'Show'} inline comments
                 </DropdownItem>
-                {isLocalMode ? (
-                  <></>
-                ) : (
-                  <DropdownItem onSelect={logout}>Log out</DropdownItem>
-                )}
+                {localMode ? <></> : <DropdownItem onSelect={logout}>Log out</DropdownItem>}
               </DropdownMenu>
             </Dropdown.Root>
           ) : (

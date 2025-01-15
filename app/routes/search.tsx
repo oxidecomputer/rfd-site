@@ -6,10 +6,11 @@
  * Copyright Oxide Computer Company
  */
 
+import type { SearchResults } from '@oxide/rfd.ts/client'
 import { type LoaderFunctionArgs } from '@remix-run/node'
 
 import { auth } from '~/services/authn.server'
-import { apiRequest } from '~/services/rfdApi.server'
+import { searchRfds } from '~/services/rfd.remote.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await auth.isAuthenticated(request)
@@ -24,35 +25,8 @@ export async function loader({ request }: LoaderFunctionArgs) {
     }
   }
 
-  return adaptResults(await apiRequest(`rfd-search?${query.toString()}`, user?.token))
-}
-
-type SearchResults = {
-  hits: SearchResultHit[]
-  query: string
-  limit: number | null
-  offset: number | null
-}
-
-type SearchResultHit = {
-  hierarchy: (string | null)[]
-  hierarchy_radio: (string | null)[]
-  content: string
-  object_id: string
-  rfd_number: number
-  anchor: string | null
-  url: string | null
-  formatted: FormattedSearchResultHit | null
-}
-
-type FormattedSearchResultHit = {
-  hierarchy: (string | null)[]
-  hierarchy_radio: (string | null)[]
-  content: string | null
-  object_id: string
-  rfd_number: number
-  anchor: string | null
-  url: string | null
+  const results = await searchRfds(user, query.toString())
+  return adaptResults(results)
 }
 
 function adaptResults(results: SearchResults) {
@@ -62,10 +36,10 @@ function adaptResults(results: SearchResults) {
         value: hit.formatted?.content,
       },
       objectID: {
-        value: hit.formatted?.object_id,
+        value: hit.formatted?.objectId,
       },
       rfd_number: {
-        value: `${hit.formatted?.rfd_number}`,
+        value: `${hit.formatted?.rfdNumber}`,
       },
       anchor: {
         value: hit.formatted?.anchor,
@@ -85,11 +59,11 @@ function adaptResults(results: SearchResults) {
       }
     }
 
-    if (hit.formatted?.hierarchy_radio) {
-      for (const i in hit.formatted?.hierarchy_radio) {
-        if (hit.formatted?.hierarchy_radio[i]) {
+    if (hit.formatted?.hierarchyRadio) {
+      for (const i in hit.formatted?.hierarchyRadio) {
+        if (hit.formatted?.hierarchyRadio[i]) {
           highlightResult[`hierarchy_radio_lvl${i}`] = {
-            value: hit.formatted?.hierarchy_radio[i],
+            value: hit.formatted?.hierarchyRadio[i],
           }
           break
         }
@@ -98,8 +72,8 @@ function adaptResults(results: SearchResults) {
 
     const adaptedHit: any = {
       content: hit.content,
-      objectID: hit.object_id,
-      rfd_number: hit.rfd_number,
+      objectID: hit.objectId,
+      rfd_number: hit.rfdNumber,
       anchor: hit.anchor,
       url: hit.url || '',
       _highlightResult: highlightResult,
@@ -112,9 +86,9 @@ function adaptResults(results: SearchResults) {
       }
     }
 
-    for (const i in hit.hierarchy_radio) {
-      if (hit.hierarchy_radio[i]) {
-        adaptedHit[`hierarchy_radio_lvl${i}`] = hit.hierarchy_radio[i]
+    for (const i in hit.hierarchyRadio) {
+      if (hit.hierarchyRadio[i]) {
+        adaptedHit[`hierarchy_radio_lvl${i}`] = hit.hierarchyRadio[i]
         break
       }
     }

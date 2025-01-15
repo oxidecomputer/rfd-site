@@ -9,7 +9,8 @@
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 
 import { isAuthenticated } from '~/services/authn.server'
-import { fetchLocalImage, fetchRfd, isLocalMode } from '~/services/rfd.server'
+import { fetchLocalImage, isLocalMode } from '~/services/rfd.local.server'
+import { fetchRfd } from '~/services/rfd.server'
 import { getExpiringUrl } from '~/services/storage.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -20,7 +21,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
 
   const rfdNumber = parseInt(rfd, 10)
 
-  if (isLocalMode) {
+  if (isLocalMode()) {
     const localImage = fetchLocalImage(rfdNumber, decodeURI(filename))
     if (!localImage) {
       throw new Response('Unable to retrieve image', { status: 500 })

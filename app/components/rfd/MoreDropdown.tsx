@@ -24,7 +24,7 @@ const MoreDropdown = () => {
       </Dropdown.Trigger>
 
       <DropdownMenu>
-        <DropdownLink to={rfd.discussion_link || ''} disabled={!rfd.discussion_link}>
+        <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
           View discussion
         </DropdownLink>
 
@@ -38,12 +38,12 @@ const MoreDropdown = () => {
           </DropdownLink>
         )}
 
-        <DropdownLink
+        {/* <DropdownLink
           to={rfd.pdf_link_google_drive || ''}
           disabled={!rfd.pdf_link_google_drive}
         >
           View PDF
-        </DropdownLink>
+        </DropdownLink> */}
       </DropdownMenu>
     </Dropdown.Root>
   )

@@ -20,7 +20,7 @@ describe('Group Permissions', () => {
       permissions: ['GetRfdsAll'],
     }
 
-    expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
+    expect(can(group.permissions, { GetRfd: 123 })).toBe(true)
   })
 
   it('Validates group has simple value permission', () => {
@@ -30,7 +30,7 @@ describe('Group Permissions', () => {
       permissions: [{ GetRfd: 123 }],
     }
 
-    expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
+    expect(can(group.permissions, { GetRfd: 123 })).toBe(true)
   })
 
   it('Validates group has list value permission', () => {
@@ -40,7 +40,7 @@ describe('Group Permissions', () => {
       permissions: [{ GetRfds: [123] }],
     }
 
-    expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
+    expect(can(group.permissions, { GetRfd: 123 })).toBe(true)
   })
 
   it('Validates group with multiple permissions', () => {
@@ -50,7 +50,7 @@ describe('Group Permissions', () => {
       permissions: [{ GetRfd: 123 }, { GetRfds: [123] }, 'GetRfdsAll'],
     }
 
-    expect(can(group.permissions, { k: 'ReadRfd', v: 123 })).toBe(true)
+    expect(can(group.permissions, { GetRfd: 123 })).toBe(true)
   })
 
   it('Validates mapped group permission', () => {
@@ -60,6 +60,6 @@ describe('Group Permissions', () => {
       permissions: ['GetDiscussionsAll'],
     }
 
-    expect(can(group.permissions, { k: 'ReadDiscussions' })).toBe(true)
+    expect(can(group.permissions, 'GetDiscussionsAll')).toBe(true)
   })
 })

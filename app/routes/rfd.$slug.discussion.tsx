@@ -28,7 +28,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.
-  if (!rfd || !rfd.discussion_link) throw resp404()
+  if (!rfd || !rfd.discussion) throw resp404()
 
-  return redirect(rfd.discussion_link)
+  return redirect(rfd.discussion)
 }

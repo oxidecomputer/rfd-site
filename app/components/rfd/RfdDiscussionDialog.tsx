@@ -28,7 +28,7 @@ import type {
   ListReviewsCommentsType,
   ListReviewsType,
   ReviewType,
-} from '~/services/rfd.server'
+} from '~/services/github-discussion.server'
 
 import { GotoIcon } from '../CustomIcons'
 import { CommentThreadBlock, matchCommentToBlock } from './RfdInlineComments'

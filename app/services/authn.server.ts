@@ -6,10 +6,12 @@
  * Copyright Oxide Computer Company
  */
 
+import type { RfdPermission } from '@oxide/rfd.ts/client'
 import { Authenticator } from 'remix-auth'
 
 import { sessionStorage } from '~/services/session.server'
-import type { RfdApiPermission, RfdScope } from '~/utils/rfdApi'
+import { isTruthy } from '~/utils/isTruthy'
+import type { RfdScope } from '~/utils/rfdApi'
 import {
   RfdApiStrategy,
   type RfdApiAccessToken,
@@ -18,8 +20,8 @@ import {
 
 import { returnToCookie } from './cookies.server'
 import { getUserRedirect } from './redirect.server'
-import { isLocalMode } from './rfd.server'
-import { apiRequest, getRfdApiUrl } from './rfdApi.server'
+import { isLocalMode } from './rfd.local.server'
+import { client, fetchGroups, getGroups, getRfdApiUrl } from './rfd.remote.server'
 
 export type AuthenticationService = 'github' | 'google' | 'local'
 
@@ -37,7 +39,7 @@ export type User = {
   email: string | null
   displayName: string | null
   token: string
-  permissions: RfdApiPermission[]
+  permissions: RfdPermission[]
   groups: string[]
   expiresAt: number
 }
@@ -45,21 +47,17 @@ export type User = {
 export type Group = {
   id: string
   name: string
-  permissions: RfdApiPermission[]
+  permissions: RfdPermission[]
 }
 
-type GroupListResponseItem = {
-  id: string
-  name: string
-  permissions: RfdApiPermission[]
-  created_at: string
-  updated_at: string
-}
-
-async function fetchGroups(ids: string[], token: string): Promise<GroupListResponseItem[]> {
-  return (await apiRequest<GroupListResponseItem[]>('group', token)).filter((group) =>
-    ids.includes(group.id),
+export async function getUserPermissions(user: User): Promise<RfdPermission[]> {
+  const groups = (await fetchGroups(user)).filter((group) =>
+    user.groups.includes(group.name),
   )
+  const allPermissions = user.permissions.concat(
+    groups.flatMap((group) => group.permissions),
+  )
+  return allPermissions
 }
 
 async function parseUser(
@@ -70,6 +68,8 @@ async function parseUser(
   const parsedToken: RfdApiAccessToken = JSON.parse(
     Buffer.from(accessToken.split('.')[1] || '', 'base64').toString('utf8'),
   )
+  const rfdClient = client(accessToken)
+  const groups = await getGroups(rfdClient)
 
   return {
     id: profile._raw.info.id,
@@ -78,9 +78,11 @@ async function parseUser(
     displayName: profile.displayName ?? null,
     token: accessToken,
     permissions: profile._raw.info.permissions,
-    groups: (await fetchGroups(profile._raw.info.groups, accessToken)).map(
-      (group) => group.name,
-    ),
+    groups: profile._raw.info.groups
+      .map((groupId) => {
+        return groups.find((group) => group.id === groupId)?.name
+      })
+      .filter(isTruthy),
     expiresAt: parsedToken.exp,
   }
 }
@@ -141,7 +143,7 @@ async function isAuthenticated(
   },
 ): Promise<User>
 async function isAuthenticated(request: Request, options: any): Promise<User | null> {
-  if (isLocalMode) {
+  if (isLocalMode()) {
     const user: User = {
       id: 'none',
       authenticator: 'local',

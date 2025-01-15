@@ -130,7 +130,7 @@ const ComboboxWrapper = ({
           const lastIdx = matchedItems.length - 1
           if (e.key === 'Enter') {
             if (!selectedItem) return
-            navigate(`/rfd/${selectedItem.number_string}`)
+            navigate(`/rfd/${selectedItem.formattedNumber}`)
             handleDismiss()
           } else if (e.key === 'ArrowDown') {
             const newIdx = selectedIdx === lastIdx ? 0 : selectedIdx + 1
@@ -187,7 +187,7 @@ const ComboboxWrapper = ({
               matchedItems.map((rfd: Fuzzysort.KeysResult<RfdListItem>, index: number) => {
                 return (
                   <ComboboxItem
-                    key={rfd.obj.number_string}
+                    key={rfd.obj.formattedNumber}
                     rfd={rfd.obj}
                     selected={selectedIdx === index}
                     isDirty={input.length > 0}
@@ -243,7 +243,7 @@ const ComboboxItem = ({
 
   return (
     <Link
-      to={`/rfd/${rfd.number_string}`}
+      to={`/rfd/${rfd.formattedNumber}`}
       onClick={onClick}
       prefetch={shouldPrefetch ? 'render' : 'intent'}
     >

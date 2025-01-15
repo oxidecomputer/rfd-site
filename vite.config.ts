@@ -13,7 +13,16 @@ import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { LocalRfdPlugin } from './vite/local-rfd-plugin'
 
-const plugins = [remix({ presets: [vercelPreset()] }), tsconfigPaths()]
+declare module '@remix-run/server-runtime' {
+  interface Future {
+    v3_singleFetch: true
+  }
+}
+
+const plugins = [
+  remix({ presets: [vercelPreset()], future: { v3_singleFetch: true } }),
+  tsconfigPaths(),
+]
 
 const localRepo = process.env.LOCAL_RFD_REPO
 if (localRepo) plugins.push(LocalRfdPlugin(localRepo))
