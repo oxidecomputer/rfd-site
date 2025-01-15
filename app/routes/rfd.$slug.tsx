@@ -9,6 +9,7 @@ import {
   DesktopOutline,
   SmallScreenOutline,
   useActiveSectionTracking,
+  useDelegatedReactRouterLinks,
   useIntersectionObserver,
 } from '@oxide/design-system/components/dist'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
@@ -18,7 +19,7 @@ import {
   type LoaderFunctionArgs,
   type MetaFunction,
 } from '@remix-run/node'
-import { Await, useLoaderData, useLocation } from '@remix-run/react'
+import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import {
@@ -164,14 +165,18 @@ export default function Rfd() {
   useEffect(() => {
     let headings = flattenSections(content.sections)
       .filter((item) => item.level <= 2)
-      .map((item) => bodyRef.current?.querySelector(`#${item.id}`))
+      .map((item) => document.getElementById(item.id))
       .filter(isValue)
 
     setSections(headings)
   }, [content.sections, setSections])
 
+  const navigate = useNavigate()
+  const containerRef = useRef<HTMLDivElement>(null)
+  useDelegatedReactRouterLinks(navigate, containerRef, title)
+
   return (
-    <>
+    <div ref={containerRef}>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd as RfdItem} key={pathname + hash} />
       <main className="relative mt-12 800:mt-16 print:mt-0">
@@ -328,7 +333,7 @@ export default function Rfd() {
           key={pathname}
         />
       </div>
-    </>
+    </div>
   )
 }
 
