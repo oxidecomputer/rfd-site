@@ -17,7 +17,7 @@
     "@asciidoctor/core": "^3.0.4",
     "@floating-ui/react": "^0.17.0",
     "@meilisearch/instant-meilisearch": "^0.8.2",
-    "@oxide/design-system": "^2.1.0",
+    "@oxide/design-system": "^2.2.0",
     "@oxide/react-asciidoc": "^1.0.3",
     "@radix-ui/react-accordion": "^1.1.2",
     "@radix-ui/react-dropdown-menu": "^2.0.4",
