@@ -16,6 +16,7 @@ import Icon from '~/components/Icon'
 import NewRfdButton from '~/components/NewRfdButton'
 import { useRootLoaderData } from '~/root'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
+import { userIsInternal } from '~/utils/rfdApi'
 
 import { DropdownItem, DropdownMenu } from './Dropdown'
 import { PublicBanner } from './PublicBanner'
@@ -55,6 +56,8 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
 
   useHotkeys('mod+k', toggleSearchMenu)
 
+  const isInternal = userIsInternal(user)
+
   return (
     <div className="sticky top-0 z-20">
       {!user && <PublicBanner />}
@@ -79,12 +82,14 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
             <Icon name="search" size={16} />
           </button>
           <Search open={open} onClose={() => setOpen(false)} />
-          <Link
-            to="/notes"
-            className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover"
-          >
-            <Icon name="edit" size={16} />
-          </Link>
+          {user && isInternal && (
+            <Link
+              to="/notes"
+              className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover"
+            >
+              <Icon name="edit" size={16} />
+            </Link>
+          )}
           <NewRfdButton />
 
           {user ? (

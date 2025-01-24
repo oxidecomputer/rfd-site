@@ -7,15 +7,21 @@
  */
 import { json, type ActionFunction } from '@remix-run/node'
 
-// import { isAuthenticated } from '~/services/authn.server'
+import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 
 export const action: ActionFunction = async ({ request, params }) => {
-  // const user = await isAuthenticated(request)
-  const user = {
-    id: process.env.NOTES_TEST_USER_ID || '',
-  }
+  const user = await isAuthenticated(request)
+  handleNotesAccess(user)
 
-  if (!user) throw new Response('User not found', { status: 401 })
+  const noteResponse = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
+    headers: {
+      'x-api-key': process.env.NOTES_API_KEY || '',
+    },
+  })
+  const noteData = await noteResponse.json()
+  if (noteData.user !== user?.id) {
+    throw new Response('Not Found', { status: 404 })
+  }
 
   const { publish } = await request.json()
 

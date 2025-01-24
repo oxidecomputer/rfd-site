@@ -49,6 +49,7 @@ import { isAuthenticated } from '~/services/authn.server'
 import { fetchDiscussion, fetchGroups, fetchRfd, type RfdItem } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
+import { userIsInternal } from '~/utils/rfdApi'
 
 function isValue<T>(item: T | null | undefined): item is T {
   return !!item
@@ -131,7 +132,7 @@ export default function Rfd() {
 
   // This check is merely cosmetic. It hides UI elements that the user does not have access to and
   // which will fail if they try to use
-  const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
+  const isInternal = userIsInternal(user)
 
   const bodyRef = useRef<HTMLDivElement>(null)
   const [activeItem, setActiveItem] = useState('')
@@ -203,7 +204,7 @@ export default function Rfd() {
               <h1 className="w-full pr-4 text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
-              {userIsInternal && (
+              {isInternal && (
                 <div className="print:hidden">
                   <MoreDropdown />
                 </div>

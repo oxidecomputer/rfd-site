@@ -12,6 +12,7 @@ import { type ReactNode } from 'react'
 
 import Icon from '~/components/Icon'
 import { type NoteItem } from '~/routes/notes'
+import { type User } from '~/services/authn.server'
 
 const navLinkStyles = ({ isActive }: { isActive: boolean }) => {
   const activeStyle = isActive
@@ -42,8 +43,17 @@ export const SidebarIcon = () => (
   </svg>
 )
 
+const BackToRfds = () => (
+  <div className="mt-0 flex h-14 items-center border-b px-4 border-secondary">
+    <Link to="/" className="flex items-center gap-2 text-sans-md text-secondary">
+      <Icon name="prev-arrow" size={12} className="text-tertiary" /> Back to RFDs
+    </Link>
+  </div>
+)
+
 interface HandleData {
   notes: NoteItem[]
+  user: User | null
 }
 
 export const Sidebar = () => {
@@ -52,60 +62,74 @@ export const Sidebar = () => {
   const data = matches[1]?.data as HandleData
   const notes = data.notes || undefined
 
+  const isEmpty = !notes || notes.length === 0 || data.user?.authenticator === 'github'
+
+  const publishedNotes = notes ? notes.filter((note) => note.published === true) : []
+  const draftNotes = notes ? notes.filter((note) => note.published === false) : []
+
   return (
-    <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col justify-between space-y-6 border-r pb-4 border-secondary elevation-2 800:elevation-0 print:hidden">
-      <div className="flex flex-col">
-        {notes && (
-          <div className="relative space-y-6 overflow-y-auto overflow-x-hidden pb-8">
-            <div className="mt-0 flex h-14 items-center border-b px-4 border-secondary">
-              <Link to="/" className="flex items-center gap-2 text-sans-md text-secondary">
-                <Icon name="prev-arrow" size={12} className="text-tertiary" /> Back to RFDs
-              </Link>
+    <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col space-y-6 border-r pb-4 border-secondary elevation-2 800:elevation-0 print:hidden">
+      {isEmpty ? (
+        <>
+          <BackToRfds />
+          <div className="flex flex-grow flex-col  justify-between p-4 pb-0">
+            <div className="relative flex flex-col gap-2">
+              <div className="h-4 w-32 rounded bg-tertiary" />
+              <div className="h-4 w-20 rounded bg-tertiary" />
+              <div className="h-4 w-24 rounded bg-tertiary" />
             </div>
-
-            <LinkSection label="Published">
-              {notes.map(
-                (note: NoteItem) =>
-                  note.published === 1 && (
-                    <NavLink
-                      key={note.id}
-                      to={`/notes/${note.id}/edit`}
-                      className={navLinkStyles}
-                    >
-                      <div className="line-clamp-2 text-ellipsis">{note.title}</div>
-                    </NavLink>
-                  ),
-              )}
-            </LinkSection>
-            <Divider />
-            <LinkSection label="Drafts">
-              {notes.map(
-                (note: NoteItem) =>
-                  note.published === 0 && (
-                    <NavLink
-                      key={note.id}
-                      to={`/notes/${note.id}/edit`}
-                      className={navLinkStyles}
-                    >
-                      <div className="line-clamp-2 text-ellipsis">{note.title}</div>
-                    </NavLink>
-                  ),
-              )}
-            </LinkSection>
+            <div className="h-8 w-full rounded bg-tertiary" />
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <>
+          <div className="flex h-full flex-col">
+            <div className="relative space-y-6 overflow-y-auto overflow-x-hidden pb-8">
+              <BackToRfds />
 
-      <div className="flex-shrink-0 px-4">
-        <Link
-          to="/notes/new"
-          className={cn(buttonStyle({ variant: 'secondary', size: 'sm' }), 'w-full')}
-        >
-          <div className="flex items-center gap-1">
-            <Icon name="add-roundel" size={12} className="text-quaternary" /> New
+              {publishedNotes.length > 0 && (
+                <>
+                  <LinkSection label="Published">
+                    {publishedNotes.map((note: NoteItem) => (
+                      <NavLink
+                        key={note.id}
+                        to={`/notes/${note.id}/edit`}
+                        className={navLinkStyles}
+                      >
+                        <div className="line-clamp-2 text-ellipsis">{note.title}</div>
+                      </NavLink>
+                    ))}
+                  </LinkSection>
+                  <Divider />
+                </>
+              )}
+
+              <LinkSection label="Drafts">
+                {draftNotes.map((note: NoteItem) => (
+                  <NavLink
+                    key={note.id}
+                    to={`/notes/${note.id}/edit`}
+                    className={navLinkStyles}
+                  >
+                    <div className="line-clamp-2 text-ellipsis">{note.title}</div>
+                  </NavLink>
+                ))}
+              </LinkSection>
+            </div>
           </div>
-        </Link>
-      </div>
+
+          <div className="flex-shrink-0 px-4">
+            <Link
+              to="/notes/new"
+              className={cn(buttonStyle({ variant: 'secondary', size: 'sm' }), 'w-full')}
+            >
+              <div className="flex items-center gap-1">
+                <Icon name="add-roundel" size={12} className="text-quaternary" /> New
+              </div>
+            </Link>
+          </div>
+        </>
+      )}
     </nav>
   )
 }

@@ -18,4 +18,10 @@ const CustomDocument = ({ document }: { document: DocumentBlock }) => (
   </div>
 )
 
-export { CustomDocument }
+const MinimalDocument = ({ document }: { document: DocumentBlock }) => (
+  <div id="content" className="asciidoc-body max-w-[1040px]">
+    <Content blocks={document.blocks} />
+  </div>
+)
+
+export { CustomDocument, MinimalDocument }

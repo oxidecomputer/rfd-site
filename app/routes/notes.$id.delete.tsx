@@ -7,15 +7,22 @@
  */
 import { json, redirect, type ActionFunction } from '@remix-run/node'
 
-// import { isAuthenticated } from '~/services/authn.server'
+import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 
-export const action: ActionFunction = async ({ params }) => {
-  // const user = await isAuthenticated(request)
-  const user = {
-    id: process.env.NOTES_TEST_USER_ID || '',
+export const action: ActionFunction = async ({ params, request }) => {
+  const user = await isAuthenticated(request)
+  handleNotesAccess(user)
+
+  const noteResponse = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
+    headers: {
+      'x-api-key': process.env.NOTES_API_KEY || '',
+    },
+  })
+  const noteData = await noteResponse.json()
+
+  if (noteData.user !== user?.id) {
+    throw new Response('Not Found', { status: 404 })
   }
-
-  if (!user) throw new Response('User not found', { status: 401 })
 
   const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
     method: 'DELETE',
@@ -25,7 +32,7 @@ export const action: ActionFunction = async ({ params }) => {
   })
 
   if (response.ok) {
-    return redirect(`/notes`)
+    return redirect('/notes')
   } else {
     const result = await response.json()
     return json({ error: result.error }, { status: response.status })

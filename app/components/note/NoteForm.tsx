@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 import { Spinner } from '@oxide/design-system'
-import { Asciidoc, prepareDocument } from '@oxide/react-asciidoc'
+import { Asciidoc, prepareDocument, type Options } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
 import dayjs from 'dayjs'
@@ -18,10 +18,16 @@ import Icon from '~/components/Icon'
 import { useDebounce } from '~/hooks/use-debounce'
 import { ad } from '~/utils/asciidoctor'
 
+import { MinimalDocument } from '../AsciidocBlocks/Document'
 import EditorWrapper from './Editor'
 import { SidebarIcon } from './Sidebar'
 
 type EditorStatus = 'idle' | 'unsaved' | 'saving' | 'saved' | 'error'
+
+const noteOpts: Options = {
+  ...opts,
+  customDocument: MinimalDocument,
+}
 
 export const NoteForm = ({
   id,
@@ -115,17 +121,20 @@ export const NoteForm = ({
   )
 
   const doc = useMemo(() => {
-    return prepareDocument(
-      ad.load(body, {
-        standalone: true,
-      }),
-    )
-  }, [body])
+    const adoc = ad.load(body, {
+      standalone: true,
+      attributes: {
+        sectnums: false,
+      },
+    })
+    adoc.setTitle(title) // use note title as document title
+    return prepareDocument(adoc)
+  }, [title, body])
 
   return (
     <>
       <fetcher.Form method="post" action="/notes/edit">
-        <div className="flex h-14 w-full items-center justify-between border-b px-6 border-b-secondary">
+        <div className="flex h-14 w-full items-center justify-between border-b px-6 pl-4 border-b-secondary">
           <div className="flex items-center gap-2">
             <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
@@ -163,7 +172,7 @@ export const NoteForm = ({
         <div className="flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
           <div
             style={{ width: `${leftPaneWidth}%` }} // Apply dynamic width here
-            className="h-full cursor-text overflow-scroll"
+            className="h-full cursor-text overflow-scroll bg-raise"
           >
             <input type="hidden" name="body" value={body} />
             <input type="hidden" name="published" value={published} />
@@ -187,7 +196,8 @@ export const NoteForm = ({
               width: `calc(${100 - leftPaneWidth}% - 2px)`,
             }}
           >
-            <Asciidoc document={doc} options={opts} />
+            <h1 className="mb-4 text-sans-3xl">{doc.title}</h1>
+            <Asciidoc document={doc} options={noteOpts} />
           </div>
         </div>
       </fetcher.Form>
@@ -233,14 +243,10 @@ const MoreDropdown = ({ id, published }: { id: string; published: 1 | 0 }) => {
 
   const handleDelete = () => {
     if (window.confirm('Are you sure you want to delete this note?')) {
-      fetcher.submit(
-        { id: id },
-        {
-          method: 'post',
-          action: `/notes/${id}/delete`,
-          encType: 'application/x-www-form-urlencoded',
-        },
-      )
+      fetcher.submit(null, {
+        method: 'post',
+        action: `/notes/${id}/delete`,
+      })
     }
   }
 
@@ -269,7 +275,7 @@ const MoreDropdown = ({ id, published }: { id: string; published: 1 | 0 }) => {
       </Dropdown.Trigger>
 
       <DropdownMenu>
-        <DropdownLink to={`/notes/${id}`}>View</DropdownLink>
+        <DropdownLink to={`/note/${id}`}>View</DropdownLink>
         <DropdownItem onSelect={handlePublish}>
           {published ? 'Unpublish' : 'Publish'}
         </DropdownItem>

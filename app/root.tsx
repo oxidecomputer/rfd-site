@@ -21,11 +21,13 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
   useRouteError,
   useRouteLoaderData,
   type ShouldRevalidateFunction,
 } from '@remix-run/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import cn from 'classnames'
 
 import type { Author } from '~/components/rfd/RfdPreview'
 import { auth, isAuthenticated } from '~/services/authn.server'
@@ -111,28 +113,33 @@ export function ErrorBoundary() {
 }
 const queryClient = new QueryClient()
 
-const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => (
-  <html lang="en" className={theme}>
-    <head>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <Meta />
-      <Links />
-      <link rel="icon" href="/favicon.svg" />
-      <link rel="icon" type="image/png" href="/favicon.png" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      {/* Use plausible analytics only on Vercel */}
-      {process.env.NODE_ENV === 'production' && (
-        <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
-      )}
-    </head>
-    <body className="mb-32">
-      {children}
-      <ScrollRestoration />
-      <Scripts />
-    </body>
-  </html>
-)
+const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => {
+  const location = useLocation()
+  const bodyClass = location.pathname.startsWith('/notes') ? 'note' : 'rfd'
+
+  return (
+    <html lang="en" className={theme}>
+      <head>
+        <meta charSet="utf-8" />
+        <meta name="viewport" content="width=device-width,initial-scale=1" />
+        <Meta />
+        <Links />
+        <link rel="icon" href="/favicon.svg" />
+        <link rel="icon" type="image/png" href="/favicon.png" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        {/* Use plausible analytics only on Vercel */}
+        {process.env.NODE_ENV === 'production' && (
+          <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
+        )}
+      </head>
+      <body className={cn('mb-32', bodyClass)}>
+        {children}
+        <ScrollRestoration />
+        <Scripts />
+      </body>
+    </html>
+  )
+}
 
 export default function App() {
   const { theme, isLocalMode } = useLoaderData<typeof loader>()

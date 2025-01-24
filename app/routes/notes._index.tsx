@@ -1,40 +1,28 @@
-/*
- * This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, you can obtain one at https://mozilla.org/MPL/2.0/.
- *
- * Copyright Oxide Computer Company
- */
+import { buttonStyle } from '@oxide/design-system/components/dist'
+import { Link } from '@remix-run/react'
+import cn from 'classnames'
 
-import { redirect, type LoaderFunction } from '@remix-run/node'
+import Icon from '~/components/Icon'
 
-// import { isAuthenticated } from '~/services/authn.server'
+import { EMBody, PlaceholderWrapper } from './notes'
 
-export const loader: LoaderFunction = async () => {
-  // const user = await isAuthenticated(request)
-  const user = {
-    id: process.env.NOTES_TEST_USER_ID || '',
-  }
+export default function Notes() {
+  return (
+    <PlaceholderWrapper>
+      <div className="m-4 flex max-w-[18rem] flex-col items-center text-center">
+        <div className="mb-4 rounded p-2 leading-[0] text-accent bg-accent-secondary">
+          <Icon name="edit" size={16} />
+        </div>
 
-  if (!user) throw new Response('Not authorized', { status: 401 })
-
-  console.log(`${process.env.NOTES_API}/user/${user.id}`)
-
-  const response = await fetch(`${process.env.NOTES_API}/user/${user.id}`, {
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-  if (!response.ok) {
-    throw new Error(`Error fetching: ${response.statusText}`)
-  }
-  const data = await response.json()
-
-  console.log('REDIRECT')
-
-  if (data.length > 0) {
-    return redirect(`/notes/${data[0].id}/edit`)
-  } else {
-    return redirect('/notes/new')
-  }
+        <h3 className="text-sans-semi-lg">Live AsciiDoc Editor</h3>
+        <EMBody className="max-w-lg">Create, edit, and share notes</EMBody>
+        <Link
+          className={cn('mt-6', buttonStyle({ variant: 'ghost', size: 'sm' }))}
+          to="/notes/new"
+        >
+          New Note
+        </Link>
+      </div>
+    </PlaceholderWrapper>
+  )
 }

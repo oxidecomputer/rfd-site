@@ -7,15 +7,12 @@
  */
 import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
 
-// import { isAuthenticated } from '~/services/authn.server'
+import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 
-export const action: ActionFunction = async () => {
-  // const user = await isAuthenticated(request)
-  const user = {
-    id: process.env.NOTES_TEST_USER_ID || '',
-  }
-
-  if (!user) throw new Response('User not found', { status: 401 })
+export const action: ActionFunction = async ({ request }) => {
+  const user = await isAuthenticated(request)
+  const redirectResponse = handleNotesAccess(user)
+  if (redirectResponse) return redirectResponse
 
   const response = await fetch(`${process.env.NOTES_API}/notes`, {
     method: 'POST',
@@ -23,7 +20,7 @@ export const action: ActionFunction = async () => {
       'x-api-key': process.env.NOTES_API_KEY || '',
       'Content-Type': 'application/json; charset=utf-8',
     },
-    body: JSON.stringify({ title: 'Untitled', user: user.id, body: '' }),
+    body: JSON.stringify({ title: 'Untitled', user: user?.id, body: '' }),
   })
 
   const result = await response.json()

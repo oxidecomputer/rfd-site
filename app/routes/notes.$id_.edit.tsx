@@ -6,17 +6,17 @@
  * Copyright Oxide Computer Company
  */
 import { json, type ActionFunction, type LoaderFunction } from '@remix-run/node'
-import { useFetcher, useLoaderData } from '@remix-run/react'
+import { useFetcher, useLoaderData, useOutletContext } from '@remix-run/react'
 import { makePatches, stringifyPatches } from '@sanity/diff-match-patch'
-import cn from 'classnames'
-import { useState } from 'react'
 
 import { NoteForm } from '~/components/note/NoteForm'
-import { Sidebar } from '~/components/note/Sidebar'
+import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 
-// import { isAuthenticated } from '~/services/authn.server'
+export const loader: LoaderFunction = async ({ params: { id }, request }) => {
+  const user = await isAuthenticated(request)
+  const redirectResponse = handleNotesAccess(user)
+  if (redirectResponse) return redirectResponse
 
-export const loader: LoaderFunction = async ({ params: { id } }) => {
   const response = await fetch(`${process.env.NOTES_API}/notes/${id}`, {
     headers: {
       'x-api-key': process.env.NOTES_API_KEY || '',
@@ -26,6 +26,11 @@ export const loader: LoaderFunction = async ({ params: { id } }) => {
     throw new Response('Not Found', { status: 404 })
   }
   const data = await response.json()
+
+  if (data.user !== user?.id) {
+    throw new Response('Not Found', { status: 404 })
+  }
+
   return data
 }
 
@@ -35,11 +40,19 @@ export const action: ActionFunction = async ({ request, params }) => {
     const title = formData.get('title')
     const body = formData.get('body')
 
-    // const user = await isAuthenticated(request)
-    const user = {
-      id: process.env.NOTES_TEST_USER_ID || '',
+    const user = await isAuthenticated(request)
+    handleNotesAccess(user)
+
+    const noteResponse = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
+      headers: {
+        'x-api-key': process.env.NOTES_API_KEY || '',
+      },
+    })
+    const noteData = await noteResponse.json()
+
+    if (noteData.user !== user?.id) {
+      throw new Response('Not Found', { status: 404 })
     }
-    if (!user) throw new Response('User not found', { status: 401 })
 
     const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
       method: 'PUT',
@@ -68,7 +81,10 @@ export default function NoteEdit() {
   const data = useLoaderData<typeof loader>()
   const fetcher = useFetcher<typeof loader>()
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const { sidebarOpen, setSidebarOpen } = useOutletContext<{
+    sidebarOpen: boolean
+    setSidebarOpen: (isOpen: boolean) => void
+  }>()
 
   const handleSave = (title: string, body: string) => {
     const patches = makePatches(data.body, body)
@@ -77,25 +93,17 @@ export default function NoteEdit() {
   }
 
   return (
-    <div
-      className={cn(
-        'purple-theme grid h-[100dvh] overflow-hidden',
-        sidebarOpen ? 'grid-cols-[14.25rem,minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
-      )}
-    >
-      {sidebarOpen && <Sidebar />}
-      <NoteForm
-        id={data.id}
-        key={data.id}
-        initialTitle={data.title}
-        initialBody={data.body}
-        updated={data.updated}
-        published={data.published}
-        onSave={handleSave}
-        sidebarOpen={sidebarOpen}
-        setSidebarOpen={(bool) => setSidebarOpen(bool)}
-        fetcher={fetcher}
-      />
-    </div>
+    <NoteForm
+      id={data.id}
+      key={data.id}
+      initialTitle={data.title}
+      initialBody={data.body}
+      updated={data.updated}
+      published={data.published}
+      onSave={handleSave}
+      sidebarOpen={sidebarOpen}
+      setSidebarOpen={(bool) => setSidebarOpen(bool)}
+      fetcher={fetcher}
+    />
   )
 }

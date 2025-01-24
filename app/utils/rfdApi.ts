@@ -6,6 +6,8 @@
  * Copyright Oxide Computer Company
  */
 
+import { type User } from '~/services/authn.server'
+
 export type RfdScope =
   | 'user:info:r'
   | 'user:info:w'
@@ -79,3 +81,6 @@ export type GroupResponse = {
   updated_at: string
   deleted_at: string
 }
+
+export const userIsInternal = (user: User | null) =>
+  user ? user.groups.some((group) => group === 'oxide-employee') : false

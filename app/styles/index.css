@@ -64,16 +64,11 @@ body {
 }
 
 body.note {
-  @apply m-0;
+  @apply mb-0;
 }
 
-.cm-line {
-  @apply pl-4;
-}
-
-#code_mirror_wrapper .cm-line,
-#code_mirror_wrapper .cm-gutters {
-  @apply !text-[15px] !normal-case !tracking-normal text-mono-md;
+.cm-editor {
+  @apply h-full;
 }
 
 @layer base {
@@ -92,7 +87,7 @@ body.note {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 50ms;
   opacity: 1;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(24px);
 }
 
 /**

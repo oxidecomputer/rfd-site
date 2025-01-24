@@ -5,12 +5,32 @@
  *
  * Copyright Oxide Computer Company
  */
-import { Editor, useMonaco } from '@monaco-editor/react'
-import { shikiToMonaco } from '@shikijs/monaco'
-import { useEffect } from 'react'
-import { getHighlighter } from 'shiki'
+import { EditorView } from '@codemirror/view'
+import { createTheme, type CreateThemeOptions } from '@uiw/codemirror-themes'
+import CodeMirror from '@uiw/react-codemirror'
 
-import theme from './oxide-dark.json'
+const themeSettings: CreateThemeOptions['settings'] = {
+  background: 'var(--surface-raise)',
+  foreground: 'var(--content-default)',
+  caret: 'var(--base-neutral-800)',
+  selection: 'rgba(255, 255, 255, 0.1)',
+  selectionMatch: 'rgba(255, 255, 255, 0.2)',
+  gutterBackground: 'var(--base-neutral-200)',
+  gutterForeground: 'var(--base-neutral-600)',
+  gutterBorder: 'transparent',
+  lineHighlight: 'rgba(255, 255, 255, 0.1)',
+}
+
+export const theme = (options?: Partial<CreateThemeOptions>) => {
+  const { theme = 'dark' } = options || {}
+  return createTheme({
+    theme: theme,
+    settings: {
+      ...themeSettings,
+    },
+    styles: [],
+  })
+}
 
 const EditorWrapper = ({
   body,
@@ -19,42 +39,39 @@ const EditorWrapper = ({
   body: string
   onChange: (string: string | undefined) => void
 }) => {
-  const monaco = useMonaco()
-
-  useEffect(() => {
-    if (!monaco) {
-      return
-    }
-
-    const highlight = async () => {
-      const highlighter = await getHighlighter({
-        themes: [theme],
-        langs: ['asciidoc'],
-      })
-
-      monaco.languages.register({ id: 'asciidoc' })
-      shikiToMonaco(highlighter, monaco)
-    }
-
-    highlight()
-  }, [monaco])
-
   return (
-    <Editor
+    <CodeMirror
       value={body}
       onChange={onChange}
-      theme="oxide-dark"
-      language="asciidoc"
-      options={{
-        minimap: { enabled: false },
-        fontFamily: 'GT America Mono',
-        fontSize: 13,
-        wordWrap: 'on',
-        quickSuggestions: false,
-        suggestOnTriggerCharacters: false,
-        acceptSuggestionOnEnter: 'off',
-        snippetSuggestions: 'none',
+      extensions={[
+        EditorView.theme({
+          '&': {
+            fontSize: '13px',
+            fontFamily: 'GT America Mono',
+          },
+          '.cm-line': {
+            paddingLeft: '12px',
+          },
+          '.cm-content': {
+            paddingTop: '8px',
+            paddingBottom: '8px',
+          },
+        }),
+        EditorView.lineWrapping,
+      ]}
+      theme={theme()}
+      basicSetup={{
+        lineNumbers: true,
+        highlightActiveLine: true,
+        foldGutter: false,
+        dropCursor: true,
+        allowMultipleSelections: true,
+        indentOnInput: true,
+        bracketMatching: true,
+        closeBrackets: true,
+        autocompletion: false,
       }}
+      className="h-full"
     />
   )
 }
