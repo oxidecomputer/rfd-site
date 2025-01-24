@@ -7,7 +7,7 @@
  */
 
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import { Outlet, ShouldRevalidateFunction } from '@remix-run/react'
+import { Outlet, type ShouldRevalidateFunction } from '@remix-run/react'
 import cn from 'classnames'
 import { useState, type ReactNode } from 'react'
 

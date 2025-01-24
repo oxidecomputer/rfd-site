@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, TypedResponse } from '@remix-run/node'
+import { redirect } from '@remix-run/node'
 import { Authenticator } from 'remix-auth'
 
 import { sessionStorage } from '~/services/session.server'
