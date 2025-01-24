@@ -35,7 +35,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
                 <div className="absolute -left-12 -top-[2px] flex flex-shrink-0 items-center justify-center rounded-full px-[4px] py-[2px] !tracking-normal text-mono-xs text-default bg-tertiary">
                   {footnote.index}
                 </div>
-                <div className="text-sans-md text-default">
+                <div className="max-w-800 text-sans-md text-default">
                   <p
                     dangerouslySetInnerHTML={{ __html: footnote.text || '' }}
                     className="inline"
