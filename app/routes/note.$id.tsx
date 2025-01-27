@@ -19,6 +19,7 @@ import { opts } from '~/components/AsciidocBlocks'
 import { MinimalDocument } from '~/components/AsciidocBlocks/Document'
 import Container from '~/components/Container'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
+import { getNote } from '~/services/notes.server'
 import { ad } from '~/utils/asciidoctor'
 
 const noteOpts: Options = {
@@ -31,16 +32,20 @@ export const loader: LoaderFunction = async ({ params: { id }, request }) => {
   const redirectResponse = handleNotesAccess(user)
   if (redirectResponse) return redirectResponse
 
-  const response = await fetch(`${process.env.NOTES_API}/notes/${id}`, {
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-  if (!response.ok) {
+  if (!user || !user.id) {
+    throw new Response('User not Found', { status: 401 })
+  }
+
+  if (!id) {
     throw new Response('Not Found', { status: 404 })
   }
-  const data = await response.json()
-  return data
+
+  const note = await getNote(id)
+  if (!note) {
+    throw new Response('Not Found', { status: 404 })
+  }
+
+  return note
 }
 
 export default function NoteView() {

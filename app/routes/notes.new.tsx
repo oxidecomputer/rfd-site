@@ -5,31 +5,22 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
+import { redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
 
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
+import { addNote } from '~/services/notes.server'
 
 export const action: ActionFunction = async ({ request }) => {
   const user = await isAuthenticated(request)
   const redirectResponse = handleNotesAccess(user)
   if (redirectResponse) return redirectResponse
 
-  const response = await fetch(`${process.env.NOTES_API}/notes`, {
-    method: 'POST',
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify({ title: 'Untitled', user: user?.id, body: '' }),
-  })
-
-  const result = await response.json()
-
-  if (response.ok) {
-    return redirect(`/notes/${result.id}/edit`)
-  } else {
-    return json({ error: result.error }, { status: response.status })
+  if (!user || !user.id) {
+    throw new Response('User not Found', { status: 401 })
   }
+
+  const id = await addNote('Untitled', user.id, '')
+  return redirect(`/notes/${id}/edit`)
 }
 
 export const loader: LoaderFunction = async (args) => {

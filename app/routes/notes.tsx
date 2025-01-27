@@ -13,6 +13,7 @@ import { useState, type ReactNode } from 'react'
 
 import { Sidebar } from '~/components/note/Sidebar'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
+import { listNotes } from '~/services/notes.server'
 import { classed } from '~/utils/classed'
 
 export type NoteItem = {
@@ -52,21 +53,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const redirectResponse = handleNotesAccess(user)
   if (redirectResponse) return redirectResponse
 
-  const response = await fetch(`${process.env.NOTES_API}/user/${user?.id}`, {
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-
-  if (!response.ok) {
-    throw new Error(`Error fetching: ${response.statusText}`)
+  if (!user || !user.id) {
+    throw new Response('User not Found', { status: 401 })
   }
-  const data = await response.json()
 
-  return {
-    notes: data,
-    user,
-  }
+  const notes = await listNotes(user.id)
+  return { notes, user }
 }
 
 export default function Notes() {

@@ -8,36 +8,19 @@
 import { json, type ActionFunction } from '@remix-run/node'
 
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
+import { getNote, updateNotePublished } from '~/services/notes.server'
 
 export const action: ActionFunction = async ({ request, params }) => {
   const user = await isAuthenticated(request)
   handleNotesAccess(user)
 
-  const noteResponse = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-  const noteData = await noteResponse.json()
-  if (noteData.user !== user?.id) {
+  const note = await getNote(params.id!)
+  if (note.user !== user?.id) {
     throw new Response('Not Found', { status: 404 })
   }
 
   const { publish } = await request.json()
+  await updateNotePublished(params.id!, publish)
 
-  const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}/publish`, {
-    method: 'POST',
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-      'Content-Type': 'application/json; charset=utf-8',
-    },
-    body: JSON.stringify({ publish }),
-  })
-
-  if (response.ok) {
-    return json({ status: response.status })
-  } else {
-    const result = await response.json()
-    return json({ error: result.error }, { status: response.status })
-  }
+  return json({ status: 200 })
 }

@@ -11,63 +11,40 @@ import { makePatches, stringifyPatches } from '@sanity/diff-match-patch'
 
 import { NoteForm } from '~/components/note/NoteForm'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
+import { getNote, updateNote } from '~/services/notes.server'
 
 export const loader: LoaderFunction = async ({ params: { id }, request }) => {
   const user = await isAuthenticated(request)
   const redirectResponse = handleNotesAccess(user)
   if (redirectResponse) return redirectResponse
 
-  const response = await fetch(`${process.env.NOTES_API}/notes/${id}`, {
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-  if (!response.ok) {
-    throw new Response('Not Found', { status: 404 })
-  }
-  const data = await response.json()
-
-  if (data.user !== user?.id) {
+  const note = await getNote(id!)
+  if (!note) {
     throw new Response('Not Found', { status: 404 })
   }
 
-  return data
+  if (note.user !== user?.id) {
+    throw new Response('Not Found', { status: 404 })
+  }
+
+  return note
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
   try {
     const formData = await request.formData()
-    const title = formData.get('title')
-    const body = formData.get('body')
+    const title = formData.get('title') as string
+    const body = formData.get('body') as string
 
     const user = await isAuthenticated(request)
     handleNotesAccess(user)
 
-    const noteResponse = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
-      headers: {
-        'x-api-key': process.env.NOTES_API_KEY || '',
-      },
-    })
-    const noteData = await noteResponse.json()
-
-    if (noteData.user !== user?.id) {
+    const note = await getNote(params.id!)
+    if (note.user !== user?.id) {
       throw new Response('Not Found', { status: 404 })
     }
 
-    const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
-      method: 'PUT',
-      headers: {
-        'x-api-key': process.env.NOTES_API_KEY || '',
-        'Content-Type': 'application/json; charset=utf-8',
-      },
-      body: JSON.stringify({ title, body }),
-    })
-
-    if (!response.ok) {
-      const result = await response.json()
-      throw new Response(result.error, { status: response.status })
-    }
-
+    await updateNote(params.id!, title, body)
     return json({ status: 'success', message: 'Note updated successfully' })
   } catch (error) {
     if (error instanceof Response) {

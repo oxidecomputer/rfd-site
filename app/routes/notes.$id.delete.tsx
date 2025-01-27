@@ -5,36 +5,24 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, redirect, type ActionFunction } from '@remix-run/node'
+import { redirect, type ActionFunction } from '@remix-run/node'
 
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
+import { deleteNote, getNote } from '~/services/notes.server'
 
 export const action: ActionFunction = async ({ params, request }) => {
   const user = await isAuthenticated(request)
   handleNotesAccess(user)
 
-  const noteResponse = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-  const noteData = await noteResponse.json()
+  if (!user || !user.id) {
+    throw new Response('User not Found', { status: 401 })
+  }
 
-  if (noteData.user !== user?.id) {
+  const note = await getNote(params.id!)
+  if (note.user !== user?.id) {
     throw new Response('Not Found', { status: 404 })
   }
 
-  const response = await fetch(`${process.env.NOTES_API}/notes/${params.id}`, {
-    method: 'DELETE',
-    headers: {
-      'x-api-key': process.env.NOTES_API_KEY || '',
-    },
-  })
-
-  if (response.ok) {
-    return redirect('/notes')
-  } else {
-    const result = await response.json()
-    return json({ error: result.error }, { status: response.status })
-  }
+  await deleteNote(params.id!)
+  return redirect('/notes')
 }
