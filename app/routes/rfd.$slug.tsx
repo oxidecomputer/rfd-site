@@ -13,18 +13,8 @@ import {
   useIntersectionObserver,
 } from '@oxide/design-system/components/dist'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
-// <<<<<<< HEAD
 import { redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
-// =======
-// import {
-//   defer,
-//   redirect,
-//   type LoaderFunctionArgs,
-//   type MetaFunction,
-// } from '@remix-run/node'
-// import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
-// >>>>>>> main
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import {
