@@ -13,12 +13,7 @@ import {
   useIntersectionObserver,
 } from '@oxide/design-system/components/dist'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
-import {
-  defer,
-  redirect,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-} from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
@@ -46,7 +41,9 @@ import RfdPreview from '~/components/rfd/RfdPreview'
 import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { isAuthenticated } from '~/services/authn.server'
-import { fetchDiscussion, fetchGroups, fetchRfd, type RfdItem } from '~/services/rfd.server'
+import { fetchDiscussion } from '~/services/github-discussion.server'
+import { fetchGroups } from '~/services/rfd.remote.server'
+import { fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
@@ -94,7 +91,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // which groups they are allowed to list. The list returned from the API is
   // then filtered down to include only the groups that provide access to this RFD.
   const groups = (await fetchGroups(user))
-    .filter((group) => can(group.permissions, { k: 'ReadRfd', v: num }))
+    .filter((group) => can(group.permissions, { GetRfd: num }))
     .map((g) => g.name)
 
   // Currently the RFD API does not have a "public" group. Instead the "public"
@@ -105,12 +102,12 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
     groups.unshift('public')
   }
 
-  return defer({
+  return {
     rfd,
     groups,
     // this must not be awaited, it is being deferred
-    discussionPromise: fetchDiscussion(rfd?.discussion_link, user),
-  })
+    discussionPromise: fetchDiscussion(num, rfd?.discussion, user),
+  }
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -125,7 +122,7 @@ export default function Rfd() {
   const { pathname, hash } = useLocation()
 
   const { rfd, groups, discussionPromise } = useLoaderData<typeof loader>()
-  const { number, title, state, authors, labels, commit_date, content } = rfd
+  const { number, title, state, authors, labels, committedAt, content } = rfd
 
   const { user, inlineComments } = useRootLoaderData()
 
@@ -163,22 +160,24 @@ export default function Rfd() {
   )
 
   useEffect(() => {
-    let headings = flattenSections(content.sections)
-      .filter((item) => item.level <= 2)
-      .map((item) => document.getElementById(item.id))
-      .filter(isValue)
+    if (content?.sections) {
+      let headings = flattenSections(content.sections)
+        .filter((item) => item.level <= 2)
+        .map((item) => document.getElementById(item.id))
+        .filter(isValue)
 
-    setSections(headings)
-  }, [content.sections, setSections])
+      setSections(headings)
+    }
+  }, [content?.sections, setSections])
 
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
-  useDelegatedReactRouterLinks(navigate, containerRef, title)
+  useDelegatedReactRouterLinks(navigate, containerRef, title || '')
 
   return (
     <div ref={containerRef}>
       {/* key makes the search dialog close on selection */}
-      <Header currentRfd={rfd as RfdItem} key={pathname + hash} />
+      <Header currentRfd={rfd} key={pathname + hash} />
       <main className="relative mt-12 800:mt-16 print:mt-0">
         {inlineComments && (
           <Suspense fallback={null}>
@@ -189,11 +188,13 @@ export default function Rfd() {
         )}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header mb-12 800:mb-16">
-          <div className="flex 800:col-start-2 1200:col-start-3 print:hidden">
-            <a href={rfd.discussion_link || ''} target="_blank" rel="noreferrer">
-              <StatusBadge label={state} />
-            </a>
-          </div>
+          {state && (
+            <div className="flex 800:col-start-2 1200:col-start-3 print:hidden">
+              <a href={rfd.discussion || ''} target="_blank" rel="noreferrer">
+                <StatusBadge label={state} />
+              </a>
+            </div>
+          )}
 
           <div className="col-span-12 grid grid-cols-12 items-baseline">
             <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 print:hidden">
@@ -213,16 +214,18 @@ export default function Rfd() {
           </div>
         </Container>
         <div className="border-b border-secondary print:m-auto print:max-w-1200 print:rounded-lg print:border">
-          <PropertyRow
-            label="State"
-            className="hidden capitalize print:block print:border-t-0"
-          >
-            {state}
-          </PropertyRow>
+          {state && (
+            <PropertyRow
+              label="State"
+              className="hidden capitalize print:block print:border-t-0"
+            >
+              {state}
+            </PropertyRow>
+          )}
           <PropertyRow label="RFD" className="800:hidden print:hidden">
             {number.toString()}
           </PropertyRow>
-          {authors.length > 0 && (
+          {authors && authors.length > 0 && (
             <PropertyRow label="Authors">
               <div>
                 {authors.map((author, index) => (
@@ -246,7 +249,7 @@ export default function Rfd() {
               </div>
             </PropertyRow>
           )}
-          {labels.length > 0 && (
+          {labels && labels.length > 0 && (
             <PropertyRow label="Labels">
               <div>
                 {labels.map((label, index) => (
@@ -265,7 +268,7 @@ export default function Rfd() {
           )}
           <PropertyRow label="Updated">
             <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
-              {() => <>{dayjs(commit_date).format('MMM D YYYY, h:mm A')}</>}
+              {() => <>{dayjs(committedAt).format('MMM D YYYY, h:mm A')}</>}
             </ClientOnly>
           </PropertyRow>
         </div>
@@ -300,7 +303,7 @@ export default function Rfd() {
 
                     return (
                       <>
-                        {comments && reviews && pullNumber ? (
+                        {title && comments && reviews && pullNumber ? (
                           <RfdDiscussionDialog
                             rfdNumber={number}
                             title={title}
@@ -315,23 +318,27 @@ export default function Rfd() {
                   }}
                 </Await>
               </Suspense>
-              <DesktopOutline
-                toc={content.sections}
-                activeItem={activeItem}
-                className="hidden 1200:block"
-              />
+              {content && (
+                <DesktopOutline
+                  toc={content.sections}
+                  activeItem={activeItem}
+                  className="hidden 1200:block"
+                />
+              )}
             </div>
           </div>
         </Container>
         <Footnotes doc={content as DocumentBlock} />
       </main>
       <div className="fixed inset-x-0 bottom-0 children:mb-0">
-        <SmallScreenOutline
-          toc={content.sections}
-          activeItem={activeItem}
-          className="block 1200:hidden"
-          key={pathname}
-        />
+        {content && (
+          <SmallScreenOutline
+            toc={content.sections}
+            activeItem={activeItem}
+            className="block 1200:hidden"
+            key={pathname}
+          />
+        )}
       </div>
     </div>
   )

@@ -30,7 +30,10 @@ import diff from 'simple-text-diff'
 import Container from '~/components/Container'
 import Icon from '~/components/Icon'
 import useWindowSize from '~/hooks/use-window-size'
-import type { ListReviewsCommentsType, ReviewCommentsType } from '~/services/rfd.server'
+import type {
+  ListReviewsCommentsType,
+  ReviewCommentsType,
+} from '~/services/github-discussion.server'
 
 import { calcOffset } from './RfdPreview'
 
