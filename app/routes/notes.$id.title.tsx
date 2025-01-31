@@ -14,11 +14,13 @@ export const action: ActionFunction = async ({ request, params }) => {
   const user = await isAuthenticated(request)
   handleNotesAccess(user)
 
-  const { publish } = await request.json()
+  const { title } = await request.json()
+
+  console.log(title)
 
   await client.updateRoom(params.id!, {
     metadata: {
-      published: publish,
+      title,
       updated: new Date().toISOString(),
     },
   })

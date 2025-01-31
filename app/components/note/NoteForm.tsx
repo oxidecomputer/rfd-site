@@ -5,24 +5,24 @@
  *
  * Copyright Oxide Computer Company
  */
+import { useSyncStatus } from '@liveblocks/react/suspense'
 import { Spinner } from '@oxide/design-system'
 import { Asciidoc, prepareDocument, type Options } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
-import dayjs from 'dayjs'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { opts } from '~/components/AsciidocBlocks'
-import { DropdownItem, DropdownLink, DropdownMenu } from '~/components/Dropdown'
+import { DropdownItem, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
 import { useDebounce } from '~/hooks/use-debounce'
 import { ad } from '~/utils/asciidoctor'
 
 import { MinimalDocument } from '../AsciidocBlocks/Document'
+import { Avatars } from './Avatar'
 import EditorWrapper from './Editor'
+import RoomErrors from './RoomErrors'
 import { SidebarIcon } from './Sidebar'
-
-type EditorStatus = 'idle' | 'unsaved' | 'saving' | 'saved' | 'error'
 
 const noteOpts: Options = {
   ...opts,
@@ -30,68 +30,43 @@ const noteOpts: Options = {
 }
 
 export const NoteForm = ({
+  userName,
   id,
   initialTitle = '',
-  initialBody = '',
-  updated,
+  isOwner,
   published,
-  onSave,
-  fetcher,
   sidebarOpen,
   setSidebarOpen,
 }: {
+  userName: string
   id: string
   initialTitle?: string
-  initialBody?: string
-  updated: string
-  published: 1 | 0
-  onSave: (title: string, body: string) => void
-  fetcher: any
+  isOwner: boolean
+  published: 'true' | 'false'
   sidebarOpen: boolean
   setSidebarOpen: (bool: boolean) => void
 }) => {
-  const [status, setStatus] = useState<EditorStatus>('idle')
-  const [body, setBody] = useState(initialBody)
   const [title, setTitle] = useState(initialTitle)
+  const [body, setBody] = useState('')
 
-  const debouncedBody = useDebounce(body, 750)
   const debouncedTitle = useDebounce(title, 750)
 
+  const prevTitle = useRef(debouncedTitle)
+  const { submit } = useFetcher()
+
   useEffect(() => {
-    const hasChanges = body !== initialBody || title !== initialTitle
-
-    const hasError = fetcher.data?.status === 'error'
-
-    if (hasError && status !== 'error') {
-      setStatus('error')
+    if (prevTitle.current !== debouncedTitle) {
+      submit(
+        { title: debouncedTitle },
+        {
+          method: 'post',
+          action: `/notes/${id}/title`,
+          encType: 'application/json',
+        },
+      )
+      prevTitle.current = debouncedTitle
     }
-
-    const isSaving = fetcher.state === 'submitting'
-    const isSaved = fetcher.state === 'idle' && status === 'saving'
-
-    if (!hasChanges && (isSaving || isSaved)) {
-      if (isSaving) {
-        setStatus('saving')
-      } else if (isSaved) {
-        setStatus('saved')
-      }
-    }
-
-    if (debouncedBody === body && debouncedTitle === title && status === 'unsaved') {
-      onSave(title, body)
-      setStatus('saving')
-    }
-  }, [
-    body,
-    title,
-    initialBody,
-    initialTitle,
-    debouncedBody,
-    debouncedTitle,
-    fetcher,
-    status,
-    onSave,
-  ])
+  }, [debouncedTitle, id, submit])
 
   // Handle window resizing
   const [leftPaneWidth, setLeftPaneWidth] = useState(50) // Initial width in percentage
@@ -132,80 +107,73 @@ export const NoteForm = ({
   }, [title, body])
 
   return (
-    <>
-      <fetcher.Form method="post" action="/notes/edit">
-        <div className="flex h-14 w-full items-center justify-between border-b px-6 pl-4 border-b-secondary">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="-m-2 -mr-1 rounded p-2 hover:bg-hover"
-              type="button"
-            >
-              <SidebarIcon />
-            </button>
-            <div className="relative w-[min-content] min-w-[1em] rounded px-2 py-1 hover:ring-1 hover:ring-default">
-              <span className="invisible whitespace-pre text-sans-xl ">
-                {title ? title : 'Title...'}
-              </span>
-              <input
-                value={title}
-                onChange={(el) => {
-                  setStatus('unsaved')
-                  setTitle(el.target.value)
-                }}
-                name="title"
-                placeholder="Title..."
-                required
-                className="absolute left-1 w-full bg-transparent p-0 text-sans-xl text-raise placeholder:text-tertiary focus:outline-none"
-              />
-            </div>
-
-            <MoreDropdown id={id} published={published} />
-
-            {fetcher.data?.status === 'error' && (
-              <div className="text-sans-md text-error">{fetcher.data.error}</div>
-            )}
-          </div>
-
-          <SavingIndicator status={status} updated={updated} />
-        </div>
-        <div className="flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
-          <div
-            style={{ width: `${leftPaneWidth}%` }} // Apply dynamic width here
-            className="h-full cursor-text overflow-scroll bg-raise"
+    <div>
+      <div className="flex h-14 w-full items-center justify-between border-b px-4 border-b-secondary">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="-m-2 -mr-1 rounded p-2 hover:bg-hover"
+            type="button"
           >
-            <input type="hidden" name="body" value={body} />
-            <input type="hidden" name="published" value={published} />
-            <EditorWrapper
-              body={body}
-              onChange={(val) => {
-                setStatus('unsaved')
-                setBody(val || '')
+            <SidebarIcon />
+          </button>
+          <div className="relative w-[min-content] min-w-[1em] rounded px-2 py-1 hover:ring-1 hover:ring-default">
+            <span className="invisible whitespace-pre text-sans-xl ">
+              {title ? title : 'Title...'}
+            </span>
+            <input
+              value={title}
+              onChange={(el) => {
+                setTitle(el.target.value)
               }}
+              name="title"
+              placeholder="Title..."
+              required
+              className="absolute left-1 w-full bg-transparent p-0 text-sans-xl text-raise placeholder:text-tertiary focus:outline-none"
             />
           </div>
-          <div
-            onMouseDown={handleMouseDown}
-            className="flex w-4 cursor-col-resize items-center bg-transparent"
-          >
-            <div className="h-full w-px border-r border-secondary" />
-          </div>
-          <div
-            className="h-full overflow-scroll px-4 py-6"
-            style={{
-              width: `calc(${100 - leftPaneWidth}% - 2px)`,
-            }}
-          >
-            <h1 className="mb-4 text-sans-3xl">{doc.title}</h1>
-            <Asciidoc document={doc} options={noteOpts} />
-          </div>
+
+          {isOwner && <MoreDropdown id={id} published={published} />}
+
+          {/* todo: Handle errors visibly not just console */}
+          <RoomErrors />
         </div>
-      </fetcher.Form>
-    </>
+
+        <div className="flex gap-2">
+          <Avatars />
+          <SavingIndicator />
+        </div>
+      </div>
+      <div className="flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
+        <div
+          style={{ width: `${leftPaneWidth}%` }} // Apply dynamic width here
+          className="h-full cursor-text overflow-scroll bg-raise"
+        >
+          <input type="hidden" name="body" value={body} />
+          <input type="hidden" name="published" value={published} />
+          <EditorWrapper userName={userName} onUpdate={setBody} />
+        </div>
+        <div
+          onMouseDown={handleMouseDown}
+          className="flex w-4 cursor-col-resize items-center bg-transparent"
+        >
+          <div className="h-full w-px border-r border-secondary" />
+        </div>
+        <div
+          className="h-full overflow-scroll px-4 py-6"
+          style={{
+            width: `calc(${100 - leftPaneWidth}% - 2px)`,
+          }}
+        >
+          <h1 className="mb-4 text-sans-3xl">{doc.title}</h1>
+          <Asciidoc document={doc} options={noteOpts} />
+        </div>
+      </div>
+    </div>
   )
 }
 
-const TypingIndicator = () => (
+export const TypingIndicator = () => (
   <div className="typing-indicator">
     <span></span>
     <span></span>
@@ -213,17 +181,20 @@ const TypingIndicator = () => (
   </div>
 )
 
-const SavingIndicator = ({
-  status,
-  updated,
-}: {
-  status: EditorStatus
-  updated: string
-}) => {
+const SavingIndicator = () => {
+  const syncStatus = useSyncStatus({ smooth: true })
+
   return (
     <div className="flex items-center gap-2 text-sans-md text-tertiary">
-      {dayjs(updated).format('MMM D YYYY, h:mm A')}
-      {status === 'unsaved' ? (
+      <div>
+        {syncStatus === 'synchronized' ? (
+          <Icon name="success" size={12} className="text-accent" />
+        ) : (
+          <Spinner />
+        )}
+      </div>
+
+      {/* {status === 'unsaved' ? (
         <TypingIndicator />
       ) : status === 'error' ? (
         <Icon name="error" size={12} className="text-error" />
@@ -233,12 +204,12 @@ const SavingIndicator = ({
         <Spinner />
       ) : (
         <Icon name="success" size={12} className="text-tertiary" />
-      )}
+      )} */}
     </div>
   )
 }
 
-const MoreDropdown = ({ id, published }: { id: string; published: 1 | 0 }) => {
+const MoreDropdown = ({ id, published }: { id: string; published: 'true' | 'false' }) => {
   const fetcher = useFetcher()
 
   const handleDelete = () => {
@@ -251,14 +222,14 @@ const MoreDropdown = ({ id, published }: { id: string; published: 1 | 0 }) => {
   }
 
   const handlePublish = async () => {
-    const isPublished = published === 1
+    const isPublished = published === 'true'
     const confirmationMessage = isPublished
       ? 'Are you sure you want to unpublish this note?'
       : 'Are you sure you want to publish this note?'
 
     if (window.confirm(confirmationMessage)) {
       fetcher.submit(
-        { publish: isPublished ? 0 : 1 },
+        { publish: isPublished ? 'false' : 'true' },
         {
           method: 'post',
           action: `/notes/${id}/publish`,
@@ -275,9 +246,8 @@ const MoreDropdown = ({ id, published }: { id: string; published: 1 | 0 }) => {
       </Dropdown.Trigger>
 
       <DropdownMenu>
-        <DropdownLink to={`/note/${id}`}>View</DropdownLink>
         <DropdownItem onSelect={handlePublish}>
-          {published ? 'Unpublish' : 'Publish'}
+          {published === 'true' ? 'Unpublish' : 'Publish'}
         </DropdownItem>
         <DropdownItem className="text-error" onSelect={handleDelete}>
           Delete

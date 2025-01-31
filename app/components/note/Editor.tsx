@@ -5,9 +5,16 @@
  *
  * Copyright Oxide Computer Company
  */
-import { EditorView } from '@codemirror/view'
+import { EditorState } from '@codemirror/state'
+import { useRoom } from '@liveblocks/react/suspense'
+import { LiveblocksYjsProvider } from '@liveblocks/yjs'
 import { createTheme, type CreateThemeOptions } from '@uiw/codemirror-themes'
-import CodeMirror from '@uiw/react-codemirror'
+import { basicSetup, EditorView } from 'codemirror'
+import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react'
+import { yCollab } from 'y-codemirror.next'
+import * as Y from 'yjs'
+
+import { getPresenceColor } from './Presence'
 
 const themeSettings: CreateThemeOptions['settings'] = {
   background: 'var(--surface-raise)',
@@ -33,47 +40,69 @@ export const theme = (options?: Partial<CreateThemeOptions>) => {
 }
 
 const EditorWrapper = ({
-  body,
-  onChange,
+  userName,
+  onUpdate,
 }: {
-  body: string
-  onChange: (string: string | undefined) => void
+  userName: string
+  onUpdate: Dispatch<SetStateAction<string>>
 }) => {
-  return (
-    <CodeMirror
-      value={body}
-      onChange={onChange}
-      extensions={[
-        EditorView.theme({
-          '&': {
-            fontSize: '13px',
-            fontFamily: 'GT America Mono',
-          },
-          '.cm-line': {
-            paddingLeft: '12px',
-          },
-          '.cm-content': {
-            paddingTop: '8px',
-            paddingBottom: '8px',
-          },
-        }),
+  const room = useRoom()
+  const [element, setElement] = useState<HTMLElement>()
+
+  const ref = useCallback((node: HTMLElement | null) => {
+    if (!node) return
+    setElement(node)
+  }, [])
+
+  useEffect(() => {
+    let provider: LiveblocksYjsProvider<any, any, any, any>
+    let ydoc: Y.Doc
+    let view: EditorView
+
+    if (!element || !room) {
+      return
+    }
+
+    ydoc = new Y.Doc()
+    provider = new LiveblocksYjsProvider(room as any, ydoc)
+    const ytext = ydoc.getText('codemirror')
+    const undoManager = new Y.UndoManager(ytext)
+
+    const { fg } = getPresenceColor(userName)
+
+    provider.awareness.setLocalStateField('user', {
+      name: userName,
+      color: fg,
+    })
+
+    const state = EditorState.create({
+      doc: ytext.toString(),
+      extensions: [
+        basicSetup,
+        yCollab(ytext, provider.awareness, { undoManager }),
+        theme(),
         EditorView.lineWrapping,
-      ]}
-      theme={theme()}
-      basicSetup={{
-        lineNumbers: true,
-        highlightActiveLine: true,
-        foldGutter: false,
-        dropCursor: true,
-        allowMultipleSelections: true,
-        indentOnInput: true,
-        bracketMatching: true,
-        closeBrackets: true,
-        autocompletion: false,
-      }}
-      className="h-full"
-    />
-  )
+        EditorView.updateListener.of((update) => {
+          if (update.docChanged) {
+            onUpdate(update.state.doc.toString())
+          }
+        }),
+      ],
+    })
+
+    view = new EditorView({
+      state,
+      parent: element,
+    })
+
+    return () => {
+      ydoc?.destroy()
+      provider?.destroy()
+      view?.destroy()
+    }
+  }, [element, room, onUpdate, userName])
+
+  return <div ref={ref} className="h-full" />
 }
 
 export default EditorWrapper

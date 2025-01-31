@@ -11,7 +11,6 @@ import cn from 'classnames'
 import { type ReactNode } from 'react'
 
 import Icon from '~/components/Icon'
-import { type NoteItem } from '~/routes/notes'
 import { type User } from '~/services/authn.server'
 
 const navLinkStyles = ({ isActive }: { isActive: boolean }) => {
@@ -52,20 +51,29 @@ const BackToRfds = () => (
 )
 
 interface HandleData {
-  notes: NoteItem[]
+  notes: {
+    id: string
+    metadata: {
+      title: string
+      published: string
+    }
+  }[]
   user: User | null
 }
 
 export const Sidebar = () => {
   const matches = useMatches()
-
   const data = matches[1]?.data as HandleData
-  const notes = data.notes || undefined
+  const notes = data?.notes
 
   const isEmpty = !notes || notes.length === 0 || data.user?.authenticator === 'github'
 
-  const publishedNotes = notes ? notes.filter((note) => note.published === true) : []
-  const draftNotes = notes ? notes.filter((note) => note.published === false) : []
+  const publishedNotes = notes
+    ? notes.filter((note) => note.metadata.published === 'true')
+    : []
+  const draftNotes = notes
+    ? notes.filter((note) => note.metadata.published === 'false')
+    : []
 
   return (
     <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col space-y-6 border-r pb-4 border-secondary elevation-2 800:elevation-0 print:hidden">
@@ -90,13 +98,15 @@ export const Sidebar = () => {
               {publishedNotes.length > 0 && (
                 <>
                   <LinkSection label="Published">
-                    {publishedNotes.map((note: NoteItem) => (
+                    {publishedNotes.map((note) => (
                       <NavLink
                         key={note.id}
                         to={`/notes/${note.id}/edit`}
                         className={navLinkStyles}
                       >
-                        <div className="line-clamp-2 text-ellipsis">{note.title}</div>
+                        <div className="line-clamp-2 text-ellipsis">
+                          {note.metadata.title}
+                        </div>
                       </NavLink>
                     ))}
                   </LinkSection>
@@ -105,13 +115,13 @@ export const Sidebar = () => {
               )}
 
               <LinkSection label="Drafts">
-                {draftNotes.map((note: NoteItem) => (
+                {draftNotes.map((note) => (
                   <NavLink
                     key={note.id}
                     to={`/notes/${note.id}/edit`}
                     className={navLinkStyles}
                   >
-                    <div className="line-clamp-2 text-ellipsis">{note.title}</div>
+                    <div className="line-clamp-2 text-ellipsis">{note.metadata.title}</div>{' '}
                   </NavLink>
                 ))}
               </LinkSection>

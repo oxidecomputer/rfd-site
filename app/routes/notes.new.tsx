@@ -19,7 +19,7 @@ export const action: ActionFunction = async ({ request }) => {
     throw new Response('User not Found', { status: 401 })
   }
 
-  const id = await addNote('Untitled', user.id, '')
+  const id = await addNote('Untitled', user.id)
   return redirect(`/notes/${id}/edit`)
 }
 

@@ -161,3 +161,27 @@ input[type='checkbox']:focus:not(:focus-visible) {
     transform: translateY(-4px);
   }
 }
+
+.cm-editor {
+  font-size: 13px;
+  font-family: 'GT America Mono';
+}
+
+.cm-line {
+  padding-left: 12px;
+}
+
+.cm-content {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.cm-editor .cm-ySelectionInfo {
+  @apply pointer-events-none absolute -left-px -top-[1.4em] z-[1000] select-none whitespace-nowrap rounded px-0.5 py-px opacity-100 text-sans-md;
+  color: var(--base-purple-200);
+  border-bottom-left-radius: 0;
+}
+
+.cm-editor .cm-ySelectionCaretDot {
+  @apply hidden;
+}

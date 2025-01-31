@@ -5,36 +5,40 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, type ActionFunction, type LoaderFunction } from '@remix-run/node'
-import { useFetcher, useLoaderData, useOutletContext } from '@remix-run/react'
-import { makePatches, stringifyPatches } from '@sanity/diff-match-patch'
+import {
+  ClientSideSuspense,
+  LiveblocksProvider,
+  RoomProvider,
+} from '@liveblocks/react/suspense'
+import { json, type ActionFunction, type LoaderFunctionArgs } from '@remix-run/node'
+import { useLoaderData, useOutletContext } from '@remix-run/react'
 
-import { NoteForm } from '~/components/note/NoteForm'
+import { NoteForm, TypingIndicator } from '~/components/note/NoteForm'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 import { getNote, updateNote } from '~/services/notes.server'
 
-export const loader: LoaderFunction = async ({ params: { id }, request }) => {
-  const user = await isAuthenticated(request)
-  const redirectResponse = handleNotesAccess(user)
-  if (redirectResponse) return redirectResponse
+import { PlaceholderWrapper } from './notes'
 
-  const note = await getNote(id!)
-  if (!note) {
+export const loader = async ({ params: { id }, request }: LoaderFunctionArgs) => {
+  const user = await isAuthenticated(request)
+
+  if (!id) {
     throw new Response('Not Found', { status: 404 })
   }
+
+  const note = await getNote(id)
 
   if (note.user !== user?.id) {
     throw new Response('Not Found', { status: 404 })
   }
 
-  return note
+  return { user, note }
 }
 
 export const action: ActionFunction = async ({ request, params }) => {
   try {
     const formData = await request.formData()
     const title = formData.get('title') as string
-    const body = formData.get('body') as string
 
     const user = await isAuthenticated(request)
     handleNotesAccess(user)
@@ -44,7 +48,7 @@ export const action: ActionFunction = async ({ request, params }) => {
       throw new Response('Not Found', { status: 404 })
     }
 
-    await updateNote(params.id!, title, body)
+    await updateNote(params.id!, title, note.published)
     return json({ status: 'success', message: 'Note updated successfully' })
   } catch (error) {
     if (error instanceof Response) {
@@ -54,33 +58,42 @@ export const action: ActionFunction = async ({ request, params }) => {
   }
 }
 
+export type Presence = {
+  cursor: { x: number; y: number } | null
+  name: string
+  userId: string
+}
+
 export default function NoteEdit() {
-  const data = useLoaderData<typeof loader>()
-  const fetcher = useFetcher<typeof loader>()
+  const { user, note } = useLoaderData<typeof loader>()
 
   const { sidebarOpen, setSidebarOpen } = useOutletContext<{
     sidebarOpen: boolean
     setSidebarOpen: (isOpen: boolean) => void
   }>()
 
-  const handleSave = (title: string, body: string) => {
-    const patches = makePatches(data.body, body)
-
-    fetcher.submit({ title, body: stringifyPatches(patches) }, { method: 'post' })
-  }
-
   return (
-    <NoteForm
-      id={data.id}
-      key={data.id}
-      initialTitle={data.title}
-      initialBody={data.body}
-      updated={data.updated}
-      published={data.published}
-      onSave={handleSave}
-      sidebarOpen={sidebarOpen}
-      setSidebarOpen={(bool) => setSidebarOpen(bool)}
-      fetcher={fetcher}
-    />
+    <LiveblocksProvider authEndpoint="/notes/liveblocks-auth">
+      <RoomProvider id={note.id}>
+        <ClientSideSuspense
+          fallback={
+            <PlaceholderWrapper>
+              <TypingIndicator />
+            </PlaceholderWrapper>
+          }
+        >
+          <NoteForm
+            id={note.id}
+            userName={user.displayName || 'Unknown'}
+            isOwner={note.user === user.id}
+            initialTitle={note.title}
+            published={note.published}
+            key={note.id}
+            sidebarOpen={sidebarOpen}
+            setSidebarOpen={(bool) => setSidebarOpen(bool)}
+          />
+        </ClientSideSuspense>
+      </RoomProvider>
+    </LiveblocksProvider>
   )
 }

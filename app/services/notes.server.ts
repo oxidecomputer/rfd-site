@@ -5,104 +5,75 @@
  *
  * Copyright Oxide Computer Company
  */
-import { applyPatches, parsePatch } from '@sanity/diff-match-patch'
-import { createClient } from '@supabase/supabase-js'
+import { Liveblocks } from '@liveblocks/node'
 import { nanoid } from 'nanoid'
-import z from 'zod'
 
-const supabase = createClient(process.env.SUPABASE_URL!, process.env.SUPABASE_ANON_KEY!)
-
-const noteCreateSchema = z.object({
-  title: z.string().min(1, 'Title must not be empty'),
-  user: z.string().min(3, 'User must not be empty'),
+export const client = new Liveblocks({
+  secret: process.env.LIVEBLOCKS_KEY || '',
 })
 
-const noteUpdateSchema = z.object({
-  title: z.string().min(1, 'Title must not be empty'),
-})
+type RoomMetadata = {
+  title: string
+  user: string
+  created: string
+  published: 'true' | 'false'
+}
 
-export const addNote = async (title: string, user: string, body: string) => {
-  const validationResult = noteCreateSchema.safeParse({ title, user })
-  if (!validationResult.success) {
-    throw new Error(`Validation failed: ${validationResult.error.message}`)
+declare module '@liveblocks/node' {
+  interface BaseMetadata extends RoomMetadata {}
+}
+
+export const getNote = async (id: string): Promise<RoomMetadata & { id: string }> => {
+  const room = await client.getRoom(id)
+  if (!room) {
+    throw new Error('Note not found')
   }
+  return {
+    id,
+    ...(room.metadata as RoomMetadata),
+  }
+}
 
+export const addNote = async (title: string, user: string) => {
   const id = nanoid(6)
   const created = new Date().toISOString()
-  const updated = created
 
-  const { error } = await supabase.from('rfd-notes').insert({
-    id,
-    title,
-    created,
-    updated,
-    user,
-    body,
-    published: false,
+  await client.createRoom(id, {
+    defaultAccesses: [],
+    usersAccesses: {
+      [`${user}`]: ['room:write'],
+    },
+    groupsAccesses: {
+      employee: ['room:write'],
+    },
+    metadata: {
+      title,
+      user,
+      created,
+      published: 'false',
+    },
   })
 
-  if (error) throw error
   return id
 }
 
-export const getNote = async (id: string) => {
-  const { data, error } = await supabase.from('rfd-notes').select().eq('id', id).single()
-
-  if (error) throw error
-  return data
-}
-
-export const updateNote = async (id: string, title: string, body: string) => {
-  const validationResult = noteUpdateSchema.safeParse({ title })
-  if (!validationResult.success) {
-    throw new Error(`Validation failed: ${validationResult.error.message}`)
-  }
-
-  const currentNote = await getNote(id)
-  if (!currentNote) {
-    throw new Error('Note not found')
-  }
-
-  const [newBody] = applyPatches(parsePatch(body), currentNote.body)
-  const updated = new Date().toISOString()
-
-  const { error } = await supabase
-    .from('rfd-notes')
-    .update({ title, updated, body: newBody })
-    .eq('id', id)
-
-  if (error) throw error
-}
-
-export const updateNotePublished = async (id: string, publish: boolean) => {
-  const { error } = await supabase
-    .from('rfd-notes')
-    .update({ published: publish })
-    .eq('id', id)
-
-  if (error) throw error
-}
-
-export const deleteNote = async (id: string) => {
-  const { error } = await supabase.from('rfd-notes').delete().eq('id', id)
-
-  if (error) throw error
+export const updateNote = async (id: string, title: string, published: string) => {
+  await client.updateRoom(id, {
+    metadata: {
+      title,
+      published,
+    },
+  })
 }
 
 export const listNotes = async (userId: string) => {
-  const { data, error } = await supabase.from('rfd-notes').select().eq('user', userId)
+  const { data } = await client.getRooms({
+    query: {
+      metadata: {
+        user: userId,
+      },
+    },
+  })
 
-  if (error) throw error
-
-  return data.map((note) => ({
-    ...note,
-    body: note.body.split('\n').slice(0, 20).join('\n'),
-  }))
-}
-
-export const listAllNotes = async () => {
-  const { data, error } = await supabase.from('rfd-notes').select()
-
-  if (error) throw error
   return data
 }
