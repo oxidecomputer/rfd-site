@@ -24,10 +24,6 @@ export default defineConfig({
     port: 3000,
   },
   ssr: {
-    noExternal: [
-      '@uiw/react-codemirror',
-      '@uiw/codemirror-extensions-basic-setup',
-      '@uiw/codemirror-themes',
-    ],
+    noExternal: ['@uiw/codemirror-themes'],
   },
 })
