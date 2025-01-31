@@ -16,6 +16,7 @@ import { useLoaderData, useOutletContext } from '@remix-run/react'
 import { NoteForm, TypingIndicator } from '~/components/note/NoteForm'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 import { getNote, updateNote } from '~/services/notes.server'
+import { userIsInternal } from '~/utils/rfdApi'
 
 import { PlaceholderWrapper } from './notes'
 
@@ -28,11 +29,11 @@ export const loader = async ({ params: { id }, request }: LoaderFunctionArgs) =>
 
   const note = await getNote(id)
 
-  if (note.user !== user?.id) {
+  if (note.published && userIsInternal(user)) {
+    return { user, note }
+  } else if (note.user !== user?.id) {
     throw new Response('Not Found', { status: 404 })
   }
-
-  return { user, note }
 }
 
 export const action: ActionFunction = async ({ request, params }) => {

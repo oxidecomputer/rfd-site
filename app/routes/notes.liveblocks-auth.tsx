@@ -20,10 +20,12 @@ export const action: ActionFunction = async ({ request }) => {
 
   const isInternal = userIsInternal(user)
 
+  // probably shouldn't check the perms in both places
+  // todo: clean up auth
   const { status, body } = await client.identifyUser(
     {
       userId: user.id,
-      groupIds: isInternal ? ['internal'] : [],
+      groupIds: isInternal ? ['employee'] : [],
     },
     { userInfo: { name: user.displayName || user.email || '' } },
   )
