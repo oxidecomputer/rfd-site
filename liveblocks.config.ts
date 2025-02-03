@@ -26,4 +26,4 @@ declare global {
   }
 }
 
-export {}
+export type LiveblocksStorage = Liveblocks['Storage']
