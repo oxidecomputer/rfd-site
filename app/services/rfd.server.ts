@@ -12,7 +12,7 @@ import type { RfdWithoutContent, RfdWithRaw } from '@oxide/rfd.ts/client'
 
 import { ad, attrs } from '~/utils/asciidoctor'
 
-import type { User } from './authn.server'
+import { type User } from './authn.server'
 import {
   fetchLocalRfd,
   fetchLocalRfds,
@@ -94,6 +94,10 @@ export const getAuthors = (rfds: RfdListItem[]): Author[] => {
         const found = authors.find(
           (el) => el.email === author.email || el.name === author.name,
         )
+
+        if (!found) {
+          authors.push(author)
+        }
       }
     }
   }
