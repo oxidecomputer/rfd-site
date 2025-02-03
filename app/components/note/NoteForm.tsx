@@ -104,7 +104,7 @@ export const NoteForm = ({
           >
             <SidebarIcon />
           </button>
-          <div className="relative w-[min-content] min-w-[1em] rounded px-2 py-1 hover:ring-1 hover:ring-default">
+          <div className="relative w-[min-content] min-w-[1em] rounded px-2 py-1 ring-accent-secondary outline-default focus-within:outline focus-within:ring-2 hover:outline">
             <span className="invisible whitespace-pre text-sans-xl ">
               {title ? title : 'Title...'}
             </span>
