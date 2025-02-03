@@ -7,19 +7,13 @@
  */
 
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import {
-  isRouteErrorResponse,
-  Outlet,
-  useRouteError,
-  type ShouldRevalidateFunction,
-} from '@remix-run/react'
+import { isRouteErrorResponse, Outlet, useRouteError } from '@remix-run/react'
 import cn from 'classnames'
 import { useState, type ReactNode } from 'react'
 
 import { ErrorPage } from '~/components/ErrorPage'
 import { Sidebar } from '~/components/note/Sidebar'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
-import { listNotes } from '~/services/notes.server'
 import { classed } from '~/utils/classed'
 
 export type NoteItem = {
@@ -35,22 +29,6 @@ export type NoteItem = {
 export type NotesOutletContext = {
   sidebarOpen: boolean
   setSidebarOpen: (isOpen: boolean) => void
-}
-
-export const shouldRevalidate: ShouldRevalidateFunction = ({
-  formAction,
-  defaultShouldRevalidate,
-}) => {
-  // Always revalidate when creating, editing, or deleting notes
-  if (
-    formAction?.includes('/notes/new') ||
-    formAction?.includes('/notes/delete') ||
-    formAction?.includes('/notes/publish')
-  ) {
-    return true
-  }
-
-  return defaultShouldRevalidate
 }
 
 export function ErrorBoundary() {
@@ -84,8 +62,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     throw new Response('User not Found', { status: 401 })
   }
 
-  const notes = await listNotes(user.id)
-  return { notes, user }
+  return { user }
 }
 
 export default function Notes() {

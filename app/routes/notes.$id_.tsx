@@ -53,7 +53,7 @@ export type Presence = {
 }
 
 export const initialStorage = {
-  meta: new LiveObject({ title: 'Untitled Note', lastUpdated: new Date().toISOString() }),
+  meta: new LiveObject({ title: 'Untitled', lastUpdated: new Date().toISOString() }),
 }
 
 export default function NoteEdit() {

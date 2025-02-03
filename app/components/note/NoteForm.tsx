@@ -10,6 +10,7 @@ import { Spinner } from '@oxide/design-system'
 import { Asciidoc, prepareDocument, type Options } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
+import { useQueryClient, type QueryClient } from '@tanstack/react-query'
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
 
@@ -28,6 +29,28 @@ const noteOpts: Options = {
   ...opts,
   customDocument: MinimalDocument,
 }
+
+function debounce<T extends (...args: any[]) => any>(
+  func: T,
+  wait: number,
+): (...args: Parameters<T>) => void {
+  let timeout: NodeJS.Timeout | null = null
+
+  return (...args: Parameters<T>) => {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+
+    timeout = setTimeout(() => {
+      func(...args)
+    }, wait)
+  }
+}
+
+// debouncing the invalidate when the title changes
+export const invalidateNotes = debounce((queryClient: QueryClient) => {
+  queryClient.invalidateQueries({ queryKey: ['notesList'] })
+}, 500)
 
 export const NoteForm = ({
   userId,
@@ -48,9 +71,11 @@ export const NoteForm = ({
 }) => {
   const title = useStorage((root) => root.meta.title)
   const lastUpdated = useStorage((root) => root.meta.lastUpdated)
+  const queryClient = useQueryClient()
 
   const handleChange = useMutation(({ storage }, e: ChangeEvent<HTMLInputElement>) => {
     storage.get('meta').set('title', e.target.value)
+    invalidateNotes(queryClient)
   }, [])
 
   const [body, setBody] = useState('')

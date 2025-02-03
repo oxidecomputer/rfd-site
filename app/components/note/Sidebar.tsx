@@ -6,12 +6,32 @@
  * Copyright Oxide Computer Company
  */
 import { buttonStyle } from '@oxide/design-system'
-import { Link, NavLink, useMatches } from '@remix-run/react'
+import { Link, NavLink } from '@remix-run/react'
+import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
 import { type ReactNode } from 'react'
 
 import Icon from '~/components/Icon'
-import { type User } from '~/services/authn.server'
+
+interface Note {
+  id: string
+  metadata: {
+    title: string
+    published: string
+  }
+  user: string
+}
+
+export function useNotes() {
+  return useQuery<Note[]>({
+    queryKey: ['notesList'],
+    queryFn: async () => {
+      const response = await fetch('/notes/list')
+      return response.json()
+    },
+    refetchInterval: 30000, // refetch every 30 seconds
+  })
+}
 
 const navLinkStyles = ({ isActive }: { isActive: boolean }) => {
   const activeStyle = isActive
@@ -50,23 +70,10 @@ const BackToRfds = () => (
   </div>
 )
 
-interface HandleData {
-  notes: {
-    id: string
-    metadata: {
-      title: string
-      published: string
-    }
-  }[]
-  user: User | null
-}
-
 export const Sidebar = () => {
-  const matches = useMatches()
-  const data = matches[1]?.data as HandleData
-  const notes = data?.notes
+  const { data: notes, isLoading } = useNotes()
 
-  const isEmpty = !notes || notes.length === 0 || data.user?.authenticator === 'github'
+  const isEmpty = isLoading || !notes || notes.length === 0
 
   const publishedNotes = notes
     ? notes.filter((note) => note.metadata.published === 'true')
