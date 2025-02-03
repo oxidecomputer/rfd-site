@@ -88,21 +88,15 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[] | unde
 export const getAuthors = (rfds: RfdListItem[]): Author[] => {
   let authors: Author[] = []
 
-  rfds.forEach((rfd) => {
-    if (!rfd.authors) {
-      return
-    }
-
-    authors.forEach((author) => {
-      const found = authors.find(
-        (el) => el.email === author.email || el.name === author.name,
-      )
-
-      if (!found) {
-        authors.push(author)
+  for (const rfd of rfds) {
+    if (rfd.authors && rfd.authors.length > 0) {
+      for (const author of rfd.authors) {
+        const found = authors.find(
+          (el) => el.email === author.email || el.name === author.name,
+        )
       }
-    })
-  })
+    }
+  }
 
   authors.sort((a, b) => a.name.localeCompare(b.name))
 
