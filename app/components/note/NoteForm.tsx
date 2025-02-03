@@ -5,17 +5,17 @@
  *
  * Copyright Oxide Computer Company
  */
-import { useSyncStatus } from '@liveblocks/react/suspense'
+import { useMutation, useStorage, useSyncStatus } from '@liveblocks/react/suspense'
 import { Spinner } from '@oxide/design-system'
 import { Asciidoc, prepareDocument, type Options } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useFetcher } from '@remix-run/react'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import dayjs from 'dayjs'
+import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
 
 import { opts } from '~/components/AsciidocBlocks'
 import { DropdownItem, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
-import { useDebounce } from '~/hooks/use-debounce'
 import { ad } from '~/utils/asciidoctor'
 
 import { MinimalDocument } from '../AsciidocBlocks/Document'
@@ -30,43 +30,30 @@ const noteOpts: Options = {
 }
 
 export const NoteForm = ({
+  userId,
   userName,
   id,
-  initialTitle = '',
   isOwner,
   published,
   sidebarOpen,
   setSidebarOpen,
 }: {
+  userId: string
   userName: string
   id: string
-  initialTitle?: string
   isOwner: boolean
   published: 'true' | 'false'
   sidebarOpen: boolean
   setSidebarOpen: (bool: boolean) => void
 }) => {
-  const [title, setTitle] = useState(initialTitle)
+  const title = useStorage((root) => root.meta.title)
+  const lastUpdated = useStorage((root) => root.meta.lastUpdated)
+
+  const handleChange = useMutation(({ storage }, e: ChangeEvent<HTMLInputElement>) => {
+    storage.get('meta').set('title', e.target.value)
+  }, [])
+
   const [body, setBody] = useState('')
-
-  const debouncedTitle = useDebounce(title, 750)
-
-  const prevTitle = useRef(debouncedTitle)
-  const { submit } = useFetcher()
-
-  useEffect(() => {
-    if (prevTitle.current !== debouncedTitle) {
-      submit(
-        { title: debouncedTitle },
-        {
-          method: 'post',
-          action: `/notes/${id}/title`,
-          encType: 'application/json',
-        },
-      )
-      prevTitle.current = debouncedTitle
-    }
-  }, [debouncedTitle, id, submit])
 
   // Handle window resizing
   const [leftPaneWidth, setLeftPaneWidth] = useState(50) // Initial width in percentage
@@ -123,9 +110,7 @@ export const NoteForm = ({
             </span>
             <input
               value={title}
-              onChange={(el) => {
-                setTitle(el.target.value)
-              }}
+              onChange={handleChange}
               name="title"
               placeholder="Title..."
               required
@@ -139,7 +124,12 @@ export const NoteForm = ({
           <RoomErrors />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex items-center gap-2">
+          {lastUpdated && (
+            <div className="text-sans-md text-tertiary">
+              {dayjs(lastUpdated).format('MMM D YYYY, h:mm A')}
+            </div>
+          )}
           <Avatars />
           <SavingIndicator />
         </div>
@@ -151,7 +141,7 @@ export const NoteForm = ({
         >
           <input type="hidden" name="body" value={body} />
           <input type="hidden" name="published" value={published} />
-          <EditorWrapper userName={userName} onUpdate={setBody} />
+          <EditorWrapper userId={userId} userName={userName} onUpdate={setBody} />
         </div>
         <div
           onMouseDown={handleMouseDown}
@@ -193,18 +183,6 @@ const SavingIndicator = () => {
           <Spinner />
         )}
       </div>
-
-      {/* {status === 'unsaved' ? (
-        <TypingIndicator />
-      ) : status === 'error' ? (
-        <Icon name="error" size={12} className="text-error" />
-      ) : status === 'saved' ? (
-        <Icon name="success" size={12} className="text-accent" />
-      ) : status === 'saving' ? (
-        <Spinner />
-      ) : (
-        <Icon name="success" size={12} className="text-tertiary" />
-      )} */}
     </div>
   )
 }

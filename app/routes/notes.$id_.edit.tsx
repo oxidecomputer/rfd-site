@@ -5,17 +5,18 @@
  *
  * Copyright Oxide Computer Company
  */
+import { LiveObject } from '@liveblocks/client'
 import {
   ClientSideSuspense,
   LiveblocksProvider,
   RoomProvider,
 } from '@liveblocks/react/suspense'
-import { json, type ActionFunction, type LoaderFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs } from '@remix-run/node'
 import { useLoaderData, useOutletContext } from '@remix-run/react'
 
 import { NoteForm, TypingIndicator } from '~/components/note/NoteForm'
-import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
-import { getNote, updateNote } from '~/services/notes.server'
+import { isAuthenticated } from '~/services/authn.server'
+import { getNote } from '~/services/notes.server'
 import { userIsInternal } from '~/utils/rfdApi'
 
 import { PlaceholderWrapper } from './notes'
@@ -29,33 +30,14 @@ export const loader = async ({ params: { id }, request }: LoaderFunctionArgs) =>
 
   const note = await getNote(id)
 
-  if (note.published && userIsInternal(user)) {
-    return { user, note }
-  } else if (note.user !== user?.id) {
+  if (!note) {
     throw new Response('Not Found', { status: 404 })
   }
-}
 
-export const action: ActionFunction = async ({ request, params }) => {
-  try {
-    const formData = await request.formData()
-    const title = formData.get('title') as string
-
-    const user = await isAuthenticated(request)
-    handleNotesAccess(user)
-
-    const note = await getNote(params.id!)
-    if (note.user !== user?.id) {
-      throw new Response('Not Found', { status: 404 })
-    }
-
-    await updateNote(params.id!, title, note.published)
-    return json({ status: 'success', message: 'Note updated successfully' })
-  } catch (error) {
-    if (error instanceof Response) {
-      return json({ status: 'error', error: await error.text() }, { status: error.status })
-    }
-    return json({ status: 'error', error: 'An unexpected error occurred' }, { status: 500 })
+  if (note.user === user?.id || (note.published && userIsInternal(user))) {
+    return { user, note }
+  } else {
+    throw new Response('Not Found', { status: 404 })
   }
 }
 
@@ -63,6 +45,10 @@ export type Presence = {
   cursor: { x: number; y: number } | null
   name: string
   userId: string
+}
+
+export const initialStorage = {
+  meta: new LiveObject({ title: 'Untitled Note', lastUpdated: new Date().toISOString() }),
 }
 
 export default function NoteEdit() {
@@ -73,9 +59,13 @@ export default function NoteEdit() {
     setSidebarOpen: (isOpen: boolean) => void
   }>()
 
+  if (!user) {
+    return null
+  }
+
   return (
     <LiveblocksProvider authEndpoint="/notes/liveblocks-auth">
-      <RoomProvider id={note.id}>
+      <RoomProvider id={note.id} initialStorage={initialStorage}>
         <ClientSideSuspense
           fallback={
             <PlaceholderWrapper>
@@ -85,9 +75,9 @@ export default function NoteEdit() {
         >
           <NoteForm
             id={note.id}
+            userId={user.id}
             userName={user.displayName || 'Unknown'}
             isOwner={note.user === user.id}
-            initialTitle={note.title}
             published={note.published}
             key={note.id}
             sidebarOpen={sidebarOpen}

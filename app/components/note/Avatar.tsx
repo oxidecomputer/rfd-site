@@ -7,17 +7,27 @@ import { getPresenceColor } from './Presence'
 export const Avatars = () => {
   const users = useOthers()
   const currentUser = useSelf()
-  const hasMoreUsers = users.length > 3
+
+  // Removes duplicate users and other sessions that match the current user
+  const filteredUsers = users.filter(
+    (user, index, self) =>
+      user.id !== currentUser.id &&
+      user.info.name !== 'Service Account' &&
+      index === self.findIndex((u) => u.id === user.id),
+  )
+
+  const hasMoreUsers = filteredUsers.length > 3
 
   return (
     <Tooltip.Provider>
-      <div className="flex items-center gap-1 pl-2">
-        {currentUser && <Avatar name="You" />}
+      <div className="flex items-center gap-1">
+        {currentUser && <Avatar id={currentUser.id} name={currentUser.info.name} />}
 
-        {users.slice(0, 3).map(({ connectionId, info }) => {
+        {filteredUsers.slice(0, 3).map(({ id, connectionId, info }) => {
           return (
             <Avatar
               key={connectionId}
+              id={id}
               name={info && info.name ? info.name : 'Unknown'}
               className="-ml-3"
             />
@@ -25,15 +35,23 @@ export const Avatars = () => {
         })}
 
         {hasMoreUsers && (
-          <div className="text-mono-sm text-quaternary">+{users.length - 3}</div>
+          <div className="text-mono-sm text-quaternary">+{filteredUsers.length - 3}</div>
         )}
       </div>
     </Tooltip.Provider>
   )
 }
 
-export const Avatar = ({ name, className }: { name: string; className?: string }) => {
-  const { fg, bg } = getPresenceColor(name)
+export const Avatar = ({
+  id,
+  name,
+  className,
+}: {
+  id: string
+  name: string
+  className?: string
+}) => {
+  const { fg, bg } = getPresenceColor(id)
 
   return (
     <Tooltip.Root delayDuration={150}>
@@ -53,7 +71,7 @@ export const Avatar = ({ name, className }: { name: string; className?: string }
       </Tooltip.Trigger>
       <Tooltip.Content
         side="bottom"
-        className="z-50 mt-2 text-nowrap rounded border px-1 py-1 text-sans-md text-default bg-raise border-secondary elevation-2"
+        className="z-50 mt-1 text-nowrap rounded border px-1 py-1 text-sans-md text-default bg-raise border-secondary elevation-2"
       >
         {name}
       </Tooltip.Content>

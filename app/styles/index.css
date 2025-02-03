@@ -63,8 +63,12 @@ body {
   @apply bg-default;
 }
 
+html {
+  @apply h-full;
+}
+
 body.note {
-  @apply mb-0;
+  @apply mb-0 h-full;
 }
 
 .cm-editor {

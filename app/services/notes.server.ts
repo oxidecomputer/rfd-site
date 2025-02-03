@@ -23,14 +23,18 @@ declare module '@liveblocks/node' {
   interface BaseMetadata extends RoomMetadata {}
 }
 
-export const getNote = async (id: string): Promise<RoomMetadata & { id: string }> => {
-  const room = await client.getRoom(id)
-  if (!room) {
-    throw new Error('Note not found')
-  }
-  return {
-    id,
-    ...(room.metadata as RoomMetadata),
+export const getNote = async (
+  id: string,
+): Promise<(RoomMetadata & { id: string }) | null> => {
+  try {
+    const room = await client.getRoom(id)
+    return {
+      id,
+      ...(room.metadata as RoomMetadata),
+    }
+  } catch (error) {
+    console.error(error)
+    return null
   }
 }
 
@@ -47,7 +51,6 @@ export const addNote = async (title: string, user: string) => {
       employee: ['room:write'],
     },
     metadata: {
-      title,
       user,
       created,
       published: 'false',
@@ -57,10 +60,9 @@ export const addNote = async (title: string, user: string) => {
   return id
 }
 
-export const updateNote = async (id: string, title: string, published: string) => {
+export const updateNote = async (id: string, published: string) => {
   await client.updateRoom(id, {
     metadata: {
-      title,
       published,
     },
   })
@@ -75,5 +77,19 @@ export const listNotes = async (userId: string) => {
     },
   })
 
-  return data
+  const rooms = await Promise.all(
+    data.map(async (room) => {
+      const storage = await client.getStorageDocument(room.id, 'json')
+
+      return {
+        ...room,
+        metadata: {
+          ...room.metadata,
+          title: storage.meta.title,
+        },
+      }
+    }),
+  )
+
+  return rooms
 }

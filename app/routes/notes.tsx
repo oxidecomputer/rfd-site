@@ -7,10 +7,16 @@
  */
 
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import { Outlet, type ShouldRevalidateFunction } from '@remix-run/react'
+import {
+  isRouteErrorResponse,
+  Outlet,
+  useRouteError,
+  type ShouldRevalidateFunction,
+} from '@remix-run/react'
 import cn from 'classnames'
 import { useState, type ReactNode } from 'react'
 
+import { NotFound } from '~/components/ErrorPage'
 import { Sidebar } from '~/components/note/Sidebar'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 import { listNotes } from '~/services/notes.server'
@@ -46,6 +52,22 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   }
 
   return defaultShouldRevalidate
+}
+
+export function ErrorBoundary() {
+  const error = useRouteError()
+
+  let message = 'Something went wrong'
+
+  if (isRouteErrorResponse(error)) {
+    return <NotFound />
+  }
+
+  return (
+    <div className="fixed inset-0 flex items-center justify-center">
+      <h1 className="text-2xl">{message}</h1>
+    </div>
+  )
 }
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {

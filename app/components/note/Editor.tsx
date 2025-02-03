@@ -18,7 +18,7 @@ import { getPresenceColor } from './Presence'
 
 const themeSettings: CreateThemeOptions['settings'] = {
   background: 'var(--surface-raise)',
-  foreground: 'var(--content-default)',
+  foreground: 'var(--content-raise)',
   caret: 'var(--base-neutral-800)',
   selection: 'rgba(255, 255, 255, 0.1)',
   selectionMatch: 'rgba(255, 255, 255, 0.2)',
@@ -40,9 +40,11 @@ export const theme = (options?: Partial<CreateThemeOptions>) => {
 }
 
 const EditorWrapper = ({
+  userId,
   userName,
   onUpdate,
 }: {
+  userId: string
   userName: string
   onUpdate: Dispatch<SetStateAction<string>>
 }) => {
@@ -68,7 +70,7 @@ const EditorWrapper = ({
     const ytext = ydoc.getText('codemirror')
     const undoManager = new Y.UndoManager(ytext)
 
-    const { fg } = getPresenceColor(userName)
+    const { fg } = getPresenceColor(userId)
 
     provider.awareness.setLocalStateField('user', {
       name: userName,
@@ -100,7 +102,7 @@ const EditorWrapper = ({
       provider?.destroy()
       view?.destroy()
     }
-  }, [element, room, onUpdate, userName])
+  }, [element, room, onUpdate, userName, userId])
 
   return <div ref={ref} className="h-full" />
 }
