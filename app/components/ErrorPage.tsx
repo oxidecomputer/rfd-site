@@ -37,23 +37,12 @@ export function ErrorPage({ children, backLink }: Props) {
       </div>
       <div className="absolute left-1/2 top-1/2 flex w-96 -translate-x-1/2 -translate-y-1/2 flex-col items-center justify-center space-y-4 rounded-lg border p-8 !bg-raise border-secondary elevation-3">
         <div className="my-2 flex h-12 w-12 items-center justify-center">
-          <div className="absolute h-12 w-12 rounded-full opacity-20 bg-destructive motion-safe:animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]" />
-          <Error12Icon className="relative h-8 w-8 text-error-secondary" />
+          <div className="absolute h-12 w-12 rounded-full opacity-20 bg-info motion-safe:animate-[ping_2s_cubic-bezier(0,0,0.2,1)_infinite]" />
+          <Error12Icon className="relative h-8 w-8 text-info-secondary" />
         </div>
 
         <div className="space-y-2 text-center">{children}</div>
       </div>
     </div>
-  )
-}
-
-export function NotFound() {
-  return (
-    <ErrorPage>
-      <h1 className="text-sans-2xl">Page not found</h1>
-      <p className="text-sans-lg text-secondary">
-        The page you are looking for doesn&apos;t exist or you may not have access to it.
-      </p>
-    </ErrorPage>
   )
 }

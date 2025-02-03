@@ -101,7 +101,7 @@ export const Sidebar = () => {
                     {publishedNotes.map((note) => (
                       <NavLink
                         key={note.id}
-                        to={`/notes/${note.id}/edit`}
+                        to={`/notes/${note.id}`}
                         className={navLinkStyles}
                       >
                         <div className="line-clamp-2 text-ellipsis">
@@ -116,11 +116,7 @@ export const Sidebar = () => {
 
               <LinkSection label="Drafts">
                 {draftNotes.map((note) => (
-                  <NavLink
-                    key={note.id}
-                    to={`/notes/${note.id}/edit`}
-                    className={navLinkStyles}
-                  >
+                  <NavLink key={note.id} to={`/notes/${note.id}`} className={navLinkStyles}>
                     <div className="line-clamp-2 text-ellipsis">{note.metadata.title}</div>{' '}
                   </NavLink>
                 ))}

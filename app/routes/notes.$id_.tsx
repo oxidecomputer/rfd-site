@@ -36,6 +36,11 @@ export const loader = async ({ params: { id }, request }: LoaderFunctionArgs) =>
 
   if (note.user === user?.id || (note.published && userIsInternal(user))) {
     return { user, note }
+  } else if (userIsInternal(user) && !note.published) {
+    throw new Response('Note not published', {
+      status: 401,
+      statusText: 'Unauthorized Access: Note Unpublished',
+    })
   } else {
     throw new Response('Not Found', { status: 404 })
   }

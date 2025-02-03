@@ -10,7 +10,7 @@ import { Liveblocks } from '@liveblocks/node'
 import { type LiveblocksStorage } from 'liveblocks.config'
 import { nanoid } from 'nanoid'
 
-import { initialStorage } from '~/routes/notes.$id_.edit'
+import { initialStorage } from '~/routes/notes.$id_'
 
 export const client = new Liveblocks({
   secret: process.env.LIVEBLOCKS_KEY || '',

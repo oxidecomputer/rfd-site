@@ -16,7 +16,7 @@ import {
 import cn from 'classnames'
 import { useState, type ReactNode } from 'react'
 
-import { NotFound } from '~/components/ErrorPage'
+import { ErrorPage } from '~/components/ErrorPage'
 import { Sidebar } from '~/components/note/Sidebar'
 import { handleNotesAccess, isAuthenticated } from '~/services/authn.server'
 import { listNotes } from '~/services/notes.server'
@@ -44,7 +44,6 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
   // Always revalidate when creating, editing, or deleting notes
   if (
     formAction?.includes('/notes/new') ||
-    formAction?.includes('/notes/edit') ||
     formAction?.includes('/notes/delete') ||
     formAction?.includes('/notes/publish')
   ) {
@@ -57,16 +56,22 @@ export const shouldRevalidate: ShouldRevalidateFunction = ({
 export function ErrorBoundary() {
   const error = useRouteError()
 
-  let message = 'Something went wrong'
-
   if (isRouteErrorResponse(error)) {
-    return <NotFound />
+    return (
+      <ErrorPage>
+        <h1 className="text-sans-2xl">
+          {error.status === 404 ? 'Page not found' : error.statusText}
+        </h1>
+        <p className="text-sans-lg text-secondary">{error.data}</p>
+      </ErrorPage>
+    )
   }
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center">
-      <h1 className="text-2xl">{message}</h1>
-    </div>
+    <ErrorPage>
+      <h1 className="text-sans-2xl">Something went wrong</h1>
+      <p className="text-sans-lg text-secondary">An unexpected error occurred</p>
+    </ErrorPage>
   )
 }
 

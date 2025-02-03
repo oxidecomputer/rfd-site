@@ -20,7 +20,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const id = await addNote('Untitled', user.id)
-  return redirect(`/notes/${id}/edit`)
+  return redirect(`/notes/${id}`)
 }
 
 export const loader: LoaderFunction = async (args) => {
