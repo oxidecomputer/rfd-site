@@ -3,15 +3,15 @@
   "exclude": ["notes/**"],
   "compilerOptions": {
     "incremental": true,
-    "lib": ["DOM", "DOM.Iterable", "ES2021"],
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "isolatedModules": true,
     "esModuleInterop": true,
     "jsx": "react-jsx",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
-    "target": "ES2021",
+    "target": "ES2022",
     "strict": true,
-    "allowJs": true,
+    "allowJs": false,
     "forceConsistentCasingInFileNames": true,
     "baseUrl": ".",
     "paths": {

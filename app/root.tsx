@@ -7,7 +7,6 @@
  */
 
 import {
-  json,
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
@@ -25,19 +24,19 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
 import type { Author } from '~/components/rfd/RfdPreview'
 import { auth, isAuthenticated } from '~/services/authn.server'
-import {
-  fetchRfds,
-  findAuthors,
-  findLabels,
-  isLocalMode,
-  provideNewRfdNumber,
-  type RfdListItem,
-} from '~/services/rfd.server'
 import styles from '~/styles/index.css?url'
 
 import { Layout } from './components/Layout'
 import LoadingBar from './components/LoadingBar'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
+import { isLocalMode } from './services/rfd.local.server'
+import {
+  fetchRfds,
+  getAuthors,
+  getLabels,
+  provideNewRfdNumber,
+  type RfdListItem,
+} from './services/rfd.server'
 
 export const shouldRevalidate: ShouldRevalidateFunction = ({ currentUrl, nextUrl }) => {
   if (currentUrl.pathname.startsWith('/notes/') && nextUrl.pathname.startsWith('/notes/')) {
@@ -59,12 +58,12 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const user = await isAuthenticated(request)
   try {
-    const rfds: RfdListItem[] = await fetchRfds(user)
+    const rfds: RfdListItem[] = (await fetchRfds(user)) || []
 
-    const authors: Author[] = rfds ? findAuthors(rfds) : []
-    const labels: string[] = rfds ? findLabels(rfds) : []
+    const authors: Author[] = rfds ? getAuthors(rfds) : []
+    const labels: string[] = rfds ? getLabels(rfds) : []
 
-    return json({
+    return {
       // Any data added to the ENV key of this loader will be injected into the
       // global window object (window.ENV)
       theme,
@@ -73,13 +72,25 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       rfds,
       authors,
       labels,
-      isLocalMode,
+      localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
-    })
+    }
   } catch (err) {
     // The only error that should be caught here is the unauthenticated error.
     // And if that occurs we need to log the user out
     await auth.logout(request, { redirectTo: '/' })
+  }
+
+  // Convince remix that a return type will always be provided
+  return {
+    theme,
+    inlineComments,
+    user,
+    rfds: [],
+    authors: [],
+    labels: [],
+    localMode: isLocalMode(),
+    newRfdNumber: undefined,
   }
 }
 
@@ -109,14 +120,14 @@ export function ErrorBoundary() {
 const queryClient = new QueryClient()
 
 export default function App() {
-  const { theme, isLocalMode } = useLoaderData<typeof loader>()
+  const { theme, localMode } = useLoaderData<typeof loader>()
 
   return (
     <Layout theme={theme}>
       <LoadingBar />
       <QueryClientProvider client={queryClient}>
         <Outlet />
-        {isLocalMode && (
+        {localMode && (
           <div className="overlay-shadow fixed bottom-6 left-6 z-10 rounded p-2 text-sans-sm text-notice bg-notice-secondary">
             Local authoring mode
           </div>

@@ -6,6 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
+import type { RfdPermission } from '@oxide/rfd.ts/client'
 import { redirect, type SessionData, type SessionStorage } from '@remix-run/node'
 import type { AuthenticateOptions, StrategyVerifyCallback } from 'remix-auth'
 import {
@@ -14,7 +15,7 @@ import {
   type OAuth2StrategyVerifyParams,
 } from 'remix-auth-oauth2'
 
-import type { RfdApiPermission, RfdApiProvider, RfdScope } from './rfdApi'
+import type { RfdApiProvider, RfdScope } from './rfdApi'
 
 export type RfdApiStrategyOptions = {
   host: string
@@ -43,7 +44,7 @@ type RfdApiProfileResponse = {
   info: {
     id: string
     groups: string[]
-    permissions: RfdApiPermission[]
+    permissions: RfdPermission[]
     created_at: string
   }
   providers: {

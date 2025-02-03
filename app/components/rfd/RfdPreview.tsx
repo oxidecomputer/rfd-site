@@ -202,8 +202,8 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
 
   if (!rfdPreview) return null
 
-  const { title, number, state, commit_date, number_string } = rfdPreview
-  const authors = generateAuthors(rfdPreview.authors || '')
+  const { title, number, state, committedAt, formattedNumber } = rfdPreview
+  const authors = rfdPreview.authors || []
   return (
     <div
       ref={floatingEl}
@@ -212,7 +212,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
     >
       <Link
         prefetch="intent"
-        to={`/rfd/${number_string}`}
+        to={`/rfd/${formattedNumber}`}
         className="mr-2 block text-sans-lg text-accent-tertiary hover:text-accent-secondary"
       >
         {number}
@@ -220,7 +220,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
       <div>
         <Link
           prefetch="intent"
-          to={`/rfd/${number_string}`}
+          to={`/rfd/${formattedNumber}`}
           className="mb-1 block text-sans-lg hover:text-default"
         >
           {title}
@@ -246,9 +246,9 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
           ))}
         </div>
         <div className="flex space-x-1 text-sans-sm text-tertiary">
-          <div>{state.charAt(0).toUpperCase() + state.slice(1)}</div>
+          {state && <div>{state.charAt(0).toUpperCase() + state.slice(1)}</div>}
           <span className="text-quaternary">•</span>
-          <div>{dayjs(commit_date).fromNow()}</div>
+          <div>{dayjs(committedAt).fromNow()}</div>
         </div>
       </div>
     </div>
