@@ -46,6 +46,7 @@ export type RfdListItem = {
   title?: string
   state?: string
   authors?: Author[]
+  flattendAuthors?: string[]
   labels?: string[]
   sha?: string
   commit?: string
@@ -168,6 +169,8 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
 }
 
 function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
+  const authors = rfd.authors ? generateAuthors(rfd.authors) : []
+  const flattendAuthors = authors.map((author) => `${author.name} ${author.email}`)
   return {
     number: rfd.rfdNumber,
     formattedNumber: rfd.rfdNumber.toString().padStart(4, '0'),
@@ -175,7 +178,8 @@ function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
     state: rfd.state,
     link: rfd.link,
     discussion: rfd.discussion,
-    authors: rfd.authors ? generateAuthors(rfd.authors) : [],
+    authors,
+    flattendAuthors,
     labels: rfd.labels
       ? rfd.labels
           .split(',')
