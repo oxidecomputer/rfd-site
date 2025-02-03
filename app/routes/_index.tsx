@@ -129,8 +129,7 @@ export default function Index() {
           'title',
           'formattedNumber',
           'authors.name',
-          'authors.email',
-          'flattenedAuthors',
+          'authors.email'
         ],
       })
       .map((result) => {
