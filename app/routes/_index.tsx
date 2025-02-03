@@ -20,6 +20,7 @@ import cn from 'classnames'
 import dayjs from 'dayjs'
 import fuzzysort from 'fuzzysort'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
@@ -29,7 +30,6 @@ import FilterDropdown from '~/components/home/FilterDropdown'
 import StatusBadge from '~/components/StatusBadge'
 import { ExactMatch, SuggestedAuthors, SuggestedLabels } from '~/components/Suggested'
 import { useIsOverflow } from '~/hooks/use-is-overflow'
-import { useKey } from '~/hooks/use-key'
 import { useRootLoaderData } from '~/root'
 import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
@@ -192,7 +192,7 @@ export default function Index() {
     return false
   }, [inputEl])
 
-  useKey('/', focusInput)
+  useHotkeys('/', focusInput)
 
   const fetcher = useFetcher()
   const submitSortOrder = (newSortAttr: SortAttr) => {

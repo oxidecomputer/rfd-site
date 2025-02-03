@@ -10,9 +10,9 @@ import { Link, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import fuzzysort from 'fuzzysort'
 import { useCallback, useEffect, useRef, useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 import Icon from '~/components/Icon'
-import { useKey } from '~/hooks/use-key'
 import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
 import { classed } from '~/utils/classed'
@@ -33,7 +33,7 @@ const SelectRfdCombobox = ({
   // memoized to avoid render churn in useKey
   const toggleCombobox = useCallback(() => setOpen(!open), [setOpen, open])
 
-  useKey('mod+/', toggleCombobox)
+  useHotkeys('mod+/', toggleCombobox)
 
   const handleDismiss = () => setOpen(false)
 
@@ -220,7 +220,7 @@ const ComboboxItem = ({
 }) => {
   const [shouldPrefetch, setShouldPrefetch] = useState(false)
 
-  const timer = useRef<NodeJS.Timeout | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   function clear() {
     if (timer.current) clearTimeout(timer.current)

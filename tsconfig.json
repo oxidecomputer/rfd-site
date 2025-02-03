@@ -1,6 +1,8 @@
 {
   "include": ["vite.d.ts", "**/*.ts", "**/*.tsx"],
+  "exclude": ["notes/**"],
   "compilerOptions": {
+    "allowImportingTsExtensions": true,
     "incremental": true,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
     "isolatedModules": true,

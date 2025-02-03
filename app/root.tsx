@@ -14,14 +14,11 @@ import {
 } from '@remix-run/node'
 import {
   isRouteErrorResponse,
-  Links,
-  Meta,
   Outlet,
-  Scripts,
-  ScrollRestoration,
   useLoaderData,
   useRouteError,
   useRouteLoaderData,
+  type ShouldRevalidateFunction,
 } from '@remix-run/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
@@ -29,6 +26,7 @@ import type { Author } from '~/components/rfd/RfdPreview'
 import { auth, isAuthenticated } from '~/services/authn.server'
 import styles from '~/styles/index.css?url'
 
+import { Layout } from './components/Layout'
 import LoadingBar from './components/LoadingBar'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
@@ -39,6 +37,13 @@ import {
   provideNewRfdNumber,
   type RfdListItem,
 } from './services/rfd.server'
+
+export const shouldRevalidate: ShouldRevalidateFunction = ({ currentUrl, nextUrl }) => {
+  if (currentUrl.pathname.startsWith('/notes/') && nextUrl.pathname.startsWith('/notes/')) {
+    return false
+  }
+  return true
+}
 
 export const meta: MetaFunction = () => {
   return [{ title: 'RFD / Oxide' }]
@@ -113,29 +118,6 @@ export function ErrorBoundary() {
   )
 }
 const queryClient = new QueryClient()
-
-const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => (
-  <html lang="en" className={theme}>
-    <head>
-      <meta charSet="utf-8" />
-      <meta name="viewport" content="width=device-width,initial-scale=1" />
-      <Meta />
-      <Links />
-      <link rel="icon" href="/favicon.svg" />
-      <link rel="icon" type="image/png" href="/favicon.png" />
-      <meta name="viewport" content="width=device-width, initial-scale=1" />
-      {/* Use plausible analytics only on Vercel */}
-      {process.env.NODE_ENV === 'production' && (
-        <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
-      )}
-    </head>
-    <body className="mb-32">
-      {children}
-      <ScrollRestoration />
-      <Scripts />
-    </body>
-  </html>
-)
 
 export default function App() {
   const { theme, localMode } = useLoaderData<typeof loader>()

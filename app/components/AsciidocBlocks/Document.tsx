@@ -7,6 +7,8 @@
  */
 import { Content, type DocumentBlock } from '@oxide/react-asciidoc'
 
+// add styles for main
+// max-w-full flex-shrink overflow-hidden 800:overflow-visible 800:pr-10 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:p-0
 const CustomDocument = ({ document }: { document: DocumentBlock }) => (
   <div
     id="content"
@@ -16,4 +18,10 @@ const CustomDocument = ({ document }: { document: DocumentBlock }) => (
   </div>
 )
 
-export { CustomDocument }
+const MinimalDocument = ({ document }: { document: DocumentBlock }) => (
+  <div id="content" className="asciidoc-body max-w-[1040px]">
+    <Content blocks={document.blocks} />
+  </div>
+)
+
+export { CustomDocument, MinimalDocument }

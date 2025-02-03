@@ -7,11 +7,12 @@
  */
 
 import type { RfdPermission } from '@oxide/rfd.ts/client'
+import { redirect } from '@remix-run/server-runtime'
 import { Authenticator } from 'remix-auth'
 
 import { sessionStorage } from '~/services/session.server'
 import { isTruthy } from '~/utils/isTruthy'
-import type { RfdScope } from '~/utils/rfdApi'
+import { userIsInternal, type RfdScope } from '~/utils/rfdApi'
 import {
   RfdApiStrategy,
   type RfdApiAccessToken,
@@ -161,6 +162,22 @@ async function isAuthenticated(request: Request, options: any): Promise<User | n
   }
 }
 
+function handleNotesAccess(user: User | null) {
+  if (!user) {
+    throw new Response('User not found', { status: 401 })
+  }
+
+  const isInternal = userIsInternal(user)
+  if (!isInternal) {
+    throw new Response('User not found', { status: 401 })
+  }
+
+  if (user?.authenticator === 'github') {
+    return redirect('/notes/auth')
+  }
+  return null
+}
+
 async function handleAuthenticationCallback(provider: string, request: Request) {
   const cookie = request.headers.get('Cookie')
   const returnTo: string | null = await returnToCookie.parse(cookie)
@@ -171,4 +188,4 @@ async function handleAuthenticationCallback(provider: string, request: Request) 
   })
 }
 
-export { auth, isAuthenticated, handleAuthenticationCallback }
+export { auth, isAuthenticated, handleAuthenticationCallback, handleNotesAccess }

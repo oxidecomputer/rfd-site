@@ -149,7 +149,7 @@ const DropdownFilterItem = ({
 }) => (
   <DropdownItem
     onSelect={onSelect}
-    classNames={selected ? 'bg-accent-secondary text-accent' : ''}
+    className={selected ? 'text-accent bg-accent-secondary' : ''}
   >
     {selected && <Outline />}
     <div className="flex items-center justify-between">

@@ -63,6 +63,18 @@ body {
   @apply bg-default;
 }
 
+html {
+  @apply h-full;
+}
+
+body.note {
+  @apply mb-0 h-full;
+}
+
+.cm-editor {
+  @apply h-full;
+}
+
 @layer base {
   body {
     @apply text-sans-sm text-raise;
@@ -79,7 +91,7 @@ body {
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 50ms;
   opacity: 1;
-  backdrop-filter: blur(4px);
+  backdrop-filter: blur(24px);
 }
 
 /**
@@ -118,12 +130,62 @@ input[type='checkbox']:focus:not(:focus-visible) {
   @apply outline-0 ring-0;
 }
 
-.link-with-underline {
-  @apply text-default hover:text-raise;
-  text-decoration: underline;
-  text-decoration-color: var(--content-quinary);
+.typing-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  width: 12px;
+  height: 12px;
+}
 
-  &:hover {
-    text-decoration-color: var(--content-tertiary);
+.typing-indicator span {
+  display: block;
+  width: 3px;
+  height: 3px;
+  background-color: var(--content-accent);
+  border-radius: 50%;
+  animation: bounce 1.4s infinite both;
+}
+
+.typing-indicator span:nth-child(1) {
+  animation-delay: -0.32s;
+}
+
+.typing-indicator span:nth-child(2) {
+  animation-delay: -0.16s;
+}
+
+@keyframes bounce {
+  0%,
+  80%,
+  100% {
+    transform: translateY(0);
   }
+  40% {
+    transform: translateY(-4px);
+  }
+}
+
+.cm-editor {
+  font-size: 13px;
+  font-family: 'GT America Mono';
+}
+
+.cm-line {
+  padding-left: 12px;
+}
+
+.cm-content {
+  padding-top: 8px;
+  padding-bottom: 8px;
+}
+
+.cm-editor .cm-ySelectionInfo {
+  @apply pointer-events-none absolute -left-px -top-[1.4em] z-[1000] select-none whitespace-nowrap rounded px-0.5 py-px opacity-100 text-sans-md;
+  color: var(--base-purple-200);
+  border-bottom-left-radius: 0;
+}
+
+.cm-editor .cm-ySelectionCaretDot {
+  @apply hidden;
 }
