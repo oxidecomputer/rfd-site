@@ -16,16 +16,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
   const user = await auth.isAuthenticated(request)
   const url = new URL(request.url)
 
-  const validParams = ['q', 'attributes_to_crop', 'highlight_pre_tag', 'highlight_post_tag']
-  const query = new URLSearchParams()
-
-  for (const [key, value] of url.searchParams.entries()) {
-    if (validParams.includes(key)) {
-      query.set(key, value)
-    }
-  }
-
-  const results = await searchRfds(user, query.toString())
+  const results = await searchRfds(user, url.searchParams.entries())
   return adaptResults(results)
 }
 
