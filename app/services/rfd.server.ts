@@ -12,7 +12,7 @@ import type { RfdWithoutContent, RfdWithRaw } from '@oxide/rfd.ts/client'
 
 import { ad, attrs } from '~/utils/asciidoctor'
 
-import type { User } from './authn.server'
+import { type User } from './authn.server'
 import {
   fetchLocalRfd,
   fetchLocalRfds,
@@ -46,6 +46,7 @@ export type RfdListItem = {
   title?: string
   state?: string
   authors?: Author[]
+  formattedAuthors?: string
   labels?: string[]
   sha?: string
   commit?: string
@@ -88,21 +89,19 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[] | unde
 export const getAuthors = (rfds: RfdListItem[]): Author[] => {
   let authors: Author[] = []
 
-  rfds.forEach((rfd) => {
-    if (!rfd.authors) {
-      return
-    }
+  for (const rfd of rfds) {
+    if (rfd.authors && rfd.authors.length > 0) {
+      for (const author of rfd.authors) {
+        const found = authors.find(
+          (el) => el.email === author.email || el.name === author.name,
+        )
 
-    authors.forEach((author) => {
-      const found = authors.find(
-        (el) => el.email === author.email || el.name === author.name,
-      )
-
-      if (!found) {
-        authors.push(author)
+        if (!found) {
+          authors.push(author)
+        }
       }
-    })
-  })
+    }
+  }
 
   authors.sort((a, b) => a.name.localeCompare(b.name))
 
@@ -170,6 +169,7 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
 }
 
 function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
+  const authors = rfd.authors ? generateAuthors(rfd.authors) : []
   return {
     number: rfd.rfdNumber,
     formattedNumber: rfd.rfdNumber.toString().padStart(4, '0'),
@@ -177,7 +177,8 @@ function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
     state: rfd.state,
     link: rfd.link,
     discussion: rfd.discussion,
-    authors: rfd.authors ? generateAuthors(rfd.authors) : [],
+    authors,
+    formattedAuthors: rfd.authors || '',
     labels: rfd.labels
       ? rfd.labels
           .split(',')

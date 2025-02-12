@@ -125,7 +125,7 @@ export default function Index() {
       .go(input, rfds, {
         threshold: -10000,
         all: true, // If true, returns all results for an empty search
-        keys: ['title', 'formattedNumber', 'authors.name', 'authors.email'],
+        keys: ['title', 'formattedNumber', 'formattedAuthors'],
       })
       .map((result) => {
         return result.obj
