@@ -105,7 +105,10 @@ export async function getRemoteRfds(rfdClient: Api): Promise<RfdWithoutContent[]
   return handleApiResponse(result)
 }
 
-export async function searchRfds(user: User | null, params: IterableIterator<[string, string]>): Promise<SearchResults> {
+export async function searchRfds(
+  user: User | null,
+  params: IterableIterator<[string, string]>,
+): Promise<SearchResults> {
   const rfdClient = client(user?.token || undefined)
   const query: SearchRfdsQueryParams = { q: '' }
 
