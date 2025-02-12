@@ -46,7 +46,7 @@ export type RfdListItem = {
   title?: string
   state?: string
   authors?: Author[]
-  flattendAuthors?: string
+  formattedAuthors?: string
   labels?: string[]
   sha?: string
   commit?: string
@@ -178,7 +178,7 @@ function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
     link: rfd.link,
     discussion: rfd.discussion,
     authors,
-    flattendAuthors: rfd.authors || '',
+    formattedAuthors: rfd.authors || '',
     labels: rfd.labels
       ? rfd.labels
           .split(',')
