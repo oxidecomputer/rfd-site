@@ -116,11 +116,11 @@ export async function searchRfds(
     switch (k) {
       case 'q':
         query.q = v
-      case 'attributes_to_crop':
+      case 'attributesToCrop':
         query.attributesToCrop = v
-      case 'highlight_pre_tag':
+      case 'highlightPreTag':
         query.highlightPreTag = v
-      case 'highlight_post_tag':
+      case 'highlightPostTag':
         query.highlightPostTag = v
     }
   }
