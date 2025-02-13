@@ -116,12 +116,16 @@ export async function searchRfds(
     switch (k) {
       case 'q':
         query.q = v
+        break
       case 'attributesToCrop':
         query.attributesToCrop = v
+        break
       case 'highlightPreTag':
         query.highlightPreTag = v
+        break
       case 'highlightPostTag':
         query.highlightPostTag = v
+        break
     }
   }
 
