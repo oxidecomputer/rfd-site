@@ -79,11 +79,11 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         return fetch(
           `/search?q=${
             request.params?.query
-          }&attributes_to_crop=${request.params?.attributesToSnippet?.join(
+          }&attributesToCrop=${request.params?.attributesToSnippet?.join(
             ',',
-          )}&highlight_post_tag=${
+          )}&highlightPostTag=${
             request.params?.highlightPostTag
-          }&highlight_pre_tag=${request.params?.highlightPreTag}`,
+          }&highlightPreTag=${request.params?.highlightPreTag}`,
         ).then(async (resp) => {
           const data = await resp.json()
           return data

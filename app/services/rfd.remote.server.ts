@@ -13,6 +13,7 @@ import type {
   RfdWithoutContent,
   RfdWithRaw,
   SearchResults,
+  SearchRfdsQueryParams,
 } from '@oxide/rfd.ts/client'
 import { ApiWithRetry } from '@oxide/rfd.ts/client-retry'
 
@@ -104,9 +105,31 @@ export async function getRemoteRfds(rfdClient: Api): Promise<RfdWithoutContent[]
   return handleApiResponse(result)
 }
 
-export async function searchRfds(user: User | null, q: string): Promise<SearchResults> {
+export async function searchRfds(
+  user: User | null,
+  params: IterableIterator<[string, string]>,
+): Promise<SearchResults> {
   const rfdClient = client(user?.token || undefined)
-  const result = await rfdClient.methods.searchRfds({ query: { q } })
+  const query: SearchRfdsQueryParams = { q: '' }
+
+  for (let [k, v] of params) {
+    switch (k) {
+      case 'q':
+        query.q = v
+        break
+      case 'attributesToCrop':
+        query.attributesToCrop = v
+        break
+      case 'highlightPreTag':
+        query.highlightPreTag = v
+        break
+      case 'highlightPostTag':
+        query.highlightPostTag = v
+        break
+    }
+  }
+
+  const result = await rfdClient.methods.searchRfds({ query })
   return handleApiResponse(result)
 }
 
