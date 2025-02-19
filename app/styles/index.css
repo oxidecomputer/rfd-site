@@ -166,26 +166,49 @@ input[type='checkbox']:focus:not(:focus-visible) {
   }
 }
 
-.cm-editor {
-  font-size: 13px;
+/* Tiptap Editor Styles */
+.ProseMirror {
+  font-size: 14px;
   font-family: 'GT America Mono';
+  letter-spacing: 0;
+  height: 100%;
+  outline: none;
 }
 
-.cm-line {
-  padding-left: 12px;
+.ProseMirror p {
+  margin: 0;
+  line-height: 1.6;
 }
 
-.cm-content {
-  padding-top: 8px;
-  padding-bottom: 8px;
+.ProseMirror .collaboration-cursor__caret {
+  border-left: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  margin-left: -1px;
+  margin-right: -1px;
+  pointer-events: none;
+  position: relative;
+  word-break: normal;
 }
 
-.cm-editor .cm-ySelectionInfo {
-  @apply pointer-events-none absolute -left-px -top-[1.4em] z-[1000] select-none whitespace-nowrap rounded px-0.5 py-px opacity-100 text-sans-md;
-  color: var(--base-purple-200);
+.ProseMirror .collaboration-cursor__label {
+  @apply pointer-events-none absolute -left-px -top-[1.4em] z-[1000] select-none whitespace-nowrap rounded px-0.5 py-px opacity-100 text-sans-md text-inverse;
+  background-color: currentColor;
   border-bottom-left-radius: 0;
 }
 
-.cm-editor .cm-ySelectionCaretDot {
-  @apply hidden;
+.drag-handle {
+  @apply flex h-5 w-5 cursor-grab items-center justify-center rounded bg-raise hover:bg-hover;
+}
+
+.prosemirror-dropcursor-block {
+  @apply text-quaternary;
+}
+
+.tiptap p.is-editor-empty:first-child::before {
+  @apply pointer-events-none h-0 text-quaternary;
+  content: attr(data-placeholder);
+}
+
+#tippy-2 {
+  @apply transition-transform;
 }

@@ -70,7 +70,7 @@ export default function NoteEdit() {
 
   return (
     <LiveblocksProvider authEndpoint="/notes/liveblocks-auth">
-      <RoomProvider id={note.id} initialStorage={initialStorage}>
+      <RoomProvider id={note.id} key={note.id} initialStorage={initialStorage}>
         <ClientSideSuspense
           fallback={
             <PlaceholderWrapper>
@@ -80,11 +80,8 @@ export default function NoteEdit() {
         >
           <NoteForm
             id={note.id}
-            userId={user.id}
-            userName={user.displayName || 'Unknown'}
             isOwner={note.user === user.id}
             published={note.published}
-            key={note.id}
             sidebarOpen={sidebarOpen}
             setSidebarOpen={(bool) => setSidebarOpen(bool)}
           />

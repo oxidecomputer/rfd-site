@@ -6,10 +6,10 @@
  * Copyright Oxide Computer Company
  */
 export const PRESENCE_COLORS = [
-  { fg: 'var(--base-green-800)', bg: 'var(--base-green-200)' },
-  { fg: 'var(--base-yellow-800)', bg: 'var(--base-yellow-200)' },
-  { fg: 'var(--base-blue-800)', bg: 'var(--base-blue-200)' },
-  { fg: 'var(--base-purple-800)', bg: 'var(--base-purple-200)' },
+  { fg: '#48D597', bg: '#162322' }, // green-800, green-200
+  { fg: '#F5B944', bg: '#292013' }, // yellow-800, yellow-200
+  { fg: '#8BA1FF', bg: '#1E202D' }, // blue-800, blue-200
+  { fg: '#BE95EB', bg: '#251F2B' }, // purple-800, purple-200
 ] as const
 
 /*

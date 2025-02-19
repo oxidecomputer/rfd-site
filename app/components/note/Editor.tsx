@@ -5,106 +5,61 @@
  *
  * Copyright Oxide Computer Company
  */
-import { EditorState } from '@codemirror/state'
-import { useRoom } from '@liveblocks/react/suspense'
-import { LiveblocksYjsProvider } from '@liveblocks/yjs'
-import { createTheme, type CreateThemeOptions } from '@uiw/codemirror-themes'
-import { basicSetup, EditorView } from 'codemirror'
-import { useCallback, useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { yCollab } from 'y-codemirror.next'
-import * as Y from 'yjs'
+import { useIsEditorReady, useLiveblocksExtension } from '@liveblocks/react-tiptap'
+import DragHandle from '@tiptap-pro/extension-drag-handle-react'
+import Document from '@tiptap/extension-document'
+import Dropcursor from '@tiptap/extension-dropcursor'
+import HardBreak from '@tiptap/extension-hard-break'
+import Paragraph from '@tiptap/extension-paragraph'
+import Placeholder from '@tiptap/extension-placeholder'
+import Text from '@tiptap/extension-text'
+import { EditorContent, useEditor } from '@tiptap/react'
+import { type Dispatch, type SetStateAction } from 'react'
 
-import { getPresenceColor } from './Presence'
+import { DragCursor } from '../CustomIcons'
+import EditorToolbar from './EditorToolbar'
 
-const themeSettings: CreateThemeOptions['settings'] = {
-  background: 'var(--surface-raise)',
-  foreground: 'var(--content-raise)',
-  caret: 'var(--base-neutral-800)',
-  selection: 'rgba(255, 255, 255, 0.1)',
-  selectionMatch: 'rgba(255, 255, 255, 0.2)',
-  gutterBackground: 'var(--base-neutral-200)',
-  gutterForeground: 'var(--base-neutral-600)',
-  gutterBorder: 'transparent',
-  lineHighlight: 'rgba(255, 255, 255, 0.1)',
-}
+const EditorWrapper = ({ onUpdate }: { onUpdate: Dispatch<SetStateAction<string>> }) => {
+  const liveblocks = useLiveblocksExtension()
+  const editorReady = useIsEditorReady()
 
-export const theme = (options?: Partial<CreateThemeOptions>) => {
-  const { theme = 'dark' } = options || {}
-  return createTheme({
-    theme: theme,
-    settings: {
-      ...themeSettings,
+  const editor = useEditor({
+    extensions: [
+      Dropcursor,
+      Document,
+      Paragraph,
+      Text,
+      HardBreak,
+      Placeholder.configure({
+        placeholder: 'Write something …',
+      }),
+      liveblocks,
+    ],
+    editorProps: {
+      attributes: {
+        class: 'h-full p-6 pl-8 focus:outline-none',
+      },
+      handlePaste: () => {}, // todo: fix newlines pasting
     },
-    styles: [],
+    onUpdate: ({ editor }) => {
+      onUpdate(editor.getText())
+    },
   })
-}
 
-const EditorWrapper = ({
-  userId,
-  userName,
-  onUpdate,
-}: {
-  userId: string
-  userName: string
-  onUpdate: Dispatch<SetStateAction<string>>
-}) => {
-  const room = useRoom()
-  const [element, setElement] = useState<HTMLElement>()
+  if (!editorReady || !editor) {
+    return null
+  }
 
-  const ref = useCallback((node: HTMLElement | null) => {
-    if (!node) return
-    setElement(node)
-  }, [])
+  return (
+    <div className="relative flex h-full flex-col">
+      <EditorToolbar editor={editor} />
+      <EditorContent editor={editor} className="h-full overflow-scroll" />
 
-  useEffect(() => {
-    let provider: LiveblocksYjsProvider<any, any, any, any>
-    let ydoc: Y.Doc
-    let view: EditorView
-
-    if (!element || !room) {
-      return
-    }
-
-    ydoc = new Y.Doc()
-    provider = new LiveblocksYjsProvider(room as any, ydoc)
-    const ytext = ydoc.getText('codemirror')
-    const undoManager = new Y.UndoManager(ytext)
-
-    const { fg } = getPresenceColor(userId)
-
-    provider.awareness.setLocalStateField('user', {
-      name: userName,
-      color: fg,
-    })
-
-    const state = EditorState.create({
-      doc: ytext.toString(),
-      extensions: [
-        basicSetup,
-        yCollab(ytext, provider.awareness, { undoManager }),
-        theme(),
-        EditorView.lineWrapping,
-        EditorView.updateListener.of((update) => {
-          if (update.docChanged) {
-            onUpdate(update.state.doc.toString())
-          }
-        }),
-      ],
-    })
-
-    view = new EditorView({
-      state,
-      parent: element,
-    })
-
-    return () => {
-      ydoc?.destroy()
-      provider?.destroy()
-      view?.destroy()
-    }
-  }, [element, room, onUpdate, userName, userId])
-
-  return <div ref={ref} className="h-full" />
+      <DragHandle tippyOptions={{ offset: [0, 6] }} editor={editor}>
+        <DragCursor className="text-quaternary" />
+      </DragHandle>
+    </div>
+  )
 }
 
 export default EditorWrapper

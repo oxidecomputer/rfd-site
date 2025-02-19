@@ -83,7 +83,7 @@ export const Sidebar = () => {
     : []
 
   return (
-    <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col space-y-6 border-r pb-4 border-secondary elevation-2 800:elevation-0 print:hidden">
+    <nav className="300:max-800:max-w-[400px] 300:w-[80vw] flex h-full w-full flex-col space-y-6 border-r pb-4 bg-raise border-secondary elevation-2 800:elevation-0 print:hidden">
       {isEmpty ? (
         <>
           <BackToRfds />

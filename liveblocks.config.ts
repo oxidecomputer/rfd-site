@@ -20,6 +20,7 @@ declare global {
       id: string
       info: {
         name: string
+        color: string
       }
     }
 

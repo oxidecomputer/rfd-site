@@ -17,3 +17,5 @@ test-results/
 .DS_Store
 
 /app/components/icons
+
+.npmrc

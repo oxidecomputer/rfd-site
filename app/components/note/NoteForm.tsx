@@ -53,16 +53,12 @@ export const invalidateNotes = debounce((queryClient: QueryClient) => {
 }, 500)
 
 export const NoteForm = ({
-  userId,
-  userName,
   id,
   isOwner,
   published,
   sidebarOpen,
   setSidebarOpen,
 }: {
-  userId: string
-  userName: string
   id: string
   isOwner: boolean
   published: 'true' | 'false'
@@ -159,14 +155,14 @@ export const NoteForm = ({
           <SavingIndicator />
         </div>
       </div>
-      <div className="flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
+      <div className="relative flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
         <div
           style={{ width: `${leftPaneWidth}%` }} // Apply dynamic width here
-          className="h-full cursor-text overflow-scroll bg-raise"
+          className="h-full cursor-text"
         >
           <input type="hidden" name="body" value={body} />
           <input type="hidden" name="published" value={published} />
-          <EditorWrapper userId={userId} userName={userName} onUpdate={setBody} />
+          <EditorWrapper onUpdate={setBody} />
         </div>
         <div
           onMouseDown={handleMouseDown}
@@ -175,7 +171,7 @@ export const NoteForm = ({
           <div className="h-full w-px border-r border-secondary" />
         </div>
         <div
-          className="h-full overflow-scroll px-4 py-6"
+          className="h-full overflow-scroll px-4 py-6 bg-default"
           style={{
             width: `calc(${100 - leftPaneWidth}% - 2px)`,
           }}

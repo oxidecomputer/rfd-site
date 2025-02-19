@@ -7,6 +7,7 @@
  */
 import { type ActionFunction } from '@remix-run/node'
 
+import { getPresenceColor } from '~/components/note/Presence'
 import { isAuthenticated } from '~/services/authn.server'
 import { client } from '~/services/notes.server'
 import { userIsInternal } from '~/utils/rfdApi'
@@ -19,6 +20,7 @@ export const action: ActionFunction = async ({ request }) => {
   }
 
   const isInternal = userIsInternal(user)
+  const { fg } = getPresenceColor(user.id)
 
   // probably shouldn't check the perms in both places
   // todo: clean up auth
@@ -27,7 +29,7 @@ export const action: ActionFunction = async ({ request }) => {
       userId: user.id,
       groupIds: isInternal ? ['employee'] : [],
     },
-    { userInfo: { name: user.displayName || user.email || '' } },
+    { userInfo: { name: user.displayName || user.email || '', color: fg } },
   )
 
   return new Response(body, { status })

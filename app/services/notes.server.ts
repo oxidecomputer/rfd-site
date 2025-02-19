@@ -24,7 +24,7 @@ type RoomMetadata = {
 }
 
 declare module '@liveblocks/node' {
-  interface BaseMetadata extends RoomMetadata {}
+  interface BaseMetadata extends RoomMetadata { }
 }
 
 export const getNote = async (
@@ -104,7 +104,7 @@ export const serviceClient = createClient({
       return null
     }
     const session = client.prepareSession('_SERVICE_ACCOUNT', {
-      userInfo: { name: 'Service Account' },
+      userInfo: { name: 'Service Account', color: '#000000' },
     })
     session.allow(room, session.FULL_ACCESS)
     const { body } = await session.authorize()
