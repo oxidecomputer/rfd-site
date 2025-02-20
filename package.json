@@ -22,7 +22,7 @@
     "@liveblocks/react-tiptap": "^2.16.1",
     "@liveblocks/yjs": "^2.16.1",
     "@meilisearch/instant-meilisearch": "^0.8.2",
-    "@oxide/design-system": "^2.2.3",
+    "@oxide/design-system": "^2.2.4",
     "@oxide/react-asciidoc": "^1.0.3",
     "@oxide/rfd.ts": "^0.1.1",
     "@radix-ui/react-accordion": "^1.1.2",
