@@ -26,9 +26,11 @@ export type NoteItem = {
   published: boolean
 }
 
+export type WindowMode = 'default' | 'focus' | 'preview'
+
 export type NotesOutletContext = {
-  sidebarOpen: boolean
-  setSidebarOpen: (isOpen: boolean) => void
+  mode: WindowMode
+  setMode: (mode: WindowMode) => void
 }
 
 export function ErrorBoundary() {
@@ -66,21 +68,23 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 }
 
 export default function Notes() {
-  const [sidebarOpen, setSidebarOpen] = useState(true)
+  const [mode, setMode] = useState<WindowMode>('default')
 
   const context: NotesOutletContext = {
-    sidebarOpen,
-    setSidebarOpen,
+    mode,
+    setMode,
   }
+
+  const showSidebar = mode === 'default'
 
   return (
     <div
       className={cn(
         'purple-theme grid h-[100dvh] overflow-hidden',
-        sidebarOpen ? 'grid-cols-[14.25rem,minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
+        showSidebar ? 'grid-cols-[14.25rem,minmax(0,1fr)]' : 'grid-cols-[minmax(0,1fr)]',
       )}
     >
-      {sidebarOpen && <Sidebar />}
+      {showSidebar && <Sidebar />}
       <Outlet context={context} />
     </div>
   )

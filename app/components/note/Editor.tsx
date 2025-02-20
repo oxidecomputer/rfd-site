@@ -53,7 +53,10 @@ const EditorWrapper = ({ onUpdate }: { onUpdate: Dispatch<SetStateAction<string>
   return (
     <div className="relative flex h-full flex-col">
       <EditorToolbar editor={editor} />
-      <EditorContent editor={editor} className="h-full overflow-scroll" />
+      <EditorContent
+        editor={editor}
+        className="mx-auto h-full w-full max-w-800 overflow-scroll"
+      />
 
       <DragHandle tippyOptions={{ offset: [0, 6] }} editor={editor}>
         <DragCursor className="text-quaternary" />

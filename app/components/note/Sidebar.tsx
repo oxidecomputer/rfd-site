@@ -44,24 +44,6 @@ const Divider = ({ className }: { className?: string }) => (
   <div className={cn('mb-3 h-[1px] border-t border-secondary 800:-mx-[2rem]', className)} />
 )
 
-export const SidebarIcon = () => (
-  <svg
-    width="12"
-    height="12"
-    viewBox="0 0 12 12"
-    fill="none"
-    xmlns="http://www.w3.org/2000/svg"
-    className="text-quaternary"
-  >
-    <path
-      fillRule="evenodd"
-      clipRule="evenodd"
-      d="M1.75 0C1.33579 0 1 0.335786 1 0.75V11.25C1 11.6642 1.33579 12 1.75 12H10.25C10.6642 12 11 11.6642 11 11.25V0.75C11 0.335786 10.6642 0 10.25 0H1.75ZM8.75 1.5H4V10.5H8.75C9.16421 10.5 9.5 10.1642 9.5 9.75V2.25C9.5 1.83579 9.16421 1.5 8.75 1.5Z"
-      fill="currentColor"
-    />
-  </svg>
-)
-
 const BackToRfds = () => (
   <div className="mt-0 flex h-14 items-center border-b px-4 border-secondary">
     <Link to="/" className="flex items-center gap-2 text-sans-md text-secondary">
@@ -124,7 +106,7 @@ export const Sidebar = () => {
               <LinkSection label="Drafts">
                 {draftNotes.map((note) => (
                   <NavLink key={note.id} to={`/notes/${note.id}`} className={navLinkStyles}>
-                    <div className="line-clamp-2 text-ellipsis">{note.metadata.title}</div>{' '}
+                    <div className="line-clamp-2 text-ellipsis">{note.metadata.title}</div>
                   </NavLink>
                 ))}
               </LinkSection>

@@ -12,7 +12,7 @@ import {
   RoomProvider,
 } from '@liveblocks/react/suspense'
 import { type LoaderFunctionArgs } from '@remix-run/node'
-import { useLoaderData, useOutletContext } from '@remix-run/react'
+import { useLoaderData } from '@remix-run/react'
 
 import { NoteForm, TypingIndicator } from '~/components/note/NoteForm'
 import { isAuthenticated } from '~/services/authn.server'
@@ -59,11 +59,6 @@ export const initialStorage = {
 export default function NoteEdit() {
   const { user, note } = useLoaderData<typeof loader>()
 
-  const { sidebarOpen, setSidebarOpen } = useOutletContext<{
-    sidebarOpen: boolean
-    setSidebarOpen: (isOpen: boolean) => void
-  }>()
-
   if (!user) {
     return null
   }
@@ -82,8 +77,6 @@ export default function NoteEdit() {
             id={note.id}
             isOwner={note.user === user.id}
             published={note.published}
-            sidebarOpen={sidebarOpen}
-            setSidebarOpen={(bool) => setSidebarOpen(bool)}
           />
         </ClientSideSuspense>
       </RoomProvider>

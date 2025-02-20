@@ -9,21 +9,22 @@ import { useMutation, useStorage, useSyncStatus } from '@liveblocks/react/suspen
 import { Spinner } from '@oxide/design-system'
 import { Asciidoc, prepareDocument, type Options } from '@oxide/react-asciidoc'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { useFetcher } from '@remix-run/react'
+import { useFetcher, useOutletContext } from '@remix-run/react'
 import { useQueryClient, type QueryClient } from '@tanstack/react-query'
+import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useCallback, useMemo, useState, type ChangeEvent } from 'react'
 
 import { opts } from '~/components/AsciidocBlocks'
 import { DropdownItem, DropdownMenu } from '~/components/Dropdown'
 import Icon from '~/components/Icon'
+import { type WindowMode } from '~/routes/notes'
 import { ad } from '~/utils/asciidoctor'
 
 import { MinimalDocument } from '../AsciidocBlocks/Document'
 import { Avatars } from './Avatar'
 import EditorWrapper from './Editor'
 import RoomErrors from './RoomErrors'
-import { SidebarIcon } from './Sidebar'
 
 const noteOpts: Options = {
   ...opts,
@@ -56,18 +57,19 @@ export const NoteForm = ({
   id,
   isOwner,
   published,
-  sidebarOpen,
-  setSidebarOpen,
 }: {
   id: string
   isOwner: boolean
   published: 'true' | 'false'
-  sidebarOpen: boolean
-  setSidebarOpen: (bool: boolean) => void
 }) => {
   const title = useStorage((root) => root.meta.title)
   const lastUpdated = useStorage((root) => root.meta.lastUpdated)
   const queryClient = useQueryClient()
+
+  const { mode, setMode } = useOutletContext<{
+    mode: WindowMode
+    setMode: (mode: WindowMode) => void
+  }>()
 
   const handleChange = useMutation(({ storage }, e: ChangeEvent<HTMLInputElement>) => {
     storage.get('meta').set('title', e.target.value)
@@ -114,17 +116,25 @@ export const NoteForm = ({
     return prepareDocument(adoc)
   }, [title, body])
 
+  const toggleWindowMode = () => {
+    switch (mode) {
+      case 'default':
+        setMode('preview')
+        break
+      case 'preview':
+        setMode('focus')
+        break
+      case 'focus':
+        setMode('default')
+        break
+    }
+  }
+
   return (
     <div>
       <div className="flex h-14 w-full items-center justify-between border-b px-4 border-b-secondary">
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => setSidebarOpen(!sidebarOpen)}
-            className="-m-2 -mr-1 rounded p-2 hover:bg-hover"
-            type="button"
-          >
-            <SidebarIcon />
-          </button>
+          <SavingIndicator />
           <div className="relative w-[min-content] min-w-[1em] rounded px-2 py-1 ring-accent-secondary outline-default focus-within:outline focus-within:ring-2 hover:outline">
             <span className="invisible whitespace-pre text-sans-xl ">
               {title ? title : 'Title...'}
@@ -152,13 +162,21 @@ export const NoteForm = ({
             </div>
           )}
           <Avatars />
-          <SavingIndicator />
+          <button
+            onClick={toggleWindowMode}
+            className="-m-2 -mr-1 rounded p-2 text-quaternary hover:bg-hover"
+            type="button"
+          >
+            {mode === 'default' && <ModeDefaultIcon />}
+            {mode === 'preview' && <ModePreviewIcon />}
+            {mode === 'focus' && <ModeFocusIcon />}
+          </button>
         </div>
       </div>
       <div className="relative flex h-[calc(100vh-60px)] flex-grow overflow-hidden">
         <div
-          style={{ width: `${leftPaneWidth}%` }} // Apply dynamic width here
-          className="h-full cursor-text"
+          style={{ width: mode === 'focus' ? '100%' : `${leftPaneWidth}%` }}
+          className={cn('h-full cursor-text')}
         >
           <input type="hidden" name="body" value={body} />
           <input type="hidden" name="published" value={published} />
@@ -166,12 +184,19 @@ export const NoteForm = ({
         </div>
         <div
           onMouseDown={handleMouseDown}
-          className="flex w-4 cursor-col-resize items-center bg-transparent"
+          className={cn(
+            'group z-10 -m-3 flex w-6 cursor-col-resize justify-center bg-transparent',
+            {
+              hidden: mode === 'focus',
+            },
+          )}
         >
-          <div className="h-full w-px border-r border-secondary" />
+          <div className="h-full w-px border-r border-secondary group-hover:border-default" />
         </div>
         <div
-          className="h-full overflow-scroll px-4 py-6 bg-default"
+          className={cn('h-full overflow-scroll px-4 py-6 bg-default', {
+            hidden: mode === 'focus',
+          })}
           style={{
             width: `calc(${100 - leftPaneWidth}% - 2px)`,
           }}
@@ -183,6 +208,57 @@ export const NoteForm = ({
     </div>
   )
 }
+
+const ModeDefaultIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 12 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M1 0.75C1 0.335786 1.33579 0 1.75 0H10.25C10.6642 0 11 0.335786 11 0.75V11.25C11 11.6642 10.6642 12 10.25 12H1.75C1.33579 12 1 11.6642 1 11.25V0.75ZM7.25 1.5H9C9.27614 1.5 9.5 1.72386 9.5 2V10C9.5 10.2761 9.27614 10.5 9 10.5H7.25V1.5ZM6.25 1.5H4V10.5H6.25V1.5Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
+const ModeFocusIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 12 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M1.75 0C1.33579 0 1 0.335786 1 0.75V11.25C1 11.6642 1.33579 12 1.75 12H10.25C10.6642 12 11 11.6642 11 11.25V0.75C11 0.335786 10.6642 0 10.25 0H1.75ZM3 1.5C2.72386 1.5 2.5 1.72386 2.5 2V10C2.5 10.2761 2.72386 10.5 3 10.5H9C9.27614 10.5 9.5 10.2761 9.5 10V2C9.5 1.72386 9.27614 1.5 9 1.5H3Z"
+      fill="currentColor"
+    />
+  </svg>
+)
+
+const ModePreviewIcon = () => (
+  <svg
+    width="12"
+    height="12"
+    viewBox="0 0 12 12"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M1 0.75C1 0.335786 1.33579 0 1.75 0H10.25C10.6642 0 11 0.335786 11 0.75V11.25C11 11.6642 10.6642 12 10.25 12H1.75C1.33579 12 1 11.6642 1 11.25V0.75ZM2.5 2C2.5 1.72386 2.72386 1.5 3 1.5H5.5V10.5H3C2.72386 10.5 2.5 10.2761 2.5 10V2ZM6.5 10.5H9C9.27614 10.5 9.5 10.2761 9.5 10V2C9.5 1.72386 9.27614 1.5 9 1.5H6.5V10.5Z"
+      fill="currentColor"
+    />
+  </svg>
+)
 
 export const TypingIndicator = () => (
   <div className="typing-indicator">
