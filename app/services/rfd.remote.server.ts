@@ -48,6 +48,11 @@ export function isHttpError(error: Error): error is HttpError {
 }
 
 export function getRfdApiUrl(): string {
+  // If we are in local mode then we can simply return an empty value
+  if (process.env.LOCAL_RFD_REPO) {
+    return ''
+  }
+
   // Otherwise crash the system if we do not have an API target set
   if (!process.env.RFD_API) {
     throw Error('Env var RFD_API must be set when not running in local mode')
