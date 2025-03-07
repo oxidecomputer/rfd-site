@@ -21,7 +21,7 @@ import {
 import { returnToCookie } from './cookies.server'
 import { getUserRedirect } from './redirect.server'
 import { isLocalMode } from './rfd.local.server'
-import { client, fetchGroups, getGroups, getRfdApiUrl } from './rfd.remote.server'
+import { client, fetchRemoteGroups, getGroups, getRfdApiUrl } from './rfd.remote.server'
 
 export type AuthenticationService = 'github' | 'google' | 'local'
 
@@ -51,7 +51,7 @@ export type Group = {
 }
 
 export async function getUserPermissions(user: User): Promise<RfdPermission[]> {
-  const groups = (await fetchGroups(user)).filter((group) =>
+  const groups = (await fetchRemoteGroups(user)).filter((group) =>
     user.groups.includes(group.name),
   )
   const allPermissions = user.permissions.concat(

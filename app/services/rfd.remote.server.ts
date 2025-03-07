@@ -71,7 +71,7 @@ export function client(token?: string): Api {
   })
 }
 
-export async function fetchGroups(
+export async function fetchRemoteGroups(
   user: User | null,
 ): Promise<AccessGroup_for_RfdPermission[]> {
   return await getGroups(client(user?.token || undefined))

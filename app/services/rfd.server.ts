@@ -8,7 +8,11 @@
 
 import { handleDocument } from '@oxide/design-system/components/dist'
 import type { DocumentBlock, DocumentSection } from '@oxide/react-asciidoc'
-import type { RfdWithoutContent, RfdWithRaw } from '@oxide/rfd.ts/client'
+import type {
+  AccessGroup_for_RfdPermission,
+  RfdWithoutContent,
+  RfdWithRaw,
+} from '@oxide/rfd.ts/client'
 
 import { ad, attrs } from '~/utils/asciidoctor'
 
@@ -19,7 +23,7 @@ import {
   isLocalMode,
   type LocalRfd,
 } from './rfd.local.server'
-import { fetchRemoteRfd, fetchRemoteRfds } from './rfd.remote.server'
+import { fetchRemoteGroups, fetchRemoteRfd, fetchRemoteRfds } from './rfd.remote.server'
 
 export type RfdItem = {
   number: number
@@ -52,6 +56,16 @@ export type RfdListItem = {
   commit?: string
   committedAt?: Date
   visibility: 'private' | 'public'
+}
+
+export async function fetchGroups(
+  user: User | null,
+): Promise<AccessGroup_for_RfdPermission[]> {
+  if (isLocalMode()) {
+    return []
+  } else {
+    return await fetchRemoteGroups(user)
+  }
 }
 
 export async function fetchRfd(
