@@ -73,4 +73,10 @@
   .asciidoc-body pre .conum[data-value] {
     @apply text-accent bg-accent-secondary-hover;
   }
+
+  .asciidoc-body svg p {
+    font-size: initial;
+    letter-spacing: initial;
+    font-weight: initial;
+  }
 }
