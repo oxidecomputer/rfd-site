@@ -12,6 +12,7 @@ import { memo, useId, useState } from 'react'
 mermaid.initialize({
   startOnLoad: false,
   theme: 'dark',
+  fontFamily: 'SuisseIntl, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif',
 })
 
 const Mermaid = memo(function Mermaid({ content }: { content: string }) {
