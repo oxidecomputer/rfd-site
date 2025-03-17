@@ -34,8 +34,8 @@ function findLineStartingWith(content: string, prefixRegex: string): string | un
 
 export function fetchLocalRfd(num: number): LocalRfd {
   try {
-    const numStr = num.toString().padStart(4, '0')
-    const buffer = fs.readFileSync(`${localRepo}/rfd/${numStr}/README.adoc`)
+    const basePath = contentsPath(num)
+    const buffer = fs.readFileSync(`${basePath}/README.adoc`)
     let content = buffer.toString()
 
     // we used to parse the whole document for state and title, but this is
@@ -43,13 +43,19 @@ export function fetchLocalRfd(num: number): LocalRfd {
     const state = findLineStartingWith(content, ':state: ') || 'unknown'
 
     let title = findLineStartingWith(content, '= ') || 'Title Not Found'
-    title = title.replace(`RFD ${parseInt(numStr)}`, '')
+    title = title.replace(`RFD ${num}`, '')
 
     // Perform basic replacement for included files
     const pattern = /^include::(.*)\[\]$/gm
     for (let match of content.matchAll(pattern) || []) {
-      const replacementContents = resolveInclude(num, match[1]).toString()
-      content = content.replace(match[0], replacementContents)
+      const replacementContents = resolveInclude(basePath, match[1])
+      if (replacementContents) {
+        content = content.replace(match[0], replacementContents.toString())
+      } else {
+        console.warn(
+          `Unable to find valid file to include for ${match[0]}. Skipping instead`,
+        )
+      }
     }
 
     return {
@@ -65,19 +71,23 @@ export function fetchLocalRfd(num: number): LocalRfd {
   }
 }
 
-function resolveInclude(num: number, path: string) {
+function resolveInclude(basePath: string, path: string) {
   checkForRelativePath(path)
 
-  const numStr = num.toString().padStart(4, '0')
-  const fullPath = `${localRepo}/rfd/${numStr}/${path}`
-  return fs.readFileSync(fullPath)
+  const fullPath = `${basePath}/${path}`
+  try {
+    return fs.readFileSync(fullPath)
+  } catch (e) {
+    console.error('Failed to load content for include')
+    return null
+  }
 }
 
 export function fetchLocalImage(num: number, src: string): Buffer | null {
   checkForRelativePath(src)
 
-  const numStr = num.toString().padStart(4, '0')
-  const imagePath = `${localRepo}/rfd/${numStr}/${src}`
+  const basePath = contentsPath(num)
+  const imagePath = `${basePath}/${src}`
   try {
     return fs.readFileSync(imagePath)
   } catch (e) {
@@ -106,8 +116,14 @@ export function fetchLocalRfds(): LocalRfd[] {
   return rfds
 }
 
+function contentsPath(num: number): string {
+  const numStr = num.toString().padStart(4, '0')
+  return `${localRepo}/rfd/${numStr}`
+}
+
 function checkForRelativePath(path: string) {
   if (path.includes('..')) {
+    console.error('Refusing to load file with a relative path part', path)
     throw new Error('Path must not include any relative path parts')
   }
 }
