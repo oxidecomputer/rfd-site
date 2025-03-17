@@ -36,7 +36,7 @@ export function fetchLocalRfd(num: number): LocalRfd {
   try {
     const numStr = num.toString().padStart(4, '0')
     const buffer = fs.readFileSync(`${localRepo}/rfd/${numStr}/README.adoc`)
-    const content = buffer.toString()
+    let content = buffer.toString()
 
     // we used to parse the whole document for state and title, but this is
     // dramatically faster for live reload and seems to work fine
@@ -44,6 +44,13 @@ export function fetchLocalRfd(num: number): LocalRfd {
 
     let title = findLineStartingWith(content, '= ') || 'Title Not Found'
     title = title.replace(`RFD ${parseInt(numStr)}`, '')
+
+    // Perform basic replacement for included files
+    const pattern = /^include::(.*)\[\]$/gm
+    for (let match of content.matchAll(pattern) || []) {
+      const replacementContents = resolveInclude(num, match[1]).toString()
+      content = content.replace(match[0], replacementContents)
+    }
 
     return {
       number: num,
@@ -58,7 +65,17 @@ export function fetchLocalRfd(num: number): LocalRfd {
   }
 }
 
+function resolveInclude(num: number, path: string) {
+  checkForRelativePath(path)
+
+  const numStr = num.toString().padStart(4, '0')
+  const fullPath = `${localRepo}/rfd/${numStr}/${path}`
+  return fs.readFileSync(fullPath)
+}
+
 export function fetchLocalImage(num: number, src: string): Buffer | null {
+  checkForRelativePath(src)
+
   const numStr = num.toString().padStart(4, '0')
   const imagePath = `${localRepo}/rfd/${numStr}/${src}`
   try {
@@ -87,4 +104,10 @@ export function fetchLocalRfds(): LocalRfd[] {
     .reverse() // sort by highest number first since we don't have dates
 
   return rfds
+}
+
+function checkForRelativePath(path: string) {
+  if (path.includes('..')) {
+    throw new Error('Path must not include any relative path parts')
+  }
 }
