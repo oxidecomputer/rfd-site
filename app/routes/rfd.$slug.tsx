@@ -42,7 +42,7 @@ import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { isAuthenticated } from '~/services/authn.server'
 import { fetchDiscussion } from '~/services/github-discussion.server'
-import { fetchGroups, fetchRfd } from '~/services/rfd.server'
+import { fetchGroups, fetchRfd, fetchRfdJobs } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
@@ -75,6 +75,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   const user = await isAuthenticated(request)
 
   const rfd = await fetchRfd(num, user)
+  const jobs = await fetchRfdJobs(num, user)
 
   // If someone goes to a private RFD but they're not logged in, they will
   // want to log in and see it.
@@ -104,6 +105,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   return {
     rfd,
     groups,
+    jobs,
     // this must not be awaited, it is being deferred
     discussionPromise: fetchDiscussion(num, rfd?.discussion, user),
   }

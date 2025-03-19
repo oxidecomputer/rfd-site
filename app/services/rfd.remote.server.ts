@@ -10,6 +10,7 @@ import type {
   AccessGroup_for_RfdPermission,
   Api,
   ApiResult,
+  Job,
   RfdWithoutContent,
   RfdWithRaw,
   SearchResults,
@@ -99,6 +100,17 @@ export async function getRemoteRfd(
   } else {
     return handleApiResponse(result)
   }
+}
+
+export async function fetchRemoteRfdJobs(num: number, user: User | null): Promise<Job[]> {
+  const rfdClient = client(user?.token || undefined)
+  return await getRemoteRfdJobs(rfdClient, num)
+}
+export async function getRemoteRfdJobs(rfdClient: Api, num: number): Promise<Job[]> {
+  const result = await rfdClient.methods.listJobs({
+    query: { rfd: num.toString() },
+  })
+  return handleApiResponse(result)
 }
 
 export async function fetchRemoteRfds(user: User | null): Promise<RfdWithoutContent[]> {
