@@ -27,25 +27,23 @@ const MoreDropdown = () => {
         </Dropdown.Trigger>
 
         <DropdownMenu>
-          {jobs && jobs.length > 0 && (
-            <DropdownItem onSelect={jobsDialogStore.toggle}>
-              View processing jobs
-            </DropdownItem>
-          )}
+          <DropdownItem onSelect={jobs.length > 0 ? jobsDialogStore.toggle : undefined}>
+            Processing jobs
+          </DropdownItem>
 
           <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
-            View discussion
+            Discussion
           </DropdownLink>
 
           <DropdownLink to={rfd.link || ''} disabled={!rfd.link}>
-            View on GitHub
+            GitHub
           </DropdownLink>
 
           {rfd.link && (
             <DropdownLink
               to={`${rfd.link.replace('/tree/', '/blob/')}/README.adoc?plain=1`}
             >
-              View AsciiDoc source
+              AsciiDoc source
             </DropdownLink>
           )}
 
@@ -58,7 +56,7 @@ const MoreDropdown = () => {
         </DropdownMenu>
       </Dropdown.Root>
 
-      {jobs && <RfdJobsMonitor jobs={jobs} dialogStore={jobsDialogStore} />}
+      <RfdJobsMonitor jobs={jobs} dialogStore={jobsDialogStore} />
     </>
   )
 }
