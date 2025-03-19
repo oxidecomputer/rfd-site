@@ -34,7 +34,7 @@ const Modal = ({
       <Dialog
         store={dialogStore}
         className={cn(
-          'fixed left-1/2 top-[min(50%,500px)] z-30 max-h-[min(800px,80vh)] w-[calc(100%-2.5rem)] max-w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-lg border p-0 bg-raise border-secondary elevation-3',
+          'fixed left-1/2 top-[min(50%,500px)] z-30 flex max-h-[min(800px,80vh)] w-[calc(100%-2.5rem)] max-w-[32rem] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border p-0 bg-raise border-secondary elevation-3',
           widthClass[width],
         )}
         backdrop={<div className="backdrop" />}
@@ -46,7 +46,9 @@ const Modal = ({
           </DialogDismiss>
         </div>
 
-        <main className="px-4 py-6 text-sans-md text-default">{children}</main>
+        <main className="overflow-y-auto px-4 py-6 text-sans-md text-default">
+          {children}
+        </main>
       </Dialog>
     </>
   )

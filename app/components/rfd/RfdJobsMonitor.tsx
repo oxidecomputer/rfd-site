@@ -159,37 +159,35 @@ export default function RfdJobsMonitor({
 
   return (
     <Modal dialogStore={dialogStore} title="RFD Processing Jobs" width="wide">
-      <div className="overflow-auto">
-        <table className="inline-table w-full">
-          <thead>
-            <tr className="text-left">
-              <th className="w-8"></th>
-              <th>Job ID</th>
-              <th>Status</th>
-              <th className="hidden 600:table-cell">Commit</th>
-              <th>Started</th>
+      <table className="inline-table w-full">
+        <thead>
+          <tr className="text-left">
+            <th className="w-8"></th>
+            <th>Job ID</th>
+            <th>Status</th>
+            <th className="hidden 600:table-cell">Commit</th>
+            <th>Started</th>
+          </tr>
+        </thead>
+        <tbody>
+          {jobs.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="px-4 py-6 text-center text-tertiary">
+                No jobs found
+              </td>
             </tr>
-          </thead>
-          <tbody>
-            {jobs.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-tertiary">
-                  No jobs found
-                </td>
-              </tr>
-            ) : (
-              jobs.map((job) => (
-                <JobRow
-                  key={job.id}
-                  job={job}
-                  isExpanded={expandedJobId === job.id}
-                  onToggle={() => toggleExpandJob(job.id)}
-                />
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
+          ) : (
+            jobs.map((job) => (
+              <JobRow
+                key={job.id}
+                job={job}
+                isExpanded={expandedJobId === job.id}
+                onToggle={() => toggleExpandJob(job.id)}
+              />
+            ))
+          )}
+        </tbody>
+      </table>
     </Modal>
   )
 }
