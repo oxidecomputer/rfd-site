@@ -7,23 +7,36 @@
  */
 
 import { Dialog, DialogDismiss, type DialogStore } from '@ariakit/react'
+import cn from 'classnames'
 
 import Icon from '~/components/Icon'
+
+type Width = 'medium' | 'wide'
+
+const widthClass: Record<Width, string> = {
+  medium: 'max-w-[32rem]',
+  wide: 'max-w-[48rem]',
+}
 
 const Modal = ({
   dialogStore,
   title,
   children,
+  width = 'medium',
 }: {
   dialogStore: DialogStore
   title: string
   children: React.ReactElement
+  width?: Width
 }) => {
   return (
     <>
       <Dialog
         store={dialogStore}
-        className="overlay-shadow fixed left-1/2 top-1/2 z-30 w-[calc(100%-2.5rem)] max-w-[32rem] -translate-x-1/2 -translate-y-1/2 rounded-lg border p-0 bg-raise border-secondary"
+        className={cn(
+          'fixed left-1/2 top-[min(50%,500px)] z-30 flex max-h-[min(800px,80vh)] w-[calc(100%-2.5rem)] max-w-[32rem] -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border p-0 bg-raise border-secondary elevation-3',
+          widthClass[width],
+        )}
         backdrop={<div className="backdrop" />}
       >
         <div className="flex w-full items-center border-b p-4 bg-secondary border-secondary">
@@ -33,7 +46,9 @@ const Modal = ({
           </DialogDismiss>
         </div>
 
-        <main className="px-4 py-6 text-sans-md text-default">{children}</main>
+        <main className="overflow-y-auto px-4 py-6 text-sans-md text-default">
+          {children}
+        </main>
       </Dialog>
     </>
   )

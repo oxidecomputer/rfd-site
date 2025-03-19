@@ -10,6 +10,7 @@ import { handleDocument } from '@oxide/design-system/components/dist'
 import type { DocumentBlock, DocumentSection } from '@oxide/react-asciidoc'
 import type {
   AccessGroup_for_RfdPermission,
+  Job,
   RfdWithoutContent,
   RfdWithRaw,
 } from '@oxide/rfd.ts/client'
@@ -23,7 +24,12 @@ import {
   isLocalMode,
   type LocalRfd,
 } from './rfd.local.server'
-import { fetchRemoteGroups, fetchRemoteRfd, fetchRemoteRfds } from './rfd.remote.server'
+import {
+  fetchRemoteGroups,
+  fetchRemoteRfd,
+  fetchRemoteRfdJobs,
+  fetchRemoteRfds,
+} from './rfd.remote.server'
 
 export type RfdItem = {
   number: number
@@ -84,6 +90,21 @@ export async function fetchRfd(
   } catch (err) {
     console.error('Failed to fetch RFD', err)
     return undefined
+  }
+}
+
+export async function fetchRfdJobs(num: number, user: User | null): Promise<Job[]> {
+  if (num < 1 || num > 9999) return []
+
+  try {
+    if (isLocalMode()) {
+      return []
+    } else {
+      return await fetchRemoteRfdJobs(num, user)
+    }
+  } catch (err) {
+    console.error('Failed to fetch RFD jobs', err)
+    return []
   }
 }
 
