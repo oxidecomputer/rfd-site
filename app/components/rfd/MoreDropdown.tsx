@@ -32,18 +32,18 @@ const MoreDropdown = () => {
           <DropdownItem onSelect={jobsDialogStore.toggle}>Processing jobs</DropdownItem>
 
           <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
-            Discussion
+            GitHub discussion
           </DropdownLink>
 
           <DropdownLink to={rfd.link || ''} disabled={!rfd.link}>
-            GitHub
+            GitHub source
           </DropdownLink>
 
           {rfd.link && (
             <DropdownLink
               to={`${rfd.link.replace('/tree/', '/blob/')}/README.adoc?plain=1`}
             >
-              AsciiDoc source
+              Raw AsciiDoc
             </DropdownLink>
           )}
 
