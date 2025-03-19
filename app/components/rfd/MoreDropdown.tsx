@@ -8,6 +8,7 @@
 import { useDialogStore } from '@ariakit/react'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useLoaderData } from '@remix-run/react'
+import { useState } from 'react'
 
 import type { loader } from '~/routes/rfd.$slug'
 
@@ -16,8 +17,9 @@ import Icon from '../Icon'
 import RfdJobsMonitor from './RfdJobsMonitor'
 
 const MoreDropdown = () => {
-  const { rfd, jobs } = useLoaderData<typeof loader>()
-  const jobsDialogStore = useDialogStore()
+  const { rfd } = useLoaderData<typeof loader>()
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const jobsDialogStore = useDialogStore({ open: dialogOpen, setOpen: setDialogOpen })
 
   return (
     <>
@@ -27,9 +29,7 @@ const MoreDropdown = () => {
         </Dropdown.Trigger>
 
         <DropdownMenu>
-          <DropdownItem onSelect={jobs.length > 0 ? jobsDialogStore.toggle : undefined}>
-            Processing jobs
-          </DropdownItem>
+          <DropdownItem onSelect={jobsDialogStore.toggle}>Processing jobs</DropdownItem>
 
           <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
             Discussion
@@ -56,7 +56,9 @@ const MoreDropdown = () => {
         </DropdownMenu>
       </Dropdown.Root>
 
-      <RfdJobsMonitor jobs={jobs} dialogStore={jobsDialogStore} />
+      {dialogOpen && (
+        <RfdJobsMonitor rfdNumber={rfd.number} dialogStore={jobsDialogStore} />
+      )}
     </>
   )
 }

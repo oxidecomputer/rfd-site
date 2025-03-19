@@ -108,7 +108,7 @@ export async function fetchRemoteRfdJobs(num: number, user: User | null): Promis
 }
 export async function getRemoteRfdJobs(rfdClient: Api, num: number): Promise<Job[]> {
   const result = await rfdClient.methods.listJobs({
-    query: { rfd: num.toString() },
+    query: { rfd: num.toString(), limit: 20 },
   })
   return handleApiResponse(result)
 }

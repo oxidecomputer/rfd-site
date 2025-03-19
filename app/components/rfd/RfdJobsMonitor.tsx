@@ -8,6 +8,7 @@
 import { type useDialogStore } from '@ariakit/react'
 import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/components/dist'
 import { type Job } from '@oxide/rfd.ts/client'
+import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -144,14 +145,33 @@ const formatTime = (dateString?: Date) => {
   return dayjs(dateString).fromNow()
 }
 
+async function fetchRfdJobs(rfdNumber: number) {
+  const response = await fetch(`/rfd/${rfdNumber}/jobs`)
+
+  if (!response.ok) {
+    throw new Error('Failed to fetch RFD jobs')
+  }
+  return response.json()
+}
+
 export default function RfdJobsMonitor({
-  jobs,
+  rfdNumber,
   dialogStore,
 }: {
-  jobs: Job[]
+  rfdNumber: number
   dialogStore: ReturnType<typeof useDialogStore>
 }) {
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null)
+
+  const {
+    data: jobs = [],
+    isLoading,
+    error,
+  } = useQuery<Job[]>({
+    queryKey: ['rfdJobs', rfdNumber],
+    queryFn: () => fetchRfdJobs(rfdNumber),
+    refetchOnWindowFocus: false,
+  })
 
   const toggleExpandJob = (jobId: number) => {
     setExpandedJobId(expandedJobId === jobId ? null : jobId)
@@ -159,35 +179,45 @@ export default function RfdJobsMonitor({
 
   return (
     <Modal dialogStore={dialogStore} title="RFD Processing Jobs" width="wide">
-      <table className="inline-table w-full">
-        <thead>
-          <tr className="text-left">
-            <th className="w-8"></th>
-            <th>Job ID</th>
-            <th>Status</th>
-            <th className="hidden 600:table-cell">Commit</th>
-            <th>Started</th>
-          </tr>
-        </thead>
-        <tbody>
-          {jobs.length === 0 ? (
-            <tr>
-              <td colSpan={5} className="px-4 py-6 text-center text-tertiary">
-                No jobs found
-              </td>
+      {isLoading ? (
+        <div className="flex items-center justify-center p-12">
+          <Spinner size="lg" />
+        </div>
+      ) : error ? (
+        <div className="px-4 py-6 text-center text-error">
+          An error occurred while loading jobs.
+        </div>
+      ) : (
+        <table className="inline-table w-full">
+          <thead>
+            <tr className="text-left">
+              <th className="w-8"></th>
+              <th>Job ID</th>
+              <th>Status</th>
+              <th className="hidden 600:table-cell">Commit</th>
+              <th>Started</th>
             </tr>
-          ) : (
-            jobs.map((job) => (
-              <JobRow
-                key={job.id}
-                job={job}
-                isExpanded={expandedJobId === job.id}
-                onToggle={() => toggleExpandJob(job.id)}
-              />
-            ))
-          )}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {jobs.length === 0 ? (
+              <tr>
+                <td colSpan={5} className="px-4 py-6 text-center text-tertiary">
+                  No jobs found
+                </td>
+              </tr>
+            ) : (
+              jobs.map((job) => (
+                <JobRow
+                  key={job.id}
+                  job={job}
+                  isExpanded={expandedJobId === job.id}
+                  onToggle={() => toggleExpandJob(job.id)}
+                />
+              ))
+            )}
+          </tbody>
+        </table>
+      )}
     </Modal>
   )
 }
