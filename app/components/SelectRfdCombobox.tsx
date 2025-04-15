@@ -6,18 +6,21 @@
  * Copyright Oxide Computer Company
  */
 
+import uFuzzy from '@leeoniya/ufuzzy'
 import { Link, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
-import fuzzysort from 'fuzzysort'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import Icon from '~/components/Icon'
 import { useKey } from '~/hooks/use-key'
 import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
+import { fuzzConf } from '~/routes/_index'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
 import { classed } from '~/utils/classed'
 
 const Outline = classed.div`absolute left-0 top-0 z-10 h-full w-full rounded border border-accent pointer-events-none`
+
+const u = new uFuzzy(fuzzConf)
 
 const SelectRfdCombobox = ({
   rfds,
@@ -82,25 +85,39 @@ const ComboboxWrapper = ({
     if (node) node.focus()
   }
 
-  const matchedItems: Fuzzysort.KeysResults<RfdListItem> = fuzzysort.go(input, rfds, {
-    threshold: -10000,
-    all: true, // If true, returns all results for an empty search
-    keys: ['title', 'number_string'],
-    scoreFn: (a) => {
-      const rfdNumber = a[1] ? parseInt(a[1].target) : null
-      const parsedInput = parseInt(input)
+  const matchedItems = useMemo(() => {
+    const parsedInput = parseInt(input)
 
-      let scoreOffset = 0
-      if (!isNaN(parsedInput) && rfdNumber === parsedInput) {
-        scoreOffset = Infinity
-      }
+    if (!input.trim()) {
+      return rfds
+    }
 
-      return Math.max(
-        a[0] ? a[0].score : -Infinity,
-        a[1] ? a[1].score + scoreOffset : -Infinity,
-      )
-    },
-  })
+    const haystack = rfds.map((rfd) => `${rfd.number} ¦ ${rfd.title || ''}`)
+    const idxs = u.filter(haystack, input)
+
+    let filteredRfds: RfdListItem[] = []
+
+    if (idxs) {
+      // Sort by exact match first, then by normal score
+      filteredRfds = idxs
+        .map((i) => {
+          const rfd = rfds[i]
+          return {
+            ...rfd,
+            _exactMatch: !isNaN(parsedInput) && rfd.number === parsedInput,
+          }
+        })
+        .sort((a, b) => {
+          // Prioritize exact matches
+          if (a._exactMatch && !b._exactMatch) return -1
+          if (!a._exactMatch && b._exactMatch) return 1
+          // Fall back to sorting by number
+          return a.number - b.number
+        })
+    }
+
+    return filteredRfds
+  }, [input, rfds])
 
   const [selectedIdx, setSelectedIdx] = useState(0)
   const selectedItem: RfdListItem | undefined = matchedItems[selectedIdx]?.obj
@@ -184,11 +201,11 @@ const ComboboxWrapper = ({
             className={cn('min-w-[12rem] [&>*:last-child_.menu-item]:border-b-0')}
           >
             {matchedItems.length > 0 ? (
-              matchedItems.map((rfd: Fuzzysort.KeysResult<RfdListItem>, index: number) => {
+              matchedItems.map((rfd: RfdListItem, index: number) => {
                 return (
                   <ComboboxItem
-                    key={rfd.obj.formattedNumber}
-                    rfd={rfd.obj}
+                    key={rfd.formattedNumber}
+                    rfd={rfd}
                     selected={selectedIdx === index}
                     isDirty={input.length > 0}
                     onClick={() => handleDismiss()}

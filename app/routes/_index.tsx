@@ -53,7 +53,7 @@ export const action = async ({ request }: ActionFunctionArgs) => {
   })
 }
 
-const fuzzConf: uFuzzy.Options = {
+export const fuzzConf: uFuzzy.Options = {
   intraMode: 1,
   intraIns: 1, // Max number of extra chars allowed between each char within a term
   // ↓ Error types to tolerate within terms
