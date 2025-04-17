@@ -14,13 +14,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import Icon from '~/components/Icon'
 import { useKey } from '~/hooks/use-key'
 import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
-import { fuzzConf } from '~/routes/_index'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
 import { classed } from '~/utils/classed'
+import { fuzz } from '~/utils/fuzz'
 
 const Outline = classed.div`absolute left-0 top-0 z-10 h-full w-full rounded border border-accent pointer-events-none`
-
-const u = new uFuzzy(fuzzConf)
 
 const SelectRfdCombobox = ({
   rfds,
@@ -93,7 +91,7 @@ const ComboboxWrapper = ({
     }
 
     const haystack = rfds.map((rfd) => `${rfd.number} ¦ ${rfd.title || ''}`)
-    const idxs = u.filter(haystack, input)
+    const idxs = fuzz.filter(haystack, input)
 
     let filteredRfds: RfdListItem[] = []
 
@@ -120,7 +118,7 @@ const ComboboxWrapper = ({
   }, [input, rfds])
 
   const [selectedIdx, setSelectedIdx] = useState(0)
-  const selectedItem: RfdListItem | undefined = matchedItems[selectedIdx]?.obj
+  const selectedItem: RfdListItem | undefined = matchedItems[selectedIdx]
 
   const handleDismiss = () => {
     setInput('')

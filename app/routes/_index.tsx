@@ -6,7 +6,6 @@
  * Copyright Oxide Computer Company
  */
 
-import uFuzzy from '@leeoniya/ufuzzy'
 import { Badge } from '@oxide/design-system'
 import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
 import {
@@ -34,6 +33,7 @@ import { useRootLoaderData } from '~/root'
 import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
+import { fuzz } from '~/utils/fuzz'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -52,17 +52,6 @@ export const action = async ({ request }: ActionFunctionArgs) => {
     },
   })
 }
-
-export const fuzzConf: uFuzzy.Options = {
-  intraMode: 1,
-  intraIns: 1, // Max number of extra chars allowed between each char within a term
-  // ↓ Error types to tolerate within terms
-  intraSub: 1,
-  intraTrn: 1,
-  intraDel: 1,
-}
-
-const u = new uFuzzy(fuzzConf)
 
 export default function Index() {
   const [searchParams] = useSearchParams()
@@ -153,7 +142,7 @@ export default function Index() {
         : ''
       return `${rfd.number} ¦ ${rfd.title || ''} ¦ ${authorString}`
     })
-    const idxs = u.filter(haystack, input)
+    const idxs = fuzz.filter(haystack, input)
 
     let filteredRfds: RfdListItem[] = []
 
@@ -184,8 +173,8 @@ export default function Index() {
       const nameHaystack = authors.map((author) => author.name)
       const emailHaystack = authors.map((author) => author.email)
 
-      const nameIdxs = u.filter(nameHaystack, input) || []
-      const emailIdxs = u.filter(emailHaystack, input) || []
+      const nameIdxs = fuzz.filter(nameHaystack, input) || []
+      const emailIdxs = fuzz.filter(emailHaystack, input) || []
 
       // Combine and deduplicate
       const uniqueIdxs = [...new Set([...nameIdxs, ...emailIdxs])]
@@ -203,7 +192,7 @@ export default function Index() {
 
   const matchedLabels = useMemo(() => {
     if (input.length > 2 && labels.length > 0) {
-      const idxs = u.filter(labels, input) || []
+      const idxs = fuzz.filter(labels, input) || []
       const matches = idxs.map((idx) => labels[idx])
 
       if (matches.length > 3) {
