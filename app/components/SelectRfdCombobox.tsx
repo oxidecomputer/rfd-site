@@ -6,7 +6,6 @@
  * Copyright Oxide Computer Company
  */
 
-import uFuzzy from '@leeoniya/ufuzzy'
 import { Link, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
