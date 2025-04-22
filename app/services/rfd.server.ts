@@ -11,6 +11,7 @@ import type { DocumentBlock, DocumentSection } from '@oxide/react-asciidoc'
 import type {
   AccessGroup_for_RfdPermission,
   RfdWithoutContent,
+  RfdWithPdf,
   RfdWithRaw,
 } from '@oxide/rfd.ts/client'
 
@@ -23,7 +24,12 @@ import {
   isLocalMode,
   type LocalRfd,
 } from './rfd.local.server'
-import { fetchRemoteGroups, fetchRemoteRfd, fetchRemoteRfds } from './rfd.remote.server'
+import {
+  fetchRemoteGroups,
+  fetchRemoteRfd,
+  fetchRemoteRfdPdf,
+  fetchRemoteRfds,
+} from './rfd.remote.server'
 
 export type RfdItem = {
   number: number
@@ -80,6 +86,25 @@ export async function fetchRfd(
     } else {
       const rfd = await fetchRemoteRfd(num, user)
       return rfd && apiRfdToItem(rfd)
+    }
+  } catch (err) {
+    console.error('Failed to fetch RFD', err)
+    return undefined
+  }
+}
+
+export async function fetchRfdPdf(
+  num: number,
+  user: User | null,
+): Promise<RfdWithPdf | undefined> {
+  if (num < 1 || num > 9999) return undefined
+
+  try {
+    if (isLocalMode()) {
+      return undefined
+    } else {
+      const rfd = await fetchRemoteRfdPdf(num, user)
+      return rfd
     }
   } catch (err) {
     console.error('Failed to fetch RFD', err)
