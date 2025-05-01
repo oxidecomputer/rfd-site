@@ -65,7 +65,8 @@ body {
 
 @layer base {
   body {
-    @apply text-sans-sm text-raise;
+    /* leading override is gross, fix later */
+    @apply !leading-[1.33] text-sans-sm text-raise;
   }
 }
 
