@@ -25,7 +25,6 @@ import {
 } from '@remix-run/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import type { Author } from '~/components/rfd/RfdPreview'
 import { auth, isAuthenticated } from '~/services/authn.server'
 import styles from '~/styles/index.css?url'
 
@@ -37,7 +36,6 @@ import {
   getAuthors,
   getLabels,
   provideNewRfdNumber,
-  type RfdListItem,
 } from './services/rfd.server'
 
 export const meta: MetaFunction = () => {
@@ -53,10 +51,10 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   const user = await isAuthenticated(request)
   try {
-    const rfds: RfdListItem[] = (await fetchRfds(user)) || []
+    const rfds = (await fetchRfds(user)) || []
 
-    const authors: Author[] = rfds ? getAuthors(rfds) : []
-    const labels: string[] = rfds ? getLabels(rfds) : []
+    const authors = rfds ? getAuthors(rfds) : []
+    const labels = rfds ? getLabels(rfds) : []
 
     return {
       // Any data added to the ENV key of this loader will be injected into the
