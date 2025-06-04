@@ -5,6 +5,7 @@ node_modules
 .env
 .vercel
 .output
+.eslintcache
 
 /build/
 /public/build/

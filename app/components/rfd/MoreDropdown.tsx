@@ -47,12 +47,7 @@ const MoreDropdown = () => {
             </DropdownLink>
           )}
 
-          {/* <DropdownLink
-             to={rfd.pdf_link_google_drive || ''}
-             disabled={!rfd.pdf_link_google_drive}
-           >
-             View PDF
-           </DropdownLink> */}
+          <DropdownLink to={`/rfd/${rfd.number}/pdf`}>View PDF</DropdownLink>
         </DropdownMenu>
       </Dropdown.Root>
 

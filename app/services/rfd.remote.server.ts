@@ -12,6 +12,7 @@ import type {
   ApiResult,
   Job,
   RfdWithoutContent,
+  RfdWithPdf,
   RfdWithRaw,
   SearchResults,
   SearchRfdsQueryParams,
@@ -111,6 +112,26 @@ export async function getRemoteRfdJobs(rfdClient: Api, num: number): Promise<Job
     query: { rfd: num.toString(), limit: 20 },
   })
   return handleApiResponse(result)
+}
+
+export async function fetchRemoteRfdPdf(
+  num: number,
+  user: User | null,
+): Promise<RfdWithPdf | undefined> {
+  const rfdClient = client(user?.token || undefined)
+  return await getRemoteRfdPdf(rfdClient, num)
+}
+export async function getRemoteRfdPdf(
+  rfdClient: Api,
+  num: number,
+): Promise<RfdWithPdf | undefined> {
+  const result = await rfdClient.methods.viewRfdPdf({ path: { number: num.toString() } })
+
+  if (result.response.status === 404) {
+    return undefined
+  } else {
+    return handleApiResponse(result)
+  }
 }
 
 export async function fetchRemoteRfds(user: User | null): Promise<RfdWithoutContent[]> {

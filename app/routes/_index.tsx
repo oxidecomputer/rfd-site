@@ -18,7 +18,6 @@ import {
 } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import fuzzysort from 'fuzzysort'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 
 import { ClientOnly } from '~/components/ClientOnly'
@@ -34,6 +33,7 @@ import { useRootLoaderData } from '~/root'
 import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
+import { fuzz } from '~/utils/fuzz'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -121,17 +121,36 @@ export default function Index() {
   const [matchedItems, exactMatch] = useMemo(() => {
     const parsedInput = parseInt(input)
 
-    const filteredRfds = fuzzysort
-      .go(input, rfds, {
-        threshold: -10000,
-        all: true, // If true, returns all results for an empty search
-        keys: ['title', 'formattedNumber', 'formattedAuthors'],
-      })
-      .map((result) => {
-        return result.obj
+    if (!input.trim()) {
+      const sortedRfds = sortBy(rfds, (rfd) => {
+        const sortVal =
+          sortAttr === 'number'
+            ? rfd.number
+            : rfd.committedAt
+              ? rfd.committedAt.getTime()
+              : new Date().getTime()
+        const mult = sortDir === 'asc' ? 1 : -1
+        return sortVal * mult
       })
 
-    const exactMatch = filteredRfds.find(
+      return [sortedRfds, undefined]
+    }
+
+    const haystack = rfds.map((rfd) => {
+      const authorString = rfd.authors
+        ? rfd.authors.map((a) => `${a.name} ${a.email}`).join(' ')
+        : ''
+      return `${rfd.number} ¦ ${rfd.title || ''} ¦ ${authorString}`
+    })
+    const idxs = fuzz.filter(haystack, input)
+
+    let filteredRfds: RfdListItem[] = []
+
+    if (idxs) {
+      filteredRfds = idxs.map((i) => rfds[i])
+    }
+
+    const exactMatch = rfds.find(
       (rfd) => !isNaN(parsedInput) && rfd.number === parsedInput && rfd,
     )
 
@@ -151,18 +170,21 @@ export default function Index() {
 
   const matchedAuthors = useMemo(() => {
     if (input.length > 2) {
-      const match = fuzzysort
-        .go(input, authors, {
-          threshold: -10000,
-          keys: ['name', 'email'],
-        })
-        .map((result) => result.obj)
+      const nameHaystack = authors.map((author) => author.name)
+      const emailHaystack = authors.map((author) => author.email)
 
-      if (match.length > 3) {
+      const nameIdxs = fuzz.filter(nameHaystack, input) || []
+      const emailIdxs = fuzz.filter(emailHaystack, input) || []
+
+      // Combine and deduplicate
+      const uniqueIdxs = [...new Set([...nameIdxs, ...emailIdxs])]
+      const matches = uniqueIdxs.map((idx) => authors[idx])
+
+      if (matches.length > 3) {
         return undefined
       }
 
-      return match.slice(0, 4)
+      return matches.slice(0, 4)
     }
 
     return []
@@ -170,17 +192,14 @@ export default function Index() {
 
   const matchedLabels = useMemo(() => {
     if (input.length > 2 && labels.length > 0) {
-      const match = fuzzysort
-        .go(input, labels, {
-          threshold: -10000,
-        })
-        .map((result) => result.target)
+      const idxs = fuzz.filter(labels, input) || []
+      const matches = idxs.map((idx) => labels[idx])
 
-      if (match.length > 3) {
+      if (matches.length > 3) {
         return undefined
       }
 
-      return match.slice(0, 4)
+      return matches.slice(0, 4)
     }
 
     return []

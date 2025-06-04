@@ -12,6 +12,7 @@ import type {
   AccessGroup_for_RfdPermission,
   Job,
   RfdWithoutContent,
+  RfdWithPdf,
   RfdWithRaw,
 } from '@oxide/rfd.ts/client'
 
@@ -28,6 +29,7 @@ import {
   fetchRemoteGroups,
   fetchRemoteRfd,
   fetchRemoteRfdJobs,
+  fetchRemoteRfdPdf,
   fetchRemoteRfds,
 } from './rfd.remote.server'
 
@@ -105,6 +107,25 @@ export async function fetchRfdJobs(num: number, user: User | null): Promise<Job[
   } catch (err) {
     console.error('Failed to fetch RFD jobs', err)
     return []
+  }
+}
+
+export async function fetchRfdPdf(
+  num: number,
+  user: User | null,
+): Promise<RfdWithPdf | undefined> {
+  if (num < 1 || num > 9999) return undefined
+
+  try {
+    if (isLocalMode()) {
+      return undefined
+    } else {
+      const rfd = await fetchRemoteRfdPdf(num, user)
+      return rfd
+    }
+  } catch (err) {
+    console.error('Failed to fetch RFD', err)
+    return undefined
   }
 }
 
