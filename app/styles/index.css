@@ -128,3 +128,27 @@ input[type='checkbox']:focus:not(:focus-visible) {
     text-decoration-color: var(--content-tertiary);
   }
 }
+
+table.inline-table {
+  @apply border-separate border-spacing-0;
+  thead {
+    @apply bg-tertiary;
+
+    tr th {
+      @apply h-8 border-y pr-4 text-left text-mono-sm border-default;
+    }
+
+    tr th:first-child {
+      @apply rounded-bl rounded-tl border-l;
+    }
+
+    tr th:last-child {
+      @apply rounded-br rounded-tr border-r;
+    }
+  }
+  tbody {
+    td {
+      @apply h-10 border-b border-b-default;
+    }
+  }
+}
