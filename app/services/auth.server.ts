@@ -85,9 +85,9 @@ const verify: RfdVerifyCallback<User> = async ({ tokens }) => {
 const googleOAuth = new RfdOAuthStrategy(
   {
     host: process.env.RFD_HOST || '',
-    clientId: process.env.RFD_CLIENT_ID || '',
-    clientSecret: process.env.RFD_CLIENT_SECRET || '',
-    redirectURI: process.env.RFD_GOOGLE_REDIRECT_URL || '',
+    clientId: process.env.RFD_API_CLIENT_ID || '',
+    clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
+    redirectURI: process.env.RFD_API_GOOGLE_CALLBACK_URL || '',
     remoteProvider: 'google',
     scopes: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
   },
@@ -98,9 +98,9 @@ auth.use(googleOAuth)
 const githubOAuth = new RfdOAuthStrategy(
   {
     host: process.env.RFD_HOST || '',
-    clientId: process.env.RFD_CLIENT_ID || '',
-    clientSecret: process.env.RFD_CLIENT_SECRET || '',
-    redirectURI: process.env.RFD_GITHUB_REDIRECT_URL || '',
+    clientId: process.env.RFD_API_CLIENT_ID || '',
+    clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
+    redirectURI: process.env.RFD_API_GITHUB_CALLBACK_URL || '',
     remoteProvider: 'github',
     scopes: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
   },
