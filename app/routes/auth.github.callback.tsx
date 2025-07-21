@@ -8,8 +8,8 @@
 
 import type { LoaderFunction } from '@remix-run/node'
 
-import { handleAuthenticationCallback } from '~/services/authn.server'
+import { handleAuthenticationCallback } from '~/services/auth.server'
 
 export let loader: LoaderFunction = async ({ request }) => {
-  return handleAuthenticationCallback('rfd-api-github', request)
+  return handleAuthenticationCallback('rfd-github', request)
 }

@@ -7,21 +7,20 @@
  */
 
 import { Button } from '@oxide/design-system'
-import { json, type LoaderFunction } from '@remix-run/node'
+import { json, redirect, type LoaderFunction } from '@remix-run/node'
 import { Form } from '@remix-run/react'
 
-import { isAuthenticated } from '~/services/authn.server'
+import { getUserFromSession } from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
-import { getUserRedirect } from '~/services/redirect.server'
 
 export let loader: LoaderFunction = async ({ request }) => {
   const url = new URL(request.url)
   const returnTo = url.searchParams.get('returnTo')
 
-  // if we're already logged in, go straight to returnTo
-  await isAuthenticated(request, {
-    successRedirect: getUserRedirect(returnTo),
-  })
+  // If we're already logged in, go straight to returnTo
+  if (await getUserFromSession(request)) {
+    throw redirect('/')
+  }
 
   const headers = new Headers()
   headers.append('Cache-Control', 'no-cache')

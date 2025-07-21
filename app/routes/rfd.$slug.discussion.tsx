@@ -8,7 +8,7 @@
 
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 
-import { isAuthenticated } from '~/services/authn.server'
+import { authenticate } from '~/services/auth.server'
 import { fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
@@ -18,7 +18,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
-  const user = await isAuthenticated(request)
+  const user = await authenticate(request)
   const rfd = await fetchRfd(num, user)
 
   // !rfd covers both non-existent and private RFDs for the logged-out user. In

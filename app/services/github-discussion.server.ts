@@ -12,7 +12,7 @@ import { Octokit } from 'octokit'
 
 import { any } from '~/utils/permission'
 
-import { getUserPermissions, type User } from './authn.server'
+import { getUserPermissions, type User } from './auth.server'
 
 function getOctokitClient() {
   if (process.env.GITHUB_API_KEY) {

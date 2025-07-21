@@ -6,15 +6,16 @@
  * Copyright Oxide Computer Company
  */
 
+import type { AccessGroup_for_RfdPermission } from '@oxide/rfd.ts/client'
 import { describe, expect, it } from 'vitest'
-
-import type { Group } from '~/services/authn.server'
 
 import { can } from './permission'
 
+type TestGroup = Omit<Omit<AccessGroup_for_RfdPermission, 'createdAt'>, 'updatedAt'>
+
 describe('Group Permissions', () => {
   it('Validates group has non value permission', () => {
-    const group: Group = {
+    const group: TestGroup = {
       id: 'test',
       name: 'Test',
       permissions: ['GetRfdsAll'],
@@ -24,7 +25,7 @@ describe('Group Permissions', () => {
   })
 
   it('Validates group has simple value permission', () => {
-    const group: Group = {
+    const group: TestGroup = {
       id: 'test',
       name: 'Test',
       permissions: [{ GetRfd: 123 }],
@@ -34,7 +35,7 @@ describe('Group Permissions', () => {
   })
 
   it('Validates group has list value permission', () => {
-    const group: Group = {
+    const group: TestGroup = {
       id: 'test',
       name: 'Test',
       permissions: [{ GetRfds: [123] }],
@@ -44,7 +45,7 @@ describe('Group Permissions', () => {
   })
 
   it('Validates group with multiple permissions', () => {
-    const group: Group = {
+    const group: TestGroup = {
       id: 'test',
       name: 'Test',
       permissions: [{ GetRfd: 123 }, { GetRfds: [123] }, 'GetRfdsAll'],
@@ -54,7 +55,7 @@ describe('Group Permissions', () => {
   })
 
   it('Validates mapped group permission', () => {
-    const group: Group = {
+    const group: TestGroup = {
       id: 'test',
       name: 'Test',
       permissions: ['GetDiscussionsAll'],

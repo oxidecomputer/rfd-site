@@ -8,7 +8,7 @@
 
 import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
 
-import { isAuthenticated } from '~/services/authn.server'
+import { authenticate } from '~/services/auth.server'
 import { fetchLocalImage, isLocalMode } from '~/services/rfd.local.server'
 import { fetchRfd } from '~/services/rfd.server'
 import { getExpiringUrl } from '~/services/storage.server'
@@ -40,7 +40,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       },
     })
   } else {
-    const user = await isAuthenticated(request)
+    const user = await authenticate(request)
     const remoteRfd = await fetchRfd(rfdNumber, user)
 
     // If the user can read the RFD than they can access the images in the RFD

@@ -9,11 +9,11 @@
 import type { SearchResults } from '@oxide/rfd.ts/client'
 import { type LoaderFunctionArgs } from '@remix-run/node'
 
-import { auth } from '~/services/authn.server'
+import { authenticate } from '~/services/auth.server'
 import { searchRfds } from '~/services/rfd.remote.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
-  const user = await auth.isAuthenticated(request)
+  const user = await authenticate(request)
   const url = new URL(request.url)
 
   const results = await searchRfds(user, url.searchParams.entries())
