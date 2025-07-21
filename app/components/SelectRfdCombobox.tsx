@@ -130,7 +130,7 @@ const ComboboxWrapper = ({
   useSteppedScroll(divRef, ulRef, selectedIdx)
 
   return (
-    <div className={open ? 'visible' : 'pointer-events-none invisible'}>
+    <div className={cn(open ? 'visible' : 'pointer-events-none invisible', 'z-10')}>
       <div
         className={cn(
           'fixed bottom-0 left-0 right-0 top-0 bg-default 600:bg-transparent',
