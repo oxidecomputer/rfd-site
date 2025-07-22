@@ -29,7 +29,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
-import { authenticate } from './services/auth.server'
+import { authenticate, logout } from './services/auth.server'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
@@ -72,8 +72,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   } catch (err) {
     // The only error that should be caught here is the unauthenticated error.
     // And if that occurs we need to log the user out
-    // TODO: FIXME
-    // await auth.logout(request, { redirectTo: '/' })
+    await logout(request, '/')
   }
 
   // Convince remix that a return type will always be provided
