@@ -173,7 +173,7 @@ async function handleAuthenticationCallback(provider: string, request: Request) 
 
 export { auth, handleAuthenticationCallback }
 
-const RFD_PATH = /^\/rfd\/[0-9]{0-3}\??.*$/
+const RFD_PATH = /^\/rfd\/[0-9]{1,4}\??.*$/
 
 function sanitizeRedirect(path: string): string {
   const decoded = decodeURIComponent(path)
