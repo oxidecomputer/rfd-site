@@ -7,6 +7,7 @@
  */
 
 import {
+  RfdMagicLinkStrategy,
   RfdOAuthStrategy,
   type ExpiringUser,
   type RfdVerifyCallback,
@@ -33,9 +34,7 @@ export type User = {
 
 const auth = new Authenticator<User>()
 
-const verify: RfdVerifyCallback<User> = async ({ tokens }) => {
-  const accessToken = tokens.accessToken()
-
+const fetchUser = async (accessToken: string) => {
   // We are decoding the token here without verifying. This is safe to do as we are not relying
   // on it for anything user facing. The only value we are interested in is the expiration. If
   // an externally controlled token were to be provided (ignoring the fact that it would fail on
@@ -82,6 +81,11 @@ const verify: RfdVerifyCallback<User> = async ({ tokens }) => {
   }
 }
 
+const verify: RfdVerifyCallback<User> = async ({ tokens }) => {
+  const accessToken = tokens.accessToken()
+  return fetchUser(accessToken)
+}
+
 const googleOAuth = new RfdOAuthStrategy(
   {
     host: process.env.RFD_API || '',
@@ -107,6 +111,23 @@ const githubOAuth = new RfdOAuthStrategy(
   verify,
 )
 auth.use(githubOAuth)
+
+const magicLink = new RfdMagicLinkStrategy(
+  {
+    storage: sessionStorage,
+    host: process.env.RFD_API || '',
+    clientSecret: process.env.RFD_API_MLINK_SECRET || '',
+    pendingPath: '/login?email=sent',
+    returnPath: '/auth/magic/callback',
+    channel: 'login',
+    linkExpirationTime: 60 * 10, // 10 minutes (in seconds)
+    scope: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
+  },
+  async ({ token }) => {
+    return fetchUser(token)
+  },
+)
+auth.use(magicLink)
 
 export async function getUserFromSession(request: Request): Promise<User | null> {
   const session = await sessionStorage.getSession(request.headers.get('Cookie'))
