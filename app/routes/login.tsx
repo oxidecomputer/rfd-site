@@ -88,59 +88,63 @@ export default function Login() {
         <div className="absolute bottom-0 h-[var(--header-height)] w-full border-t border-t-secondary"></div>
       </div>
       <div className="overlay-shadow fixed left-1/2 top-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-lg border p-8 text-center transition-all bg-raise border-secondary 600:w-[24rem]">
-        <h1 className="mb-8 text-sans-2xl text-accent">Sign in</h1>
         {!showEmailForm && (
-          <Form action="/auth/google" method="post">
-            <Button className="w-full" type="submit">
-              Continue with Google
-            </Button>
-          </Form>
+          <>
+            <h1 className="mb-8 text-sans-2xl text-accent">Sign in</h1>
+            <Form action="/auth/google" method="post">
+              <Button className="w-full" type="submit">
+                Continue with Google
+              </Button>
+            </Form>
+            <Form action="/auth/github" method="post">
+              <Button className="w-full" variant="secondary" type="submit">
+                Continue with GitHub
+              </Button>
+            </Form>
+            <div>
+              <Button
+                className="w-full"
+                variant="secondary"
+                onClick={() => setShowEmailForm(true)}
+              >
+                Continue with Email
+              </Button>
+            </div>
+          </>
         )}
-        {!showEmailForm && (
-          <Form action="/auth/github" method="post">
-            <Button className="w-full" variant="secondary" type="submit">
-              Continue with GitHub
-            </Button>
-          </Form>
-        )}
-        {!showEmailForm && (
-          <div>
-            <Button
-              className="w-full"
-              variant="secondary"
-              onClick={() => setShowEmailForm(true)}
-            >
-              Continue with Email
-            </Button>
-          </div>
+        {showEmailForm && emailSuccess && (
+          <>
+            <h1 className="mb-4 text-sans-2xl text-accent">Email sent</h1>
+            <div>Check your email for a login link.</div>
+          </>
         )}
         {showEmailForm && !emailSuccess && (
-          <Form action="/login" method="post" className="space-y-4">
-            <input
-              placeholder="Email address"
-              name="email"
-              className="mousetrap overlay-shadow h-full w-full rounded border p-3 text-sans-md bg-raise border-secondary focus:outline-none focus:outline-offset-0 focus:ring-2 focus:ring-accent-secondary"
-            />
-            {actionData?.errorMessage && (
-              <div className="text-destructive">{actionData?.errorMessage}</div>
-            )}
-            <Button className="w-full" type="submit">
-              Send
-            </Button>
-          </Form>
-        )}
-        {showEmailForm && emailSuccess && <div>Check your email for a login link</div>}
-        {showEmailForm && !emailSuccess && (
-          <div>
-            <Button
-              className="w-full"
-              type="submit"
-              variant="secondary"
-              onClick={() => setShowEmailForm(false)}
-            >
-              Cancel
-            </Button>
-          </div>
+          <>
+            <h1 className="mb-8 text-sans-2xl text-accent">Sign in</h1>
+            <Form action="/login" method="post" className="space-y-4">
+              <input
+                placeholder="Email address"
+                name="email"
+                className="mousetrap overlay-shadow h-full w-full rounded border p-3 text-sans-md bg-raise border-secondary focus:outline-none focus:outline-offset-0 focus:ring-2 focus:ring-accent-secondary"
+              />
+              {actionData?.errorMessage && (
+                <div className="text-destructive">{actionData?.errorMessage}</div>
+              )}
+              <Button className="w-full" type="submit">
+                Send login link
+              </Button>
+            </Form>
+            <div>
+              <Button
+                className="w-full"
+                type="submit"
+                variant="secondary"
+                onClick={() => setShowEmailForm(false)}
+              >
+                Cancel
+              </Button>
+            </div>
+          </>
         )}
       </div>
     </>
