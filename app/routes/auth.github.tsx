@@ -8,10 +8,10 @@
 
 import { redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
 
-import { auth } from '~/services/authn.server'
+import { auth } from '~/services/auth.server'
 
 export let loader: LoaderFunction = () => redirect('/login')
 
 export let action: ActionFunction = ({ request }) => {
-  return auth.authenticate('rfd-api-github', request)
+  return auth.authenticate('rfd-github', request)
 }

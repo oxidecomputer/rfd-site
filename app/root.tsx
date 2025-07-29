@@ -25,10 +25,11 @@ import {
 } from '@remix-run/react'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 
-import { auth, isAuthenticated } from '~/services/authn.server'
+// import { auth, isAuthenticated } from '~/services/authn.server'
 import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
+import { authenticate, logout } from './services/auth.server'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
@@ -49,7 +50,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   let inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
-  const user = await isAuthenticated(request)
+  const user = await authenticate(request)
   try {
     const rfds = (await fetchRfds(user)) || []
 
@@ -71,7 +72,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   } catch (err) {
     // The only error that should be caught here is the unauthenticated error.
     // And if that occurs we need to log the user out
-    await auth.logout(request, { redirectTo: '/' })
+    await logout(request, '/')
   }
 
   // Convince remix that a return type will always be provided

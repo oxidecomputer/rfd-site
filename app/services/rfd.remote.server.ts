@@ -19,7 +19,7 @@ import type {
 } from '@oxide/rfd.ts/client'
 import { ApiWithRetry } from '@oxide/rfd.ts/client-retry'
 
-import type { User } from './authn.server'
+import type { User } from './auth.server'
 
 export abstract class HttpError extends Error {
   public abstract readonly status: number
@@ -171,7 +171,7 @@ export async function searchRfds(
   return handleApiResponse(result)
 }
 
-function handleApiResponse<T>(response: ApiResult<T>): T {
+export function handleApiResponse<T>(response: ApiResult<T>): T {
   if (response.type === 'success') {
     return response.data
   } else if (response.type === 'client_error') {

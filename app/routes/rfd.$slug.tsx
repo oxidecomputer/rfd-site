@@ -40,7 +40,7 @@ import RfdInlineComments from '~/components/rfd/RfdInlineComments'
 import RfdPreview from '~/components/rfd/RfdPreview'
 import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
-import { isAuthenticated } from '~/services/authn.server'
+import { authenticate } from '~/services/auth.server'
 import { fetchDiscussion } from '~/services/github-discussion.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
@@ -72,7 +72,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
-  const user = await isAuthenticated(request)
+  const user = await authenticate(request)
 
   const rfd = await fetchRfd(num, user)
 

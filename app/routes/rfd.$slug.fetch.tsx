@@ -8,7 +8,7 @@
 
 import type { LoaderFunction } from '@remix-run/node'
 
-import { isAuthenticated } from '~/services/authn.server'
+import { authenticate } from '~/services/auth.server'
 import { fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
@@ -16,7 +16,7 @@ export let loader: LoaderFunction = async ({ request, params: { slug } }) => {
   const num = parseRfdNum(slug)
   if (!num) throw new Response('Not Found', { status: 404 })
 
-  const user = await isAuthenticated(request)
+  const user = await authenticate(request)
   const rfd = await fetchRfd(num, user)
 
   if (!rfd) throw new Response('Not Found', { status: 404 })

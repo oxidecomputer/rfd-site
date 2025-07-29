@@ -18,7 +18,7 @@ import type {
 
 import { ad, attrs } from '~/utils/asciidoctor'
 
-import { type User } from './authn.server'
+import type { User } from './auth.server'
 import {
   fetchLocalRfd,
   fetchLocalRfds,

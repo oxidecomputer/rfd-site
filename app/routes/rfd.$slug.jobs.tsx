@@ -7,7 +7,7 @@
  */
 import { json, type LoaderFunctionArgs } from '@remix-run/node'
 
-import { isAuthenticated } from '~/services/authn.server'
+import { authenticate } from '~/services/auth.server'
 import { fetchRfdJobs } from '~/services/rfd.server'
 
 export async function loader({ request, params }: LoaderFunctionArgs) {
@@ -17,7 +17,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     return json({ error: 'Invalid RFD number' }, { status: 400 })
   }
 
-  const user = await isAuthenticated(request)
+  const user = await authenticate(request)
   const jobs = await fetchRfdJobs(rfdNumber, user)
 
   return json(jobs)
