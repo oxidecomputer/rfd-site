@@ -80,7 +80,7 @@
     "prettier-plugin-tailwindcss": "^0.5.7",
     "tailwindcss": "^3.3.1",
     "typescript": "~5.2.2",
-    "vite": "^5.4.9",
+    "vite": "^5.4.19",
     "vite-tsconfig-paths": "^5.0.1",
     "vitest": "^2.0.3"
   },
