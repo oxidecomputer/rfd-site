@@ -24,7 +24,8 @@ export let loader: LoaderFunction = async ({ request }) => {
   const returnTo = url.searchParams.get('returnTo')
   const emailResponse = url.searchParams.get('email')
 
-  // If we're already logged in, go straight to returnTo
+  // If we're already logged in, just return to the home page. This may occur
+  // while navigating back and forward or from their history
   if (await getUserFromSession(request)) {
     throw redirect('/')
   }
