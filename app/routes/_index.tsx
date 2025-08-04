@@ -76,7 +76,7 @@ export default function Index() {
         if (rfd.state === 'abandoned') {
           return false
         }
-        
+
         if (!rfd.authors) {
           return false
         }
