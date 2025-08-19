@@ -126,8 +126,8 @@ export default function Index() {
         const sortVal =
           sortAttr === 'number'
             ? rfd.number
-            : rfd.committedAt
-              ? rfd.committedAt.getTime()
+            : rfd.latestMajorChangeAt
+              ? rfd.latestMajorChangeAt.getTime()
               : new Date().getTime()
         const mult = sortDir === 'asc' ? 1 : -1
         return sortVal * mult
@@ -158,8 +158,8 @@ export default function Index() {
       const sortVal =
         sortAttr === 'number'
           ? rfd.number
-          : rfd.committedAt
-            ? rfd.committedAt.getTime()
+          : rfd.latestMajorChangeAt
+            ? rfd.latestMajorChangeAt.getTime()
             : new Date().getTime()
       const mult = sortDir === 'asc' ? 1 : -1
       return sortVal * mult
@@ -397,11 +397,13 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
             {() => (
               <>
                 <div className="text-secondary 800:text-default">
-                  {rfd.committedAt && dayjs(rfd.committedAt).format('MMM D, YYYY')}
+                  {rfd.latestMajorChangeAt &&
+                    dayjs(rfd.latestMajorChangeAt).format('MMM D, YYYY')}
                 </div>
                 <div className="text-quaternary 800:hidden">/</div>
                 <div className="text-secondary 800:text-tertiary">
-                  {rfd.committedAt && dayjs(rfd.committedAt).format('h:mm A')}
+                  {rfd.latestMajorChangeAt &&
+                    dayjs(rfd.latestMajorChangeAt).format('h:mm A')}
                 </div>
               </>
             )}

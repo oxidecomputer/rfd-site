@@ -202,7 +202,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
 
   if (!rfdPreview) return null
 
-  const { title, number, state, committedAt, formattedNumber } = rfdPreview
+  const { title, number, state, latestMajorChangeAt, formattedNumber } = rfdPreview
   const authors = rfdPreview.authors || []
   return (
     <div
@@ -248,7 +248,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
         <div className="flex space-x-1 text-sans-sm text-tertiary">
           {state && <div>{state.charAt(0).toUpperCase() + state.slice(1)}</div>}
           <span className="text-quaternary">•</span>
-          <div>{dayjs(committedAt).fromNow()}</div>
+          <div>{dayjs(latestMajorChangeAt).fromNow()}</div>
         </div>
       </div>
     </div>

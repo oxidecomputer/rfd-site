@@ -25,6 +25,8 @@ export async function loader() {
   const rfdUrls = R.pipe(
     rfds,
     R.sortBy((rfd) => rfd.formattedNumber),
+    // Here we explicitly want committedAt instead of latestMajorChangeAt, since we want the sitemap
+    // to update for any change, not just major ones.
     R.map((rfd) => url(`/rfd/${rfd.formattedNumber}`, rfd.committedAt)),
     R.join('\n'),
   )
