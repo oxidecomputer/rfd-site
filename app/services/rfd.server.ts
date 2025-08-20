@@ -47,6 +47,7 @@ export type RfdItem = {
   sha?: string
   commit?: string
   committedAt?: Date
+  latestMajorChangeAt?: Date
   visibility: 'private' | 'public'
 }
 
@@ -63,6 +64,7 @@ export type RfdListItem = {
   sha?: string
   commit?: string
   committedAt?: Date
+  latestMajorChangeAt?: Date
   visibility: 'private' | 'public'
 }
 
@@ -220,6 +222,7 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
     sha: rfd.sha,
     commit: rfd.commit,
     committedAt: rfd.committedAt,
+    latestMajorChangeAt: rfd.latestMajorChangeAt,
     visibility: rfd.visibility,
   }
 }
@@ -244,6 +247,7 @@ function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
     sha: rfd.sha,
     commit: rfd.commit,
     committedAt: rfd.committedAt,
+    latestMajorChangeAt: rfd.latestMajorChangeAt,
     visibility: rfd.visibility,
   }
 }
@@ -270,6 +274,9 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
     toc: content?.sections,
     committedAt: rfd.committedAt,
     visibility: rfd.visibility,
+
+    // Local RFDs don't differentiate between major and minor changes.
+    latestMajorChangeAt: rfd.committedAt,
   }
 }
 
@@ -281,6 +288,9 @@ function localRfdToListItem(rfd: LocalRfd): RfdListItem {
     state: rfd.state,
     committedAt: rfd.committedAt,
     visibility: rfd.visibility,
+
+    // Local RFDs don't differentiate between major and minor changes.
+    latestMajorChangeAt: rfd.committedAt,
   }
 }
 

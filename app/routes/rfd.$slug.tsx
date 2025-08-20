@@ -121,7 +121,7 @@ export default function Rfd() {
   const { pathname, hash } = useLocation()
 
   const { rfd, groups, discussionPromise } = useLoaderData<typeof loader>()
-  const { number, title, state, authors, labels, committedAt, content } = rfd
+  const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
 
   const { user, inlineComments } = useRootLoaderData()
 
@@ -267,7 +267,7 @@ export default function Rfd() {
           )}
           <PropertyRow label="Updated">
             <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
-              {() => <>{dayjs(committedAt).format('MMM D YYYY, h:mm A')}</>}
+              {() => <>{dayjs(latestMajorChangeAt).format('MMM D YYYY, h:mm A')}</>}
             </ClientOnly>
           </PropertyRow>
         </div>

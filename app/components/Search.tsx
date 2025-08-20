@@ -444,7 +444,7 @@ const RFDPreview = ({ number }: { number: number }) => {
           <div className="flex h-6 items-center border-b px-3 text-mono-xs border-b-secondary">
             <div className="text-quaternary">Updated:</div>
             <div className="ml-1 text-default">
-              {dayjs(rfd.committedAt).format('YYYY/MM/DD h:mm A')}
+              {dayjs(rfd.latestMajorChangeAt).format('YYYY/MM/DD h:mm A')}
             </div>
           </div>
 
