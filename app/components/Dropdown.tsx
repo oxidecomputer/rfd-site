@@ -98,7 +98,7 @@ export const DropdownMenu = ({
   <Dropdown.Portal>
     <Dropdown.Content
       className={cn(
-        'menu overlay-shadow z-30 mt-2 min-w-[12rem] rounded border bg-raise border-secondary [&>*:last-child]:border-b-0',
+        'menu overlay-shadow z-30 mt-2 min-w-48 rounded border bg-raise border-secondary [&>*:last-child]:border-b-0',
         classNames,
       )}
       align={align}
@@ -118,7 +118,7 @@ export const DropdownSubMenu = ({
   <Dropdown.Portal>
     <Dropdown.SubContent
       className={cn(
-        'menu overlay-shadow z-10 ml-2 max-h-[30vh] min-w-[12rem] overflow-y-auto rounded border bg-raise border-secondary [&>*:last-child]:border-b-0',
+        'menu overlay-shadow z-10 ml-2 max-h-[30vh] min-w-48 overflow-y-auto rounded border bg-raise border-secondary [&>*:last-child]:border-b-0',
         classNames,
       )}
     >

@@ -13,7 +13,7 @@ import {
   useDialogStore,
   type DialogStore,
 } from '@ariakit/react'
-import { Spinner } from '@oxide/design-system/components/dist'
+import { Spinner } from '@oxide/design-system/components'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -262,7 +262,7 @@ const DiscussionReviewGroup = ({
     <>
       <div
         className={cn(
-          'flex-grow-1 relative left-0 right-0 top-0 z-10 mb-[-1px] h-[1px] border-t border-t-secondary',
+          'flex-grow-1 relative left-0 right-0 top-0 z-10 -mb-px h-px border-t border-t-secondary',
           scrollStart && reviewCount > 0 ? 'opacity-0' : 'opacity-100 transition-opacity',
         )}
       />
@@ -339,7 +339,7 @@ const DiscussionReview = ({
     <section className={cn('relative', !isLast && 'pb-8')}>
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute bottom-0 left-4 top-0 w-[1px] border-l border-l-secondary" />
+        <div className="absolute bottom-0 left-4 top-0 w-px border-l border-l-secondary" />
       )}
 
       {/* Review header */}
@@ -444,7 +444,7 @@ const DiscussionIssueComment = ({
     <section className={cn('relative', !isLast && 'pb-8')}>
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute bottom-0 left-4 top-0 w-[1px] border-l border-l-secondary" />
+        <div className="absolute bottom-0 left-4 top-0 w-px border-l border-l-secondary" />
       )}
 
       {/* Review header */}

@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 import { type useDialogStore } from '@ariakit/react'
-import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/components/dist'
+import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/components'
 import { type Job } from '@oxide/rfd.ts/client'
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
@@ -25,23 +25,23 @@ type JobStatus = {
 }
 
 const InfoField = ({ label, children }: { label: string; children: ReactNode }) => (
-  <div className="border-r border-default last-of-type:border-0">
-    <div className="mb-1 text-mono-sm text-tertiary">{label}</div>
+  <div className="border-default border-r last-of-type:border-0">
+    <div className="text-mono-sm text-tertiary mb-1">{label}</div>
     <div className="flex items-center gap-1.5">{children}</div>
   </div>
 )
 
 const KeyValueRow = ({ label, value }: { label: string; value: ReactNode }) => (
-  <div className="flex flex-col justify-between border-b px-3 py-2 border-default last-of-type:border-0 600:flex-row 600:items-center">
-    <div className="text-mono-sm text-secondary">{label}</div>
-    <div className="max-w-[200px] truncate 600:max-w-[initial]">{value}</div>
+  <div className="600:gap-6 border-default 600:flex-row 600:items-center flex w-full flex-col flex-nowrap justify-between border-b px-3 py-2 last-of-type:border-0">
+    <div className="text-mono-sm text-secondary shrink-0">{label}</div>
+    <div className="max-600:pr-6 truncate">{value}</div>
   </div>
 )
 
 const JobDetailsRow = ({ job }: { job: Job }) => {
   return (
-    <div className="space-y-4 p-4 bg-tertiary 600:p-6">
-      <div className="grid grid-cols-1 gap-4 text-sans-md 600:grid-cols-3">
+    <div className="bg-tertiary 600:p-6 space-y-4 p-4">
+      <div className="text-sans-md 600:grid-cols-3 grid grid-cols-1 gap-4">
         <InfoField label="Committed">
           {dayjs(job.committedAt).format('MMM D, h:mma')}
         </InfoField>
@@ -59,7 +59,7 @@ const JobDetailsRow = ({ job }: { job: Job }) => {
         </InfoField>
       </div>
 
-      <div className="w-full rounded-lg border bg-raise border-default">
+      <div className="bg-raise border-default w-full rounded-lg border">
         <KeyValueRow label="Branch" value={job.branch} />
         <KeyValueRow label="Commit SHA" value={job.sha} />
         <KeyValueRow
@@ -90,21 +90,24 @@ const JobRow = ({
 
   return (
     <>
-      <tr className="cursor-pointer text-sans-md hover:bg-secondary" onClick={onToggle}>
-        <td className="flex items-center justify-center">
+      <tr className="text-sans-md hover:bg-secondary cursor-pointer" onClick={onToggle}>
+        <td className="text-center">
           <Icon
             name="next-arrow"
             size={12}
-            className={cn('transition-transform text-tertiary', isExpanded && 'rotate-90')}
+            className={cn(
+              'text-tertiary inline-block transition-transform',
+              isExpanded && 'rotate-90',
+            )}
           />
         </td>
         <td>{job.id}</td>
-        <td className="flex items-center gap-2">
+        <td>
           <Badge color={status.color}>{status.label}</Badge>
           {status.label !== 'Completed' && <Spinner />}
         </td>
-        <td className="hidden 600:table-cell">
-          <Badge color="neutral" className="!normal-case">
+        <td className="600:table-cell hidden">
+          <Badge color="neutral" className="normal-case!">
             {job.sha.substring(0, 8)}
           </Badge>
         </td>
@@ -184,24 +187,24 @@ export default function RfdJobsMonitor({
           <Spinner size="lg" />
         </div>
       ) : error ? (
-        <div className="px-4 py-6 text-center text-error">
+        <div className="text-error px-4 py-6 text-center">
           An error occurred while loading jobs.
         </div>
       ) : (
-        <table className="inline-table w-full">
+        <table className="inline-table w-full table-fixed">
           <thead>
             <tr className="text-left">
               <th className="w-8"></th>
               <th>Job ID</th>
               <th>Status</th>
-              <th className="hidden 600:table-cell">Commit</th>
+              <th className="600:table-cell hidden">Commit</th>
               <th>Started</th>
             </tr>
           </thead>
           <tbody>
             {jobs.length === 0 ? (
               <tr>
-                <td colSpan={5} className="px-4 py-6 text-center text-tertiary">
+                <td colSpan={5} className="text-tertiary px-4 py-6 text-center">
                   No jobs found
                 </td>
               </tr>

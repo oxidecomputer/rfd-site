@@ -24,7 +24,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
 
           <ul
             id="footnotes"
-            className="col-span-12 col-start-2 800:pr-16 1200:col-start-3 1200:w-[calc(100%-var(--toc-width))] print:!col-span-12 print:!col-start-1"
+            className="col-span-12 col-start-2 800:pr-16 1200:col-start-3 1200:w-[calc(100%-var(--toc-width))] print:col-span-12! print:col-start-1!"
           >
             {doc.footnotes.map((footnote) => (
               <li
@@ -32,7 +32,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
                 id={`_footnotedef_${footnote.index}`}
                 className="relative mb-2"
               >
-                <div className="absolute -left-12 -top-[2px] flex flex-shrink-0 items-center justify-center rounded-full px-[4px] py-[2px] !tracking-normal text-mono-xs text-default bg-tertiary">
+                <div className="absolute -left-12 -top-[2px] flex shrink-0 items-center justify-center rounded-full px-[4px] py-[2px] tracking-normal! text-mono-xs text-default bg-tertiary">
                   {footnote.index}
                 </div>
                 <div className="max-w-800 text-sans-md text-default">

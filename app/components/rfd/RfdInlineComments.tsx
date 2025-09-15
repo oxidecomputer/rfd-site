@@ -17,7 +17,7 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
-import { Badge } from '@oxide/design-system/components/dist'
+import { Badge } from '@oxide/design-system/components'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -367,7 +367,7 @@ export const CommentThreadBlock = ({
       {/* Meta */}
       <div className="flex items-center justify-between p-3 bg-secondary">
         <a href={htmlUrl} target="_blank" rel="noreferrer" className="hover:opacity-80">
-          <div className="flex items-center !normal-case text-mono-sm">
+          <div className="flex items-center normal-case! text-mono-sm">
             {isOverlay && (
               <span className="mr-1 text-sans-sm text-secondary">Comment on </span>
             )}
@@ -552,7 +552,7 @@ const CodeLine = ({
       {lineNumber && (
         <div
           className={cn(
-            'flex w-16 flex-shrink-0 justify-end py-1 pl-4 pr-2',
+            'flex w-16 shrink-0 justify-end py-1 pl-4 pr-2',
             change === 'add' && 'bg-accent-secondary-hover',
             change === 'remove' && 'bg-destructive-secondary-hover',
           )}
@@ -562,12 +562,12 @@ const CodeLine = ({
       )}
       <div
         className={cn(
-          'flex flex-grow whitespace-pre-wrap py-1 pl-2 pr-6',
+          'flex grow whitespace-pre-wrap py-1 pl-2 pr-6',
           change === 'add' && 'bg-accent-secondary',
           change === 'remove' && 'bg-destructive-secondary',
         )}
       >
-        <div className="w-2 flex-shrink-0">
+        <div className="w-2 shrink-0">
           {change === 'add' && '+'}
           {change === 'remove' && '-'}
         </div>

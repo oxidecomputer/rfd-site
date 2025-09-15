@@ -52,7 +52,7 @@ const Listing = ({ node }: { node: LiteralBlock }) => {
         <Title text={node.title} />
         <div className="content">
           <pre
-            className={cn('highlight !block', nowrap ? 'nowrap' : '')}
+            className={cn('highlight block!', nowrap ? 'nowrap' : '')}
             dangerouslySetInnerHTML={{
               __html: node.content || '',
             }}

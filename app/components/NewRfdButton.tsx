@@ -37,7 +37,7 @@ const NewRfdButton = () => {
               repository
             </a>
             ,{' '}
-            <code className="align-[1px]; ml-[1px] mr-[1px] rounded border px-[4px] py-[1px] text-mono-code bg-raise border-secondary">
+            <code className="align-[1px]; ml-px mr-px rounded border px-[4px] py-px text-mono-code bg-raise border-secondary">
               scripts/new.sh
             </code>
             , that will create a new RFD when used like the code below.
@@ -48,8 +48,8 @@ const NewRfdButton = () => {
               ? 'The snippet below automatically updates to ensure the new RFD number is correct.'
               : 'Replace the number below with the next free number'}
           </p>
-          <pre className="mt-4 overflow-x-auto rounded border px-[1.25rem] py-[1rem] text-mono-code border-secondary 800:px-[1.75rem] 800:py-[1.5rem]">
-            <code className="!text-[0.825rem] text-mono-code">
+          <pre className="mt-4 overflow-x-auto rounded border px-5 py-4 text-mono-code border-secondary 800:px-7 800:py-6">
+            <code className="text-[0.825rem]! text-mono-code">
               <span className="mr-2 inline-block select-none text-quaternary">$</span>
               scripts/new.sh{' '}
               {newRfdNumber ? newRfdNumber.toString().padStart(4, '0') : '0042'} "My title

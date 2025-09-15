@@ -93,7 +93,7 @@ export const SuggestedTemplate = ({
   <div className={cn('w-full', `${color}-theme`)}>
     <div className="items-top flex w-full rounded px-3 py-2 pr-6 text-sans-sm text-accent bg-accent-secondary">
       {cloneElement(icon, {
-        className: `mr-2 flex-shrink-0 text-accent-tertiary`,
+        className: `mr-2 shrink-0 text-accent-tertiary`,
       })}
       {children}
     </div>

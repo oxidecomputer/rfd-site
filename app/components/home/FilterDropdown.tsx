@@ -71,7 +71,7 @@ const FilterDropdown = () => {
     <div className="flex h-4 items-center text-mono-sm text-default">
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger className="-m-2 ml-0 p-2">
-          <Icon name="filter" size={12} className="flex-shrink-0" />
+          <Icon name="filter" size={12} className="shrink-0" />
         </Dropdown.Trigger>
 
         <DropdownMenu align="start">

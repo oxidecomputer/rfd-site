@@ -69,7 +69,7 @@ export default function Login() {
             'radial-gradient(200% 100% at 50% 100%, #161B1D 0%, var(--surface-default) 100%)',
         }}
       >
-        <div className="flex h-[var(--header-height)] w-full items-center justify-between border-b px-3 border-b-secondary">
+        <div className="flex h-(--header-height) w-full items-center justify-between border-b px-3 border-b-secondary">
           <div className="space-y-1">
             <div className="h-3 w-16 rounded bg-secondary" />
             <div className="h-3 w-24 rounded bg-secondary" />
@@ -85,7 +85,7 @@ export default function Login() {
           </div>
         </div>
 
-        <div className="absolute bottom-0 h-[var(--header-height)] w-full border-t border-t-secondary"></div>
+        <div className="absolute bottom-0 h-(--header-height) w-full border-t border-t-secondary"></div>
       </div>
       <div className="overlay-shadow fixed left-1/2 top-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-lg border p-8 text-center transition-all bg-raise border-secondary 600:w-[24rem]">
         {!showEmailForm && (

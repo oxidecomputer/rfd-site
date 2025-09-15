@@ -29,12 +29,12 @@
   }
 
   & ins {
-    @apply rounded-sm text-accent;
+    @apply rounded-xs text-accent;
     background-color: rgba(var(--base-green-800-rgb), 0.2);
   }
 
   & del {
-    @apply rounded-sm text-destructive;
+    @apply rounded-xs text-destructive;
     background-color: rgba(var(--base-red-800-rgb), 0.2);
     text-decoration: line-through;
   }

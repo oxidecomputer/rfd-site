@@ -247,25 +247,25 @@ export default function Index() {
     <>
       {/* key makes the search dialog close on selection */}
       <Header key={pathname + hash} />
-      <div className="pt-[1rem]">
+      <div className="pt-4">
         <Container>
-          <div className="relative my-12 w-full 600:pt-[calc(299/1200*100%)]">
+          <div className="600:pt-[calc(299/1200*100%)] relative my-12 w-full">
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="absolute -left-[2.7777777778%] top-0 z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none !filter-none"
+              className="absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none filter-none!"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
               }}
             />
 
-            <div className="1000:translate-0 relative flex w-full flex-col items-center justify-start 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[150px]">
-              <h1 className="text-center text-sans-2xl text-raise 800:text-sans-3xl">
+            <div className="1000:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[130px] relative flex w-full flex-col items-center justify-start">
+              <h1 className="text-sans-2xl text-raise 800:text-sans-3xl text-center">
                 Requests for Discussion
               </h1>
 
-              <div className="relative mt-[22px] h-[40px] w-full 800:w-[calc(100%/36*16+4px)]">
+              <div className="800:w-[calc(100%/36*16+4px)] overlay-shadow relative mt-[22px] h-[40px] w-full rounded">
                 <input
                   value={input}
                   ref={inputEl}
@@ -285,15 +285,15 @@ export default function Index() {
                       )
                     }
                   }}
-                  className="mousetrap overlay-shadow h-full w-full rounded border p-3 text-sans-md bg-raise border-secondary focus:outline-none focus:outline-offset-0 focus:ring-2 focus:ring-accent-secondary"
+                  className="mousetrap text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
                   placeholder="Filter by title, number or author"
                 />
-                <div className="pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border text-mono-xs text-default border-default">
+                <div className="text-mono-xs text-default border-default pointer-events-none absolute top-1/2 right-3 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border">
                   /
                 </div>
               </div>
 
-              <div className="mt-3 flex w-full flex-col gap-2 800:absolute 800:top-[120px] 800:mt-0 800:w-[calc(100%/36*16+4px)]">
+              <div className="800:absolute 800:top-[120px] 800:mt-0 800:w-[calc(100%/36*16+4px)] mt-3 flex w-full flex-col gap-2">
                 {matchedAuthors && <SuggestedAuthors authors={matchedAuthors} />}
                 {matchedLabels && <SuggestedLabels labels={matchedLabels} />}
                 {exactMatch && matchedItems.length > 1 && <ExactMatch rfd={exactMatch} />}
@@ -301,41 +301,41 @@ export default function Index() {
             </div>
           </div>
         </Container>
-        <Container className="mb-4 mt-4 flex justify-between">
+        <Container className="mt-4 mb-4 flex justify-between">
           <FilterDropdown />
-          <div className="flex text-mono-sm text-default">
-            <div className="mr-1 block text-tertiary">Results:</div>
+          <div className="text-mono-sm text-default flex">
+            <div className="text-tertiary mr-1 block">Results:</div>
             {matchedItems.length}
           </div>
         </Container>
         <ul className="space-y-3">
           <Container
             isGrid
-            className="hidden h-10 items-center rounded-lg border px-3 text-mono-xs text-secondary bg-raise border-secondary 800:grid"
+            className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"
           >
             <div
-              className="group col-span-12 flex cursor-pointer select-none content-start pl-2 800:col-span-5"
+              className="group 800:col-span-5 col-span-12 flex cursor-pointer content-start pl-2 select-none"
               onClick={() => submitSortOrder('number')}
             >
-              <div className="-ml-1 flex items-center rounded p-1 group-hover:bg-tertiary">
-                Number <span className="mx-1 inline-block text-quaternary">/</span> Title
+              <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
+                Number <span className="text-quaternary mx-1 inline-block">/</span> Title
                 <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
               </div>
             </div>
 
-            <div className="col-span-3 1000:col-span-2">State</div>
+            <div className="1000:col-span-2 col-span-3">State</div>
 
             <div
-              className="group col-span-3 flex cursor-pointer select-none content-start 1000:col-span-2"
+              className="group 1000:col-span-2 col-span-3 flex cursor-pointer content-start select-none"
               onClick={() => submitSortOrder('updated')}
             >
-              <div className="-ml-1 flex items-center rounded p-1 group-hover:bg-tertiary">
+              <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
                 Updated
                 <SortIcon isActive={sortAttr === 'updated'} direction={sortDir} />
               </div>
             </div>
 
-            <div className="col-span-2 hidden 1000:block">Labels</div>
+            <div className="1000:block col-span-2 hidden">Labels</div>
           </Container>
 
           {matchedItems.map((rfd) => (
@@ -356,8 +356,8 @@ const SortIcon = ({
 }) => (
   <div
     className={cn(
-      'ml-2 h-[14px] flex-col justify-between text-secondary',
-      isActive ? 'flex' : 'hidden group-hover:!flex group-hover:children:!opacity-40',
+      'text-secondary ml-2 h-[14px] flex-col justify-between',
+      isActive ? 'flex' : 'hidden group-hover:flex! group-hover:[&>*]:!opacity-40',
     )}
   >
     <SortArrowTop className={direction === 'asc' ? '' : 'opacity-40'} />
@@ -367,30 +367,30 @@ const SortIcon = ({
 
 const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
   return (
-    <Container className="relative rounded-lg border text-sans-md border-secondary 800:h-20">
-      <div className="grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4 800:gap-6 800:py-0">
+    <Container className="text-sans-md border-secondary 800:h-20 relative rounded-lg border">
+      <div className="800:gap-6 800:py-0 grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4">
         <Link
           to={`/rfd/${rfd.formattedNumber}`}
           key={rfd.formattedNumber}
           prefetch="intent"
-          className="group order-2 col-span-12 -m-4 p-4 pr-10 text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md"
+          className="group text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md order-2 col-span-12 -m-4 p-4 pr-10"
         >
-          <div className="-m-2 inline-flex flex-col rounded-lg p-2 800:group-hover:bg-hover">
+          <div className="800:group-hover:bg-hover -m-2 inline-flex flex-col rounded-lg p-2">
             <div>RFD {rfd.number}</div>
-            <div className="line-clamp-2 text-default">{rfd.title}</div>
+            <div className="text-default line-clamp-2">{rfd.title}</div>
           </div>
         </Link>
 
-        <div className="order-1 col-span-12 flex flex-col items-start 800:order-2 800:col-span-3 1000:col-span-2">
+        <div className="800:order-2 800:col-span-3 1000:col-span-2 order-1 col-span-12 flex flex-col items-start">
           {rfd.state && <StatusBadge label={rfd.state} />}
         </div>
 
-        <div className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2">
+        <div className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2">
           <ClientOnly
             fallback={
               <>
-                <div className="h-4 w-24 rounded bg-tertiary" />
-                <div className="mt-1 hidden h-4 w-12 rounded bg-tertiary 800:block"></div>
+                <div className="bg-tertiary h-4 w-24 rounded" />
+                <div className="bg-tertiary 800:block mt-1 hidden h-4 w-12 rounded"></div>
               </>
             }
           >
@@ -417,12 +417,12 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
 }
 
 const Labels = ({ labels }: { labels: string[] }) => (
-  <div className="order-4 col-span-3 hidden max-h-[2.5rem] 1000:flex">
+  <div className="1000:flex order-4 col-span-3 hidden max-h-10">
     <ClientOnly
       fallback={
         <>
-          <div className="h-4 w-16 rounded bg-tertiary" />
-          <div className="ml-1 hidden h-4 w-12 rounded bg-tertiary 800:block"></div>
+          <div className="bg-tertiary h-4 w-16 rounded" />
+          <div className="bg-tertiary 800:block ml-1 hidden h-4 w-12 rounded"></div>
         </>
       }
     >
@@ -433,11 +433,11 @@ const Labels = ({ labels }: { labels: string[] }) => (
 
 const LabelsInner = ({ labels }: { labels: string[] }) => {
   const containerEl = useRef<HTMLDivElement>(null)
-  const { isOverflow } = useIsOverflow(containerEl)
+  // const { isOverflow } = useIsOverflow(containerEl)
   return (
     <div
       ref={containerEl}
-      className="relative flex flex-shrink flex-wrap gap-1 overflow-hidden pr-8 text-tertiary"
+      className="text-tertiary relative flex shrink flex-wrap gap-1 overflow-hidden pr-8"
     >
       {labels ? (
         labels.map((label) => (
@@ -449,11 +449,12 @@ const LabelsInner = ({ labels }: { labels: string[] }) => {
         <div className="text-sans-md text-quaternary">-</div>
       )}
 
-      {isOverflow && (
-        <div className="absolute right-6 top-1/2 -translate-y-1/2 text-mono-sm text-secondary">
+      {/* todo: replace with something clearer */}
+      {/*{isOverflow && (
+        <div className="text-mono-sm text-tertiary absolute top-1/2 right-6 -translate-y-1/2">
           +
         </div>
-      )}
+      )}*/}
     </div>
   )
 }

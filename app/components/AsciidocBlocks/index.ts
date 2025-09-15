@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { AsciiDocBlocks } from '@oxide/design-system/components/dist'
+import { AsciiDocBlocks } from '@oxide/design-system/components'
 import { type Options } from '@oxide/react-asciidoc'
 
 import { CustomDocument } from './Document'

@@ -208,7 +208,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
 
       {(items.length > 0 || noMatches) && (
         <>
-          <div className="flex h-[60vh] overflow-hidden 600:h-[32rem]">
+          <div className="flex h-[60vh] overflow-hidden 600:h-128">
             {noMatches ? (
               <div className="flex h-full w-full flex-col items-center justify-center py-12 600:py-0">
                 <div className="mb-4 rounded p-1 bg-accent-secondary">
@@ -257,7 +257,7 @@ const SearchBox = () => {
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
         autoFocus
-        className="w-full bg-transparent px-4 text-sans-lg text-raise focus:!outline-none 600:text-sans-2xl"
+        className="w-full bg-transparent px-4 text-sans-lg text-raise focus:outline-none! 600:text-sans-2xl"
         placeholder="Search RFD contents"
       />
       {inputValue !== '' && (
@@ -345,8 +345,8 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
               {isNewSection && (
                 <h3
                   className={cn(
-                    'line-clamp-1 h-6 rounded-t-sm px-3 !leading-6 text-mono-xs text-secondary bg-tertiary',
-                    sectionIsSelected && '600:!text-inverse 600:!bg-accent',
+                    'line-clamp-1 h-6 rounded-t-sm px-3 leading-6! text-mono-xs text-secondary bg-tertiary',
+                    sectionIsSelected && '600:text-inverse! 600:bg-accent!',
                   )}
                 >
                   {hit.hierarchy_lvl0}
@@ -450,7 +450,7 @@ const RFDPreview = ({ number }: { number: number }) => {
 
           <div className="flex w-full flex-col items-start p-6">
             {rfd.state && <StatusBadge label={rfd.state} />}
-            <div className="mt-2 !text-[32px] !leading-[1.15] text-sans-3xl text-raise">
+            <div className="mt-2 text-[32px]! leading-[1.15]! text-sans-3xl text-raise">
               {rfd.title}
             </div>
             <ul className="mt-6 w-full">
@@ -466,7 +466,7 @@ const RFDPreview = ({ number }: { number: number }) => {
                         >
                           <DialogDismiss className="text-left">
                             <li
-                              className="text-sans-sm text-default hover:text-default children:!text-sans-sm"
+                              className="text-sans-sm text-default hover:text-default [&>*]:!text-sans-sm"
                               dangerouslySetInnerHTML={{ __html: item.title }}
                             />
                           </DialogDismiss>

@@ -84,7 +84,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           {user ? (
             <Dropdown.Root modal={false}>
               <Dropdown.Trigger className="flex h-8 w-8 items-center justify-center rounded border text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover 600:w-auto 600:px-3">
-                <Icon name="profile" size={16} className="flex-shrink-0" />
+                <Icon name="profile" size={16} className="shrink-0" />
                 <span className="ml-2 hidden text-sans-sm text-default 600:block">
                   {user.displayName || user.email}
                 </span>

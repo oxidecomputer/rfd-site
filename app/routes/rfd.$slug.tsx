@@ -11,7 +11,7 @@ import {
   useActiveSectionTracking,
   useDelegatedReactRouterLinks,
   useIntersectionObserver,
-} from '@oxide/design-system/components/dist'
+} from '@oxide/design-system/components'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import { redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
 import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
@@ -200,7 +200,7 @@ export default function Rfd() {
               <span className="hidden 1200:inline">RFD</span> {number}
             </div>
             <div className="col-span-12 flex items-baseline 800:col-span-11 1200:col-span-10">
-              <h1 className="w-full pr-4 text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
+              <h1 className="w-full pr-4 text-sans-2xl text-balance text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
@@ -278,7 +278,7 @@ export default function Rfd() {
             ref={bodyRef}
           >
             <Asciidoc document={content as DocumentBlock} options={opts} />
-            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1200:sticky 1200:block print:hidden">
+            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto 1200:sticky 1200:block print:hidden">
               <Suspense
                 fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
               >
@@ -329,7 +329,7 @@ export default function Rfd() {
         </Container>
         <Footnotes doc={content as DocumentBlock} />
       </main>
-      <div className="fixed inset-x-0 bottom-0 children:mb-0">
+      <div className="fixed inset-x-0 bottom-0 [&>*]:mb-0">
         {content && (
           <SmallScreenOutline
             toc={content.sections}
@@ -360,7 +360,7 @@ const PropertyRow = ({
   >
     <Container isGrid>
       <div className="relative col-span-4 text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
-        <div className="absolute -bottom-2 -top-2 right-0 w-px bg-[black]" />
+        <div className="hidden print:block absolute -bottom-2 -top-2 right-0 w-px border-default border-r" />
         {label}
       </div>
       <div className="col-span-8 text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">

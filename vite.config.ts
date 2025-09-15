@@ -10,6 +10,7 @@ import { vitePlugin as remix } from '@remix-run/dev'
 import { vercelPreset } from '@vercel/remix/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
+import tailwindcss from "@tailwindcss/vite";
 
 import { LocalRfdPlugin } from './vite/local-rfd-plugin'
 
@@ -22,6 +23,7 @@ declare module '@remix-run/server-runtime' {
 const plugins = [
   remix({ presets: [vercelPreset()], future: { v3_singleFetch: true } }),
   tsconfigPaths(),
+  tailwindcss(),
 ]
 
 const localRepo = process.env.LOCAL_RFD_REPO

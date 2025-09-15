@@ -45,7 +45,7 @@ const SelectRfdCombobox = ({
         </div>
         <div
           className={cn(
-            'truncate !leading-[14px] text-sans-sm text-default 600:max-w-[240px]',
+            'truncate leading-[14px]! text-sans-sm text-default 600:max-w-[240px]',
             isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
           )}
         >
@@ -57,7 +57,7 @@ const SelectRfdCombobox = ({
         className="ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border text-tertiary border-secondary hover:bg-hover 600:ml-6"
         aria-label="Select a RFD"
       >
-        <Icon name="select-arrows" size={6} className="flex-shrink-0" height={14} />
+        <Icon name="select-arrows" size={6} className="shrink-0" height={14} />
       </button>
 
       <ComboboxWrapper open={open} rfds={open ? rfds : []} onDismiss={handleDismiss} />
@@ -195,7 +195,7 @@ const ComboboxWrapper = ({
         >
           <ul
             ref={ulRef}
-            className={cn('min-w-[12rem] [&>*:last-child_.menu-item]:border-b-0')}
+            className={cn('min-w-48 [&>*:last-child_.menu-item]:border-b-0')}
           >
             {matchedItems.length > 0 ? (
               matchedItems.map((rfd: RfdListItem, index: number) => {
