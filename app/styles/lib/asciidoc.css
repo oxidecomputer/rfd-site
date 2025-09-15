@@ -45,27 +45,27 @@
   }
 
   & h1[data-sectnum]:before {
-    @apply pointer-events-none top-[6px] mr-2 inline-block text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    @apply text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg pointer-events-none top-[6px] mr-2 inline-block;
     content: attr(data-sectnum);
   }
 
   & h2[data-sectnum]:before {
-    @apply pointer-events-none top-[6px] mr-2 inline-block text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    @apply text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg pointer-events-none top-[6px] mr-2 inline-block;
     content: attr(data-sectnum);
   }
 
   & h3[data-sectnum]:before {
-    @apply pointer-events-none top-[6px] mr-2 inline-block text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    @apply text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg pointer-events-none top-[6px] mr-2 inline-block;
     content: attr(data-sectnum);
   }
 
   & h4[data-sectnum]:before {
-    @apply pointer-events-none top-[6px] mr-2 inline-block text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    @apply text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg pointer-events-none top-[6px] mr-2 inline-block;
     content: attr(data-sectnum);
   }
 
   & h5[data-sectnum]:before {
-    @apply pointer-events-none top-[6px] mr-2 inline-block text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg;
+    @apply text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg pointer-events-none top-[6px] mr-2 inline-block;
     content: attr(data-sectnum);
   }
 

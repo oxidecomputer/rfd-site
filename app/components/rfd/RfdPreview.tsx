@@ -207,13 +207,13 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   return (
     <div
       ref={floatingEl}
-      className="overlay-shadow absolute z-10 mt-8 flex w-[24rem] rounded-lg border p-3 bg-raise border-secondary"
+      className="overlay-shadow bg-raise border-secondary absolute z-10 mt-8 flex w-[24rem] rounded-lg border p-3"
       style={{ top: rfdPreviewPos.top, left: rfdPreviewPos.left }}
     >
       <Link
         prefetch="intent"
         to={`/rfd/${formattedNumber}`}
-        className="mr-2 block text-sans-lg text-accent-tertiary hover:text-accent-secondary"
+        className="text-sans-lg text-accent-tertiary hover:text-accent-secondary mr-2 block"
       >
         {number}
       </Link>
@@ -221,7 +221,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
         <Link
           prefetch="intent"
           to={`/rfd/${formattedNumber}`}
-          className="mb-1 block text-sans-lg hover:text-default"
+          className="text-sans-lg hover:text-default mb-1 block"
         >
           {title}
         </Link>
@@ -230,7 +230,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
             <Fragment key={author.name}>
               <Link
                 className={cn(
-                  'inline-block hover:text-default',
+                  'hover:text-default inline-block',
                   !author.email && 'pointer-events-none',
                 )}
                 to={
@@ -245,7 +245,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
             </Fragment>
           ))}
         </div>
-        <div className="flex space-x-1 text-sans-sm text-tertiary">
+        <div className="text-sans-sm text-tertiary flex space-x-1">
           {state && <div>{state.charAt(0).toUpperCase() + state.slice(1)}</div>}
           <span className="text-quaternary">•</span>
           <div>{dayjs(latestMajorChangeAt).fromNow()}</div>

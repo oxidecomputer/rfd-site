@@ -29,7 +29,7 @@ const Mermaid = memo(function Mermaid({ content }: { content: string }) {
   return (
     <>
       <button
-        className="absolute right-2 top-2 text-mono-xs text-tertiary"
+        className="text-mono-xs text-tertiary absolute top-2 right-2"
         onClick={() => setShowSource(!showSource)}
       >
         {showSource ? 'Hide' : 'Show'} Source <span className="text-quaternary">|</span>{' '}

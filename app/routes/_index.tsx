@@ -27,7 +27,6 @@ import Header from '~/components/Header'
 import FilterDropdown from '~/components/home/FilterDropdown'
 import StatusBadge from '~/components/StatusBadge'
 import { ExactMatch, SuggestedAuthors, SuggestedLabels } from '~/components/Suggested'
-import { useIsOverflow } from '~/hooks/use-is-overflow'
 import { useKey } from '~/hooks/use-key'
 import { useRootLoaderData } from '~/root'
 import { rfdSortCookie } from '~/services/cookies.server'
@@ -357,7 +356,7 @@ const SortIcon = ({
   <div
     className={cn(
       'text-secondary ml-2 h-[14px] flex-col justify-between',
-      isActive ? 'flex' : 'hidden group-hover:flex! group-hover:[&>*]:!opacity-40',
+      isActive ? 'flex' : 'hidden group-hover:flex! group-hover:*:!opacity-40',
     )}
   >
     <SortArrowTop className={direction === 'asc' ? '' : 'opacity-40'} />

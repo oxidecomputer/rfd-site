@@ -181,7 +181,7 @@ export const CommentCount = ({
   error?: boolean
 }) => {
   return (
-    <div className="sticky top-0 w-full pb-4 bg-default">
+    <div className="bg-default sticky top-0 w-full pb-4">
       <button
         onClick={onClick}
         className={cn(
@@ -221,16 +221,16 @@ const DialogContent = ({
   return (
     <Dialog
       store={dialogStore}
-      className="dialog overlay-shadow fixed bottom-0 right-0 top-0 z-20 flex w-[670px] flex-col border-l bg-raise border-secondary print:hidden"
+      className="dialog overlay-shadow bg-raise border-secondary fixed top-0 right-0 bottom-0 z-20 flex w-[670px] flex-col border-l print:hidden"
       backdropProps={{ className: 'backdrop' }}
     >
       <DialogHeading className="mb-4 p-8">
         <div className="flex items-start justify-between">
-          <div className="pr-4 text-sans-2xl">
+          <div className="text-sans-2xl pr-4">
             RFD {rfdNumber} {title}
           </div>
           <DialogDismiss className="-m-2 p-2">
-            <Icon name="close" size={12} className="mt-2 text-secondary" />
+            <Icon name="close" size={12} className="text-secondary mt-2" />
           </DialogDismiss>
         </div>
         <a
@@ -262,7 +262,7 @@ const DiscussionReviewGroup = ({
     <>
       <div
         className={cn(
-          'flex-grow-1 relative left-0 right-0 top-0 z-10 -mb-px h-px border-t border-t-secondary',
+          'border-t-secondary relative top-0 right-0 left-0 z-10 -mb-px h-px flex-grow-1 border-t',
           scrollStart && reviewCount > 0 ? 'opacity-0' : 'opacity-100 transition-opacity',
         )}
       />
@@ -293,16 +293,16 @@ const DiscussionReviewGroup = ({
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="mb-24 w-full max-w-[220px] text-center">
-              <div className="inline-block rounded p-2 text-accent bg-accent-secondary">
+              <div className="text-accent bg-accent-secondary inline-block rounded p-2">
                 <Icon name="chat" size={16} />
               </div>
               <h2 className="text-semi-lg mt-4">Nothing to see here</h2>
-              <p className="text-md mt-2 text-default">
+              <p className="text-md text-default mt-2">
                 This discussion has no reviews or comments
               </p>
               <a
                 href={`https://github.com/oxidecomputer/rfd/pull/${pullNumber}`}
-                className="mt-6 inline-block rounded border px-2 py-1 text-mono-xs text-secondary border-default hover:bg-secondary"
+                className="text-mono-xs text-secondary border-default hover:bg-secondary mt-6 inline-block rounded border px-2 py-1"
                 target="_blank"
                 rel="noreferrer"
               >
@@ -339,7 +339,7 @@ const DiscussionReview = ({
     <section className={cn('relative', !isLast && 'pb-8')}>
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute bottom-0 left-4 top-0 w-px border-l border-l-secondary" />
+        <div className="border-l-secondary absolute top-0 bottom-0 left-4 w-px border-l" />
       )}
 
       {/* Review header */}
@@ -360,7 +360,7 @@ const DiscussionReview = ({
               {data.review.user.login}
             </a>
           </div>
-          <div className="ml-1 text-sans-md text-secondary">
+          <div className="text-sans-md text-secondary ml-1">
             reviewed on
             <time dateTime={data.review.submitted_at}>
               {' '}
@@ -372,8 +372,8 @@ const DiscussionReview = ({
 
       {/* Review body (if it exists) */}
       {data.review.body && (
-        <div className="relative mt-4 overflow-hidden rounded-lg border bg-default border-secondary">
-          <div className="flex items-center border-b p-3 text-sans-md bg-secondary border-b-secondary">
+        <div className="bg-default border-secondary relative mt-4 overflow-hidden rounded-lg border">
+          <div className="text-sans-md bg-secondary border-b-secondary flex items-center border-b p-3">
             <a
               href={data.review.user.html_url}
               className="text-sans-semi-md text-default hover:text-raise"
@@ -382,11 +382,11 @@ const DiscussionReview = ({
             >
               {data.review.user.login}
             </a>
-            <span className="ml-1 text-secondary">left a comment</span>
+            <span className="text-secondary ml-1">left a comment</span>
           </div>
 
           <div
-            className="github-markdown asciidoc-body w-full p-3 pr-4 text-left text-sans-md text-default"
+            className="github-markdown asciidoc-body text-sans-md text-default w-full p-3 pr-4 text-left"
             dangerouslySetInnerHTML={{ __html: marked.parse(data.review.body) }}
           />
         </div>
@@ -398,18 +398,18 @@ const DiscussionReview = ({
         return (
           <div key={thread[0].id} className="relative">
             {thread[0].line && (
-              <div className="absolute bottom-3 left-1 right-1 top-3">
+              <div className="absolute top-3 right-1 bottom-3 left-1">
                 <DialogDismiss
                   onClick={() => gotoBlock(thread[0].line!)}
                   className="group sticky top-0"
                 >
-                  <div className="flex h-6 w-6 items-center justify-center rounded-full border bg-raise border-secondary group-hover:bg-secondary">
+                  <div className="bg-raise border-secondary group-hover:bg-secondary flex h-6 w-6 items-center justify-center rounded-full border">
                     <GotoIcon className="text-secondary" />
                   </div>
                 </DialogDismiss>
               </div>
             )}
-            <div className="relative ml-10 mt-4 flex justify-end">
+            <div className="relative mt-4 ml-10 flex justify-end">
               <CommentThreadBlock
                 path={thread[0].path}
                 line={thread[0].line || thread[0].original_line}
@@ -444,7 +444,7 @@ const DiscussionIssueComment = ({
     <section className={cn('relative', !isLast && 'pb-8')}>
       {/* Timeline line */}
       {!isLast && (
-        <div className="absolute bottom-0 left-4 top-0 w-px border-l border-l-secondary" />
+        <div className="border-l-secondary absolute top-0 bottom-0 left-4 w-px border-l" />
       )}
 
       {/* Review header */}
@@ -455,8 +455,8 @@ const DiscussionIssueComment = ({
           alt={`Avatar for ${data.user.login}`}
         />
 
-        <div className="relative ml-2 w-full overflow-hidden rounded-lg border bg-default border-secondary">
-          <div className="flex items-center border-b p-3 text-sans-md bg-secondary border-b-secondary">
+        <div className="bg-default border-secondary relative ml-2 w-full overflow-hidden rounded-lg border">
+          <div className="text-sans-md bg-secondary border-b-secondary flex items-center border-b p-3">
             <a
               href={data.user.html_url}
               className="text-sans-semi-md text-default hover:text-raise"
@@ -465,7 +465,7 @@ const DiscussionIssueComment = ({
             >
               {data.user.login}
             </a>
-            <span className="ml-1 text-secondary">
+            <span className="text-secondary ml-1">
               commented on
               <time dateTime={data.created_at}>
                 {' '}
@@ -475,7 +475,7 @@ const DiscussionIssueComment = ({
           </div>
 
           <div
-            className="github-markdown asciidoc-body w-full p-3 pr-4 text-left text-sans-md text-default"
+            className="github-markdown asciidoc-body text-sans-md text-default w-full p-3 pr-4 text-left"
             dangerouslySetInnerHTML={{ __html: marked.parse(data.body || '') }}
           />
         </div>

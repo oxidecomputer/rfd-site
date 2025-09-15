@@ -52,7 +52,7 @@ export const DropdownSubTrigger = ({
     <Icon
       name="carat-down"
       size={12}
-      className="absolute right-3 top-1/2 -translate-y-1/2 -rotate-90 text-tertiary"
+      className="text-tertiary absolute top-1/2 right-3 -translate-y-1/2 -rotate-90"
     />
   </Dropdown.SubTrigger>
 )
@@ -74,7 +74,7 @@ export const DropdownLink = ({
     {...(internal ? {} : { target: '_blank', rel: 'noreferrer' })}
     href={to}
     className={cn(
-      'block ',
+      'block',
       dropdownOuterStyles,
       classNames,
       disabled && 'pointer-events-none',
@@ -98,7 +98,7 @@ export const DropdownMenu = ({
   <Dropdown.Portal>
     <Dropdown.Content
       className={cn(
-        'menu overlay-shadow z-30 mt-2 min-w-48 rounded border bg-raise border-secondary [&>*:last-child]:border-b-0',
+        'menu overlay-shadow bg-raise border-secondary z-30 mt-2 min-w-48 rounded border [&>*:last-child]:border-b-0',
         classNames,
       )}
       align={align}
@@ -118,7 +118,7 @@ export const DropdownSubMenu = ({
   <Dropdown.Portal>
     <Dropdown.SubContent
       className={cn(
-        'menu overlay-shadow z-10 ml-2 max-h-[30vh] min-w-48 overflow-y-auto rounded border bg-raise border-secondary [&>*:last-child]:border-b-0',
+        'menu overlay-shadow bg-raise border-secondary z-10 ml-2 max-h-[30vh] min-w-48 overflow-y-auto rounded border [&>*:last-child]:border-b-0',
         classNames,
       )}
     >

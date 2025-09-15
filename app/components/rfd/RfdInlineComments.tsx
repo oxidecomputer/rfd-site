@@ -230,13 +230,13 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
         }}
         {...getReferenceProps()}
       >
-        <div className="inline-flex items-center justify-center rounded-full p-[2px] bg-tertiary">
+        <div className="bg-tertiary inline-flex items-center justify-center rounded-full p-[2px]">
           {users.slice(0, 3).map((user, index) => {
             return (
               <div
                 key={index}
                 className={cn(
-                  'h-[24px] w-[24px] overflow-hidden rounded-full border-2 bg-secondary',
+                  'bg-secondary h-[24px] w-[24px] overflow-hidden rounded-full border-2',
                   index > 0 && '-ml-2',
                 )}
                 style={{ borderColor: 'var(--surface-tertiary)' }}
@@ -300,11 +300,11 @@ const CodeSuggestion = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border text-raise border-secondary',
+        'text-raise border-secondary overflow-hidden rounded-lg border',
         isOverlay ? 'bg-default' : 'bg-raise',
       )}
     >
-      <div className="w-full border-b px-2 py-2 text-mono-xs text-tertiary border-b-secondary">
+      <div className="text-mono-xs text-tertiary border-b-secondary w-full border-b px-2 py-2">
         Suggestion
       </div>
       <CodeLine change="remove" code={textDiff.before} />
@@ -360,16 +360,16 @@ export const CommentThreadBlock = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border border-secondary',
-        isOverlay ? 'overlay-shadow w-[560px] bg-raise' : 'w-full bg-default',
+        'border-secondary overflow-hidden rounded-lg border',
+        isOverlay ? 'overlay-shadow bg-raise w-[560px]' : 'bg-default w-full',
       )}
     >
       {/* Meta */}
-      <div className="flex items-center justify-between p-3 bg-secondary">
+      <div className="bg-secondary flex items-center justify-between p-3">
         <a href={htmlUrl} target="_blank" rel="noreferrer" className="hover:opacity-80">
-          <div className="flex items-center normal-case! text-mono-sm">
+          <div className="text-mono-sm flex items-center normal-case!">
             {isOverlay && (
-              <span className="mr-1 text-sans-sm text-secondary">Comment on </span>
+              <span className="text-sans-sm text-secondary mr-1">Comment on </span>
             )}
             {path}
 
@@ -390,7 +390,7 @@ export const CommentThreadBlock = ({
       {/* )} */}
 
       {/* Code */}
-      <div className={cn('border-b border-t border-secondary', isOverlay && 'border-t')}>
+      <div className={cn('border-secondary border-t border-b', isOverlay && 'border-t')}>
         {lines.map((line, index) => {
           let change: Change = null
 
@@ -449,7 +449,7 @@ export const CommentThreadBlock = ({
           return (
             <div
               key={comment.id}
-              className="flex border-b p-3 border-b-secondary last:border-b-0"
+              className="border-b-secondary flex border-b p-3 last:border-b-0"
             >
               <img
                 src={comment.user.avatar_url}
@@ -470,7 +470,7 @@ export const CommentThreadBlock = ({
                         {comment.user.login}
                       </a>
                     </div>
-                    <div className="ml-1 text-sans-md text-secondary">
+                    <div className="text-sans-md text-secondary ml-1">
                       <time dateTime={comment.created_at}>
                         {dayjs(comment.created_at).fromNow()}
                       </time>
@@ -478,7 +478,7 @@ export const CommentThreadBlock = ({
                   </div>
                 </div>
                 <div
-                  className="github-markdown asciidoc-body mt-2 w-full pr-4 text-left text-sans-md text-default"
+                  className="github-markdown asciidoc-body text-sans-md text-default mt-2 w-full pr-4 text-left"
                   dangerouslySetInnerHTML={{ __html: marked.parse(comment.body) }}
                 />
 
@@ -527,10 +527,10 @@ const CommentReactions = ({ reactions }: { reactions: Reactions }) => {
         return (
           <div
             key={key}
-            className="flex items-center rounded-lg border p-1 text-mono-sm text-default border-secondary"
+            className="text-mono-sm text-default border-secondary flex items-center rounded-lg border p-1"
           >
             {emoji}
-            <span className="ml-1 inline-block text-mono-sm text-default">{count}</span>
+            <span className="text-mono-sm text-default ml-1 inline-block">{count}</span>
           </div>
         )
       })}
@@ -548,11 +548,11 @@ const CodeLine = ({
   lineNumber?: number | null
 }) => {
   return (
-    <div className="flex text-mono-code">
+    <div className="text-mono-code flex">
       {lineNumber && (
         <div
           className={cn(
-            'flex w-16 shrink-0 justify-end py-1 pl-4 pr-2',
+            'flex w-16 shrink-0 justify-end py-1 pr-2 pl-4',
             change === 'add' && 'bg-accent-secondary-hover',
             change === 'remove' && 'bg-destructive-secondary-hover',
           )}
@@ -562,7 +562,7 @@ const CodeLine = ({
       )}
       <div
         className={cn(
-          'flex grow whitespace-pre-wrap py-1 pl-2 pr-6',
+          'flex grow py-1 pr-6 pl-2 whitespace-pre-wrap',
           change === 'add' && 'bg-accent-secondary',
           change === 'remove' && 'bg-destructive-secondary',
         )}

@@ -45,7 +45,7 @@ const SelectRfdCombobox = ({
         </div>
         <div
           className={cn(
-            'truncate leading-[14px]! text-sans-sm text-default 600:max-w-[240px]',
+            'text-sans-sm text-default 600:max-w-[240px] truncate leading-[14px]!',
             isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
           )}
         >
@@ -54,7 +54,7 @@ const SelectRfdCombobox = ({
       </div>
       <button
         onClick={toggleCombobox}
-        className="ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border text-tertiary border-secondary hover:bg-hover 600:ml-6"
+        className="text-tertiary border-secondary hover:bg-hover 600:ml-6 ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border"
         aria-label="Select a RFD"
       >
         <Icon name="select-arrows" size={6} className="shrink-0" height={14} />
@@ -133,13 +133,13 @@ const ComboboxWrapper = ({
     <div className={cn(open ? 'visible' : 'pointer-events-none invisible', 'z-10')}>
       <div
         className={cn(
-          'fixed bottom-0 left-0 right-0 top-0 bg-default 600:bg-transparent',
-          open ? 'opacity-80 ' : 'opacity-0',
+          'bg-default 600:bg-transparent fixed top-0 right-0 bottom-0 left-0',
+          open ? 'opacity-80' : 'opacity-0',
         )}
         onClick={() => handleDismiss()}
       />
       <div
-        className="group absolute left-4 right-4 top-4 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem]"
+        className="group 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem] absolute top-4 right-4 left-4"
         onKeyDown={(e) => {
           const lastIdx = matchedItems.length - 1
           if (e.key === 'Enter') {
@@ -163,7 +163,7 @@ const ComboboxWrapper = ({
         aria-controls="TODO"
         aria-expanded
       >
-        <div className="overlay flex rounded border shadow bg-raise border-secondary focus-within:ring-2 focus-within:ring-accent-secondary">
+        <div className="overlay bg-raise border-secondary focus-within:ring-accent-secondary flex rounded border shadow focus-within:ring-2">
           <input
             ref={inputRef}
             value={input}
@@ -180,10 +180,10 @@ const ComboboxWrapper = ({
             }}
             placeholder="Search"
             spellCheck="false"
-            className="mousetrap h-12 w-full appearance-none rounded border-none px-3 text-sans-lg text-raise bg-raise focus:outline-none focus:outline-offset-0 600:h-auto 600:py-3 600:text-sans-md"
+            className="mousetrap text-sans-lg text-raise bg-raise 600:h-auto 600:py-3 600:text-sans-md h-12 w-full appearance-none rounded border-none px-3 focus:outline-offset-0 focus:outline-none"
           />
           <button
-            className="hover:bg-raise-hover block border-l px-4 text-mono-sm text-secondary border-l-secondary 600:hidden"
+            className="hover:bg-raise-hover text-mono-sm text-secondary border-l-secondary 600:hidden block border-l px-4"
             onClick={handleDismiss}
           >
             <Icon name="close" size={12} className="text-tertiary" />
@@ -191,12 +191,9 @@ const ComboboxWrapper = ({
         </div>
         <div
           ref={divRef}
-          className="overlay-shadow mt-3 max-h-[60vh] overflow-y-auto rounded border bg-raise border-secondary"
+          className="overlay-shadow bg-raise border-secondary mt-3 max-h-[60vh] overflow-y-auto rounded border"
         >
-          <ul
-            ref={ulRef}
-            className={cn('min-w-48 [&>*:last-child_.menu-item]:border-b-0')}
-          >
+          <ul ref={ulRef} className={cn('min-w-48 [&>*:last-child_.menu-item]:border-b-0')}>
             {matchedItems.length > 0 ? (
               matchedItems.map((rfd: RfdListItem, index: number) => {
                 return (
@@ -210,7 +207,7 @@ const ComboboxWrapper = ({
                 )
               })
             ) : (
-              <div className="px-3 py-2 text-center text-sans-sm text-default">
+              <div className="text-sans-sm text-default px-3 py-2 text-center">
                 No matches found
               </div>
             )}
@@ -263,7 +260,7 @@ const ComboboxItem = ({
     >
       <li
         className={cn(
-          'menu-item relative cursor-pointer border-b px-3 py-2 pr-6 text-sans-sm border-secondary',
+          'menu-item text-sans-sm border-secondary relative cursor-pointer border-b px-3 py-2 pr-6',
           selected
             ? 'text-accent bg-accent-secondary hover:bg-accent-secondary-hover'
             : 'hover:bg-raise-hover text-default',

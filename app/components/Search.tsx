@@ -98,7 +98,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         <Dialog
           open={open}
           onClose={onClose}
-          className="overlay-shadow fixed left-1/2 top-4 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0 bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px]"
+          className="overlay-shadow bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px] fixed top-4 left-1/2 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0"
           aria-label="Jump to"
           backdrop={<div className="backdrop" />}
         >
@@ -191,27 +191,27 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
     >
       <div
         className={cn(
-          'flex h-12 items-center focus-visible:outline-none 600:h-16',
-          (items.length > 0 || noMatches) && 'border-b border-b-secondary',
+          '600:h-16 flex h-12 items-center focus-visible:outline-none',
+          (items.length > 0 || noMatches) && 'border-b-secondary border-b',
         )}
       >
         <SearchBox />
 
         <button
-          className="hover:bg-raise-hover block h-full border-l px-4 text-mono-sm text-secondary border-l-secondary"
+          className="hover:bg-raise-hover text-mono-sm text-secondary border-l-secondary block h-full border-l px-4"
           onClick={dismissSearch}
         >
-          <span className="hidden 600:block">Dismiss</span>
-          <Icon name="close" size={12} className="block text-tertiary 600:hidden" />
+          <span className="600:block hidden">Dismiss</span>
+          <Icon name="close" size={12} className="text-tertiary 600:hidden block" />
         </button>
       </div>
 
       {(items.length > 0 || noMatches) && (
         <>
-          <div className="flex h-[60vh] overflow-hidden 600:h-128">
+          <div className="600:h-128 flex h-[60vh] overflow-hidden">
             {noMatches ? (
-              <div className="flex h-full w-full flex-col items-center justify-center py-12 600:py-0">
-                <div className="mb-4 rounded p-1 bg-accent-secondary">
+              <div className="600:py-0 flex h-full w-full flex-col items-center justify-center py-12">
+                <div className="bg-accent-secondary mb-4 rounded p-1">
                   <Icon name="search" size={16} className="text-accent" />
                 </div>
                 <div className="text-secondary">
@@ -228,7 +228,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
             )}
           </div>
 
-          <div className="hidden justify-between rounded-b-lg px-4 py-2 text-default bg-tertiary 600:flex">
+          <div className="text-default bg-tertiary 600:flex hidden justify-between rounded-b-lg px-4 py-2">
             <ActionMenuHotkey keys={['Enter']} action="submit" />
             <ActionMenuHotkey keys={['Arrow Up', 'Arrow Down']} action="select" />
             <ActionMenuHotkey keys={['Esc']} action="close" />
@@ -257,12 +257,12 @@ const SearchBox = () => {
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
         autoFocus
-        className="w-full bg-transparent px-4 text-sans-lg text-raise focus:outline-none! 600:text-sans-2xl"
+        className="text-sans-lg text-raise 600:text-sans-2xl w-full bg-transparent px-4 focus:outline-none!"
         placeholder="Search RFD contents"
       />
       {inputValue !== '' && (
         <button
-          className="absolute right-0 top-1/2 hidden -translate-y-1/2 p-4 600:block"
+          className="600:block absolute top-1/2 right-0 hidden -translate-y-1/2 p-4"
           onClick={() => setInputValue('')}
         >
           <Icon name="close" size={12} className="text-tertiary" />
@@ -331,7 +331,7 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
 
   return (
     <div
-      className="h-full w-full overflow-y-auto border-r bg-secondary border-r-secondary 600:w-1/2"
+      className="bg-secondary border-r-secondary 600:w-1/2 h-full w-full overflow-y-auto border-r"
       ref={divRef}
     >
       <ul ref={ulRef}>
@@ -345,7 +345,7 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
               {isNewSection && (
                 <h3
                   className={cn(
-                    'line-clamp-1 h-6 rounded-t-sm px-3 leading-6! text-mono-xs text-secondary bg-tertiary',
+                    'text-mono-xs text-secondary bg-tertiary line-clamp-1 h-6 rounded-t-sm px-3 leading-6!',
                     sectionIsSelected && '600:text-inverse! 600:bg-accent!',
                   )}
                 >
@@ -365,11 +365,11 @@ const HitItem = ({ hit, isSelected }: { hit: RFDHit; isSelected: boolean }) => {
   const subTitleAttribute = hit.hierarchy_lvl2 ? 'hierarchy_lvl2' : 'hierarchy_lvl1'
 
   return (
-    <div className="relative border-b border-b-secondary">
+    <div className="border-b-secondary relative border-b">
       {isSelected && (
         <div
           className={cn(
-            'pointer-events-none absolute top-0 z-20 hidden h-[calc(100%+1px)] w-full rounded-b-sm border border-accent 600:block',
+            'border-accent 600:block pointer-events-none absolute top-0 z-20 hidden h-[calc(100%+1px)] w-full rounded-b-sm border',
           )}
         />
       )}
@@ -380,7 +380,7 @@ const HitItem = ({ hit, isSelected }: { hit: RFDHit; isSelected: boolean }) => {
             isSelected ? '600:rounded-md 600:bg-accent-secondary' : '',
           )}
         >
-          <DialogDismiss className="text-left text-sans-sm">
+          <DialogDismiss className="text-sans-sm text-left">
             <div>
               <Highlight
                 attribute={subTitleAttribute}
@@ -438,19 +438,19 @@ const RFDPreview = ({ number }: { number: number }) => {
   const rfd: RfdItem | null = query.data as RfdItem
 
   return (
-    <div className="hidden h-full w-1/2 overflow-scroll 600:block">
+    <div className="600:block hidden h-full w-1/2 overflow-scroll">
       {rfd ? (
         <>
-          <div className="flex h-6 items-center border-b px-3 text-mono-xs border-b-secondary">
+          <div className="text-mono-xs border-b-secondary flex h-6 items-center border-b px-3">
             <div className="text-quaternary">Updated:</div>
-            <div className="ml-1 text-default">
+            <div className="text-default ml-1">
               {dayjs(rfd.latestMajorChangeAt).format('YYYY/MM/DD h:mm A')}
             </div>
           </div>
 
           <div className="flex w-full flex-col items-start p-6">
             {rfd.state && <StatusBadge label={rfd.state} />}
-            <div className="mt-2 text-[32px]! leading-[1.15]! text-sans-3xl text-raise">
+            <div className="text-sans-3xl text-raise mt-2 text-[32px]! leading-[1.15]!">
               {rfd.title}
             </div>
             <ul className="mt-6 w-full">
@@ -458,7 +458,7 @@ const RFDPreview = ({ number }: { number: number }) => {
                 rfd.toc.map(
                   (item) =>
                     item.level === 1 && (
-                      <div className="w-full border-b py-2 border-b-default" key={item.id}>
+                      <div className="border-b-default w-full border-b py-2" key={item.id}>
                         <Link
                           to={`/rfd/${rfd.number}#${item.id}`}
                           className="block"
@@ -466,7 +466,7 @@ const RFDPreview = ({ number }: { number: number }) => {
                         >
                           <DialogDismiss className="text-left">
                             <li
-                              className="text-sans-sm text-default hover:text-default [&>*]:!text-sans-sm"
+                              className="text-sans-sm text-default hover:text-default *:!text-sans-sm"
                               dangerouslySetInnerHTML={{ __html: item.title }}
                             />
                           </DialogDismiss>
@@ -479,19 +479,19 @@ const RFDPreview = ({ number }: { number: number }) => {
         </>
       ) : (
         <>
-          <div className="flex h-6 items-center border-b px-3 text-mono-xs border-b-secondary">
-            <div className="h-3 w-[180px] rounded bg-tertiary" />
+          <div className="text-mono-xs border-b-secondary flex h-6 items-center border-b px-3">
+            <div className="bg-tertiary h-3 w-[180px] rounded" />
           </div>
 
           <div className="flex w-full flex-col items-start p-6">
-            <div className="h-4 w-[65px] rounded bg-tertiary" />
-            <div className="mt-2 h-6 w-[200px] rounded bg-tertiary" />
+            <div className="bg-tertiary h-4 w-[65px] rounded" />
+            <div className="bg-tertiary mt-2 h-6 w-[200px] rounded" />
             <ul className="mt-6 w-full">
-              <li className="mb-2 h-6 w-full rounded bg-tertiary" />
-              <li className="mb-2 h-6 w-full rounded bg-tertiary" />
-              <li className="mb-2 h-6 w-full rounded bg-tertiary" />
-              <li className="mb-2 h-6 w-full rounded bg-tertiary" />
-              <li className="mb-2 h-6 w-full rounded bg-tertiary" />
+              <li className="bg-tertiary mb-2 h-6 w-full rounded" />
+              <li className="bg-tertiary mb-2 h-6 w-full rounded" />
+              <li className="bg-tertiary mb-2 h-6 w-full rounded" />
+              <li className="bg-tertiary mb-2 h-6 w-full rounded" />
+              <li className="bg-tertiary mb-2 h-6 w-full rounded" />
             </ul>
           </div>
         </>
@@ -511,7 +511,7 @@ export const ActionMenuHotkey = ({ keys, action }: ActionMenuHotkeyProps) => (
       {keys.map((hotkey) => (
         <kbd
           key={hotkey}
-          className="mr-1 inline-block rounded px-2 py-1 text-mono-xs text-default bg-secondary"
+          className="text-mono-xs text-default bg-secondary mr-1 inline-block rounded px-2 py-1"
         >
           {hotkey}
         </kbd>

@@ -26,7 +26,7 @@ const Listing = ({ node }: { node: LiteralBlock }) => {
       >
         <Title text={node.title} />
         <div className="content">
-          <pre className={cn('highlight', nowrap ? ' nowrap' : '')}>
+          <pre className={cn('highlight', nowrap ? 'nowrap' : '')}>
             {lang && lang === 'mermaid' ? (
               <Mermaid content={node.source || ''} />
             ) : (

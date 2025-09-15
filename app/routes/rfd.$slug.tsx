@@ -177,7 +177,7 @@ export default function Rfd() {
     <div ref={containerRef}>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
-      <main className="relative mt-12 800:mt-16 print:mt-0">
+      <main className="800:mt-16 relative mt-12 print:mt-0">
         {inlineComments && (
           <Suspense fallback={null}>
             <Await resolve={discussionPromise} errorElement={<></>}>
@@ -186,9 +186,9 @@ export default function Rfd() {
           </Suspense>
         )}
         <RfdPreview currentRfd={number} />
-        <Container isGrid className="page-header mb-12 800:mb-16">
+        <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
-            <div className="flex 800:col-start-2 1200:col-start-3 print:hidden">
+            <div className="800:col-start-2 1200:col-start-3 flex print:hidden">
               <a href={rfd.discussion || ''} target="_blank" rel="noreferrer">
                 <StatusBadge label={state} />
               </a>
@@ -196,11 +196,11 @@ export default function Rfd() {
           )}
 
           <div className="col-span-12 grid grid-cols-12 items-baseline">
-            <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 print:hidden">
-              <span className="hidden 1200:inline">RFD</span> {number}
+            <div className="text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 hidden print:hidden">
+              <span className="1200:inline hidden">RFD</span> {number}
             </div>
-            <div className="col-span-12 flex items-baseline 800:col-span-11 1200:col-span-10">
-              <h1 className="w-full pr-4 text-sans-2xl text-balance text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
+            <div className="800:col-span-11 1200:col-span-10 col-span-12 flex items-baseline">
+              <h1 className="text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 w-full pr-4 text-balance print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
@@ -212,7 +212,7 @@ export default function Rfd() {
             <AccessWarning groups={groups} />
           </div>
         </Container>
-        <div className="border-b border-secondary print:m-auto print:max-w-1200 print:rounded-lg print:border">
+        <div className="border-secondary border-b print:m-auto print:max-w-1200 print:rounded-lg print:border">
           {state && (
             <PropertyRow
               label="State"
@@ -266,19 +266,19 @@ export default function Rfd() {
             </PropertyRow>
           )}
           <PropertyRow label="Updated">
-            <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
+            <ClientOnly fallback={<div className="bg-tertiary h-4 w-32 rounded" />}>
               {() => <>{dayjs(latestMajorChangeAt).format('MMM D YYYY, h:mm A')}</>}
             </ClientOnly>
           </PropertyRow>
         </div>
 
-        <Container className="mt-12 800:mt-16" isGrid>
+        <Container className="800:mt-16 mt-12" isGrid>
           <div
-            className="col-span-12 flex 800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3"
+            className="800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3 col-span-12 flex"
             ref={bodyRef}
           >
             <Asciidoc document={content as DocumentBlock} options={opts} />
-            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto 1200:sticky 1200:block print:hidden">
+            <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
               <Suspense
                 fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
               >
@@ -321,7 +321,7 @@ export default function Rfd() {
                 <DesktopOutline
                   toc={content.sections}
                   activeItem={activeItem}
-                  className="hidden 1200:block"
+                  className="1200:block hidden"
                 />
               )}
             </div>
@@ -329,12 +329,12 @@ export default function Rfd() {
         </Container>
         <Footnotes doc={content as DocumentBlock} />
       </main>
-      <div className="fixed inset-x-0 bottom-0 [&>*]:mb-0">
+      <div className="fixed inset-x-0 bottom-0 *:mb-0">
         {content && (
           <SmallScreenOutline
             toc={content.sections}
             activeItem={activeItem}
-            className="block 1200:hidden"
+            className="1200:hidden block"
             key={pathname}
           />
         )}
@@ -354,16 +354,16 @@ const PropertyRow = ({
 }) => (
   <div
     className={cn(
-      'w-full border-t py-3 border-secondary print:py-2 print:border-default',
+      'border-secondary print:border-default w-full border-t py-3 print:py-2',
       className,
     )}
   >
     <Container isGrid>
-      <div className="relative col-span-4 text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
-        <div className="hidden print:block absolute -bottom-2 -top-2 right-0 w-px border-default border-r" />
+      <div className="text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:text-raise relative col-span-4 print:col-span-2">
+        <div className="border-default absolute -top-2 right-0 -bottom-2 hidden w-px border-r print:block" />
         {label}
       </div>
-      <div className="col-span-8 text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">
+      <div className="text-sans-md text-default 800:col-span-9 1200:col-span-8 col-span-8 print:col-span-10">
         {children}
       </div>
     </Container>

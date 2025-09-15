@@ -24,7 +24,7 @@ const MoreDropdown = () => {
   return (
     <>
       <Dropdown.Root modal={false}>
-        <Dropdown.Trigger className="rounded border p-2 align-[3px] border-default hover:bg-hover">
+        <Dropdown.Trigger className="border-default hover:bg-hover rounded border p-2 align-[3px]">
           <Icon name="more" size={12} className="text-default" />
         </Dropdown.Trigger>
 

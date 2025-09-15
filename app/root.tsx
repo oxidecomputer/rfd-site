@@ -145,7 +145,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <Outlet />
         {localMode && (
-          <div className="overlay-shadow fixed bottom-6 left-6 z-10 rounded p-2 text-sans-sm text-notice bg-notice-secondary">
+          <div className="overlay-shadow text-sans-sm text-notice bg-notice-secondary fixed bottom-6 left-6 z-10 rounded p-2">
             Local authoring mode
           </div>
         )}

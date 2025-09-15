@@ -15,7 +15,7 @@ import type { RfdListItem } from '~/services/rfd.server'
 
 import type { Author } from './rfd/RfdPreview'
 
-const Comma = () => <span className="mr-1 inline-block text-notice-tertiary">,</span>
+const Comma = () => <span className="text-notice-tertiary mr-1 inline-block">,</span>
 
 export const SuggestedAuthors = ({ authors }: { authors: Author[] }) => {
   if (authors.length === 0) return null
@@ -91,7 +91,7 @@ export const SuggestedTemplate = ({
   color: string
 }) => (
   <div className={cn('w-full', `${color}-theme`)}>
-    <div className="items-top flex w-full rounded px-3 py-2 pr-6 text-sans-sm text-accent bg-accent-secondary">
+    <div className="items-top text-sans-sm text-accent bg-accent-secondary flex w-full rounded px-3 py-2 pr-6">
       {cloneElement(icon, {
         className: `mr-2 shrink-0 text-accent-tertiary`,
       })}
