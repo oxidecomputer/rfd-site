@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { expect, test } from '@playwright/test'
+import { expect, test } from '@chromatic-com/playwright'
 
 test('Click around', async ({ page }) => {
   await page.goto('/')
@@ -56,18 +56,18 @@ test('Filter by author', async ({ page }) => {
 })
 
 test('Header filter box', async ({ page }) => {
-  await page.goto('/rfd/0002')
+  await page.goto('/rfd/0001')
+  await expect(page.getByRole('heading', { name: 'Requests for Discussion' })).toBeVisible()
+
+  await expect(page.getByRole('banner').getByPlaceholder('Search')).toBeHidden()
+
+  await page.getByRole('button', { name: 'Select a RFD' }).click()
+  await page.getByRole('banner').getByPlaceholder('Search').fill('Mission')
+  await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
 
   await expect(
     page.getByRole('heading', { name: 'Mission, Principles and Values' }),
   ).toBeVisible()
-
-  await expect(page.getByRole('banner').getByPlaceholder('Search')).toBeHidden()
-  await page.getByRole('button', { name: 'Select a RFD' }).click()
-  await page.getByRole('banner').getByPlaceholder('Search').fill('User Networking API')
-  await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
-
-  await expect(page.getByRole('heading', { name: 'User Networking API' })).toBeVisible()
 })
 
 test('Direct link to public RFD', async ({ page }) => {
