@@ -1,14 +1,18 @@
 name: 'Chromatic'
 
-on: push
+on:
+  deployment_status:
 
 jobs:
-  chromatic:
-    name: Run Chromatic
+  playwright:
+    if:
+      github.event_name == 'deployment_status' && github.event.deployment_status.state ==
+      'success'
     runs-on: ubuntu-latest
+    container:
+      image: mcr.microsoft.com/playwright:v1.55.0-noble
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - uses: actions/setup-node@v4
@@ -16,8 +20,43 @@ jobs:
           node-version: '22'
           cache: 'npm'
       - name: Install dependencies
-        run: npm ci
+        run: npm install
+      - name: Run Playwright tests
+        run: npx playwright test
+        env:
+          HOME: /root
+          BASE_URL: ${{ github.event.deployment_status.target_url }}
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          # Chromatic automatically defaults to the test-results directory.
+          # Replace with the path to your custom directory and adjust the CHROMATIC_ARCHIVE_LOCATION environment variable accordingly.
+          name: test-results
+          path: ./test-results
+          retention-days: 30
+  chromatic:
+    name: Run Chromatic
+    if:
+      github.event_name == 'deployment_status' && github.event.deployment_status.state ==
+      'success'
+    needs: playwright
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.18.0
+      - name: Install dependencies
+        run: npm install
+      - name: Download Playwright test results
+        uses: actions/download-artifact@v4
+        with:
+          name: test-results
+          path: ./test-results
       - name: Run Chromatic
         uses: chromaui/action@latest
         with:
+          playwright: true
           projectToken: ${{ secrets.CHROMATIC_PROJECT_TOKEN }}
