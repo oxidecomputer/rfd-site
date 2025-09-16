@@ -354,16 +354,16 @@ const PropertyRow = ({
 }) => (
   <div
     className={cn(
-      'w-full border-t py-3 border-secondary print:py-2 print:border-default',
+      'flex w-full items-center border-t border-secondary print:py-2 print:border-default',
       className,
     )}
   >
     <Container isGrid>
-      <div className="relative col-span-4 text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
-        <div className="absolute -bottom-2 -top-2 right-0 w-px bg-[black]" />
+      <div className="relative col-span-4 flex h-10 items-center text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
+        <div className="absolute bottom-2 right-0 top-2 hidden w-px border-r border-secondary print:block" />
         {label}
       </div>
-      <div className="col-span-8 text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">
+      <div className="col-span-8 flex h-10 items-center text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">
         {children}
       </div>
     </Container>
