@@ -24,6 +24,9 @@ test('Click around', async ({ page }) => {
   // we're in public mode so we should see the banner
   await expect(page.getByText('Viewing public RFDs')).toBeVisible()
 
+  // click the sort number button for more consistency in visual regression tests
+  await page.getByTestId('sort-number').click()
+
   // can click an RFD
   await page.getByRole('link', { name: 'RFD 223' }).click()
   await expect(

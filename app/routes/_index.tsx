@@ -315,6 +315,7 @@ export default function Index() {
           >
             <div
               className="group col-span-12 flex cursor-pointer select-none content-start pl-2 800:col-span-5"
+              data-testid="sort-number"
               onClick={() => submitSortOrder('number')}
             >
               <div className="-ml-1 flex items-center rounded p-1 group-hover:bg-tertiary">
