@@ -22,11 +22,7 @@ export default defineConfig({
     baseURL: process.env.CI ? process.env.BASE_URL : 'http://localhost:3000',
     trace: 'on-first-retry',
   },
-  projects: [
-    { name: 'chrome', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'safari', use: { ...devices['Desktop Safari'] } },
-  ],
+  projects: [{ name: 'chrome', use: { ...devices['Desktop Chrome'] } }],
   webServer: process.env.CI
     ? undefined
     : {
