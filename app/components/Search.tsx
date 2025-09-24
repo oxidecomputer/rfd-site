@@ -99,7 +99,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
           open={open}
           onClose={onClose}
           className="overlay-shadow fixed left-1/2 top-4 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0 bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px]"
-          aria-label="Jump to"
+          aria-label="Search"
           backdrop={<div className="backdrop" />}
         >
           <InstantSearch searchClient={searchClient.current} indexName="rfd">

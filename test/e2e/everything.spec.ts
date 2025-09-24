@@ -171,3 +171,98 @@ test('Login redirect on nonexistent or private RFD', async ({ page }) => {
   await expect(page).toHaveURL(/\/login\?returnTo=\/rfd\/4268$/)
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
 })
+
+test('Search menu open and close', async ({ page }) => {
+  await page.goto('/')
+
+  const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
+  const searchDialog = page.getByRole('dialog', { name: 'Search' })
+
+  // Test keyboard open and close
+  await openSearchMenu()
+  await expect(searchDialog).toBeVisible()
+  await page.keyboard.press('Escape')
+  await expect(searchDialog).toBeHidden()
+
+  await openSearchMenu()
+  await expect(searchDialog).toBeVisible()
+})
+
+test('Search functionality and navigation', async ({ page }) => {
+  await page.goto('/')
+
+  const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
+  const searchDialog = page.getByRole('dialog', { name: 'Search' })
+
+  // Open search dialog
+  await openSearchMenu()
+  await expect(searchDialog).toBeVisible()
+
+  // Type search query
+  await page.keyboard.insertText('test')
+
+  // Wait for search results to appear
+  await expect(
+    searchDialog.getByText('RFD 125 Telemetry requirements and building blocks'),
+  ).toBeVisible()
+
+  // Verify one of the expected search results is present
+  const testScenarioResult = searchDialog
+    .getByRole('button')
+    .filter({ hasText: 'Use cases and requirements' })
+  await expect(testScenarioResult).toBeVisible()
+
+  // Click on the search result
+  await testScenarioResult.click()
+
+  // Verify we navigated to the correct RFD and section
+  await expect(page).toHaveURL(/\/rfd\/125#_use_cases_and_requirements/)
+  await expect(
+    page.getByRole('heading', {
+      name: 'Telemetry requirements and building blocks',
+      level: 1,
+    }),
+  ).toBeVisible()
+
+  // Verify we're at the correct section
+  await expect(
+    page.getByRole('heading', { name: 'Use cases and requirements', level: 2 }),
+  ).toBeVisible()
+})
+
+test('Search result navigation to different RFD', async ({ page }) => {
+  await page.goto('/')
+
+  const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
+  const searchDialog = page.getByRole('dialog', { name: 'Search' })
+
+  // Open search dialog
+  await openSearchMenu()
+  await expect(searchDialog).toBeVisible()
+
+  // Type search query
+  await page.keyboard.insertText('test')
+
+  await expect(page.getByRole('heading', { name: 'RFD 532 Versioning for' })).toBeVisible()
+
+  // Navigate through results with arrow keys
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+  await page.keyboard.press('ArrowDown')
+
+  // Click on the "Assumptions" result from RFD 523
+  const assumptionsResult = searchDialog
+    .getByRole('button')
+    .filter({ hasText: 'Assumptions' })
+  await expect(assumptionsResult).toBeVisible()
+  await assumptionsResult.click()
+
+  // Verify we navigated to RFD 532 and the correct section
+  await expect(page).toHaveURL(/\/rfd\/532#_assumptions/)
+  await expect(
+    page.getByRole('heading', { name: 'Versioning for internal HTTP APIs', level: 1 }),
+  ).toBeVisible()
+
+  // Verify we're at the correct section
+  await expect(page.getByRole('heading', { name: 'Assumptions', level: 2 })).toBeVisible()
+})
