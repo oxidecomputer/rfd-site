@@ -66,17 +66,47 @@ test('Header filter box', async ({ page }) => {
   await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
 
   await expect(
-    page.getByRole('heading', { name: 'Mission, Principles and Values' }),
+    page.getByRole('heading', { name: 'Mission, Principles and Values', level: 1 }),
   ).toBeVisible()
 })
 
-test('Direct link to public RFD', async ({ page }) => {
+test('Direct link to public RFD 68', async ({ page }) => {
   await page.goto('/rfd/0068')
 
   await expect(
-    page.getByRole('heading', { name: 'Partnership as Shared Values' }),
+    page.getByRole('heading', { name: 'Partnership as Shared Values', level: 1 }),
   ).toBeVisible()
   await expect(page.getByText('AuthorsBryan Cantrill')).toBeVisible()
+})
+
+test('Direct link to public RFD 479', async ({ page }) => {
+  await page.goto('/rfd/0479')
+
+  await expect(
+    page.getByRole('heading', { name: 'Dropshot API traits', level: 1 }),
+  ).toBeVisible()
+  await expect(page.getByText('AuthorsRain Paharia')).toBeVisible()
+})
+
+test('Direct link to public RFD 400', async ({ page }) => {
+  await page.goto('/rfd/0400')
+
+  await expect(
+    page.getByRole('heading', {
+      name: 'Dealing with cancel safety in async Rust',
+      level: 1,
+    }),
+  ).toBeVisible()
+  await expect(page.getByText('AuthorsRain Paharia')).toBeVisible()
+})
+
+test('Direct link to public RFD 463', async ({ page }) => {
+  await page.goto('/rfd/0463')
+
+  await expect(
+    page.getByRole('heading', { name: 'The Oximeter Query Language', level: 1 }),
+  ).toBeVisible()
+  await expect(page.getByText('AuthorsBenjamin Naecker')).toBeVisible()
 })
 
 test('Sign in button', async ({ page }) => {
