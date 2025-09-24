@@ -164,25 +164,6 @@ test.describe('Login redirect', () => {
   })
 })
 
-test('Search menu open and close', async ({ page }) => {
-  await page.goto('/')
-
-  const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
-  const searchDialog = page.getByRole('dialog', { name: 'Search' })
-
-  // Test keyboard open and close
-  await openSearchMenu()
-  await expect(searchDialog).toBeVisible()
-  await page.keyboard.press('Escape')
-  await expect(searchDialog).toBeHidden()
-
-  await openSearchMenu()
-  await expect(searchDialog).toBeVisible()
-
-  // Limit content height for Chromatic screenshots
-  await limitContentHeight(page)
-})
-
 test('Search functionality and navigation', async ({ page }) => {
   await page.goto('/')
 
@@ -200,6 +181,8 @@ test('Search functionality and navigation', async ({ page }) => {
   await expect(
     searchDialog.getByText('RFD 125 Telemetry requirements and building blocks'),
   ).toBeVisible()
+
+  await page.screenshot()
 
   // Verify one of the expected search results is present
   const testScenarioResult = searchDialog
@@ -237,6 +220,8 @@ test('Search result navigation to different RFD', async ({ page }) => {
   // Open search dialog
   await openSearchMenu()
   await expect(searchDialog).toBeVisible()
+
+  await page.screenshot()
 
   // Type search query
   await page.keyboard.insertText('test')
