@@ -385,7 +385,10 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
           {rfd.state && <StatusBadge label={rfd.state} />}
         </div>
 
-        <div className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2">
+        <div
+          data-testid="timestamp"
+          className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2"
+        >
           <ClientOnly
             fallback={
               <>

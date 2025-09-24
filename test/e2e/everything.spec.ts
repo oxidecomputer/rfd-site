@@ -10,6 +10,16 @@ import { expect, test } from '@chromatic-com/playwright'
 
 test('Click around', async ({ page }) => {
   await page.goto('/')
+
+  // Hide timestamps for consistent Chromatic screenshots
+  await page.addStyleTag({
+    content: `
+      [data-testid*="timestamp"] {
+        visibility: hidden !important;
+      }
+    `,
+  })
+
   await expect(page.getByRole('heading', { name: 'Requests for Discussion' })).toBeVisible()
   // we're in public mode so we should see the banner
   await expect(page.getByText('Viewing public RFDs')).toBeVisible()
@@ -77,6 +87,15 @@ test('Direct link to public RFD 68', async ({ page }) => {
     page.getByRole('heading', { name: 'Partnership as Shared Values', level: 1 }),
   ).toBeVisible()
   await expect(page.getByText('AuthorsBryan Cantrill')).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await page.evaluate(() => {
+    const content = document.querySelector('main')
+    if (content) {
+      content.style.maxHeight = '5000px'
+      content.style.overflow = 'hidden'
+    }
+  })
 })
 
 test('Direct link to public RFD 479', async ({ page }) => {
@@ -86,6 +105,15 @@ test('Direct link to public RFD 479', async ({ page }) => {
     page.getByRole('heading', { name: 'Dropshot API traits', level: 1 }),
   ).toBeVisible()
   await expect(page.getByText('AuthorsRain Paharia')).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await page.evaluate(() => {
+    const content = document.querySelector('main')
+    if (content) {
+      content.style.maxHeight = '5000px'
+      content.style.overflow = 'hidden'
+    }
+  })
 })
 
 test('Direct link to public RFD 400', async ({ page }) => {
@@ -98,6 +126,15 @@ test('Direct link to public RFD 400', async ({ page }) => {
     }),
   ).toBeVisible()
   await expect(page.getByText('AuthorsRain Paharia')).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await page.evaluate(() => {
+    const content = document.querySelector('main')
+    if (content) {
+      content.style.maxHeight = '5000px'
+      content.style.overflow = 'hidden'
+    }
+  })
 })
 
 test('Direct link to public RFD 463', async ({ page }) => {
@@ -107,6 +144,15 @@ test('Direct link to public RFD 463', async ({ page }) => {
     page.getByRole('heading', { name: 'The Oximeter Query Language', level: 1 }),
   ).toBeVisible()
   await expect(page.getByText('AuthorsBenjamin Naecker')).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await page.evaluate(() => {
+    const content = document.querySelector('main')
+    if (content) {
+      content.style.maxHeight = '5000px'
+      content.style.overflow = 'hidden'
+    }
+  })
 })
 
 test('Sign in button', async ({ page }) => {
