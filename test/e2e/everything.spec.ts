@@ -8,6 +8,17 @@
 
 import { expect, test } from '@chromatic-com/playwright'
 
+// Helper function to limit content height for Chromatic screenshots
+async function limitContentHeight(page: any) {
+  await page.evaluate(() => {
+    const content = document.querySelector('main')
+    if (content) {
+      content.style.maxHeight = '5000px'
+      content.style.overflow = 'hidden'
+    }
+  })
+}
+
 test('Click around', async ({ page }) => {
   await page.goto('/')
 
@@ -92,13 +103,7 @@ test('Direct link to public RFD 68', async ({ page }) => {
   await expect(page.getByText('AuthorsBryan Cantrill')).toBeVisible()
 
   // Limit content height for Chromatic screenshots
-  await page.evaluate(() => {
-    const content = document.querySelector('main')
-    if (content) {
-      content.style.maxHeight = '5000px'
-      content.style.overflow = 'hidden'
-    }
-  })
+  await limitContentHeight(page)
 })
 
 test('Direct link to public RFD 479', async ({ page }) => {
@@ -110,13 +115,7 @@ test('Direct link to public RFD 479', async ({ page }) => {
   await expect(page.getByText('AuthorsRain Paharia')).toBeVisible()
 
   // Limit content height for Chromatic screenshots
-  await page.evaluate(() => {
-    const content = document.querySelector('main')
-    if (content) {
-      content.style.maxHeight = '5000px'
-      content.style.overflow = 'hidden'
-    }
-  })
+  await limitContentHeight(page)
 })
 
 test('Direct link to public RFD 400', async ({ page }) => {
@@ -131,13 +130,7 @@ test('Direct link to public RFD 400', async ({ page }) => {
   await expect(page.getByText('AuthorsRain Paharia')).toBeVisible()
 
   // Limit content height for Chromatic screenshots
-  await page.evaluate(() => {
-    const content = document.querySelector('main')
-    if (content) {
-      content.style.maxHeight = '5000px'
-      content.style.overflow = 'hidden'
-    }
-  })
+  await limitContentHeight(page)
 })
 
 test('Direct link to public RFD 463', async ({ page }) => {
@@ -149,13 +142,7 @@ test('Direct link to public RFD 463', async ({ page }) => {
   await expect(page.getByText('AuthorsBenjamin Naecker')).toBeVisible()
 
   // Limit content height for Chromatic screenshots
-  await page.evaluate(() => {
-    const content = document.querySelector('main')
-    if (content) {
-      content.style.maxHeight = '5000px'
-      content.style.overflow = 'hidden'
-    }
-  })
+  await limitContentHeight(page)
 })
 
 test('Sign in button', async ({ page }) => {
@@ -166,10 +153,15 @@ test('Sign in button', async ({ page }) => {
   await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
 })
 
-test('Login redirect on nonexistent or private RFD', async ({ page }) => {
-  await page.goto('/rfd/4268')
-  await expect(page).toHaveURL(/\/login\?returnTo=\/rfd\/4268$/)
-  await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+test.describe('Login redirect', () => {
+  test.use({
+    disableAutoSnapshot: true, // Disables the automated snapshot generated at the end of the test
+  })
+  test('Login redirect on nonexistent or private RFD', async ({ page }) => {
+    await page.goto('/rfd/4268')
+    await expect(page).toHaveURL(/\/login\?returnTo=\/rfd\/4268$/)
+    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+  })
 })
 
 test('Search menu open and close', async ({ page }) => {
@@ -186,6 +178,9 @@ test('Search menu open and close', async ({ page }) => {
 
   await openSearchMenu()
   await expect(searchDialog).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await limitContentHeight(page)
 })
 
 test('Search functionality and navigation', async ({ page }) => {
@@ -228,6 +223,9 @@ test('Search functionality and navigation', async ({ page }) => {
   await expect(
     page.getByRole('heading', { name: 'Use cases and requirements', level: 2 }),
   ).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await limitContentHeight(page)
 })
 
 test('Search result navigation to different RFD', async ({ page }) => {
@@ -265,4 +263,7 @@ test('Search result navigation to different RFD', async ({ page }) => {
 
   // Verify we're at the correct section
   await expect(page.getByRole('heading', { name: 'Assumptions', level: 2 })).toBeVisible()
+
+  // Limit content height for Chromatic screenshots
+  await limitContentHeight(page)
 })
