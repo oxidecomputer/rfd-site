@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { expect, test } from '@chromatic-com/playwright'
+import { expect, takeSnapshot, test } from '@chromatic-com/playwright'
 
 // Helper function to limit content height for Chromatic screenshots
 async function limitContentHeight(page: any) {
@@ -164,7 +164,7 @@ test.describe('Login redirect', () => {
   })
 })
 
-test('Search functionality and navigation', async ({ page }) => {
+test('Search functionality and navigation', async ({ page }, testInfo) => {
   await page.goto('/')
 
   const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
@@ -182,7 +182,7 @@ test('Search functionality and navigation', async ({ page }) => {
     searchDialog.getByText('RFD 125 Telemetry requirements and building blocks'),
   ).toBeVisible()
 
-  await page.screenshot()
+  await takeSnapshot(page, testInfo)
 
   // Verify one of the expected search results is present
   const testScenarioResult = searchDialog
@@ -211,7 +211,7 @@ test('Search functionality and navigation', async ({ page }) => {
   await limitContentHeight(page)
 })
 
-test('Search result navigation to different RFD', async ({ page }) => {
+test('Search result navigation to different RFD', async ({ page }, testInfo) => {
   await page.goto('/')
 
   const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
@@ -221,7 +221,7 @@ test('Search result navigation to different RFD', async ({ page }) => {
   await openSearchMenu()
   await expect(searchDialog).toBeVisible()
 
-  await page.screenshot()
+  await takeSnapshot(page, testInfo)
 
   // Type search query
   await page.keyboard.insertText('test')
