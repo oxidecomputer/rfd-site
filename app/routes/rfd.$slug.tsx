@@ -266,9 +266,11 @@ export default function Rfd() {
             </PropertyRow>
           )}
           <PropertyRow label="Updated">
-            <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
-              {() => <>{dayjs(latestMajorChangeAt).format('MMM D YYYY, h:mm A')}</>}
-            </ClientOnly>
+            <div data-testid="timestamp">
+              <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
+                {() => <>{dayjs(latestMajorChangeAt).format('MMM D YYYY, h:mm A')}</>}
+              </ClientOnly>
+            </div>
           </PropertyRow>
         </div>
 
