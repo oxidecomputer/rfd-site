@@ -44,13 +44,13 @@ test.describe('Navigation and Basic Functionality', () => {
     await page.goto('/')
     await setupConsistentView(page)
 
-    await takeSnapshot(page, testInfo)
-
     await expect(
       page.getByRole('heading', { name: 'Requests for Discussion' }),
     ).toBeVisible()
     // we're in public mode so we should see the banner
     await expect(page.getByText('Viewing public RFDs')).toBeVisible()
+
+    await takeSnapshot(page, testInfo)
 
     // can click an RFD
     await page.getByRole('link', { name: 'RFD 223' }).click()
