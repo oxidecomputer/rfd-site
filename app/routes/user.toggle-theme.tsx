@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { json, type ActionFunction } from '@remix-run/node'
+import { data, type ActionFunction } from 'react-router'
 
 import { themeCookie } from '~/services/cookies.server'
 
@@ -20,5 +20,5 @@ export const action: ActionFunction = async ({ request }) => {
     await themeCookie.serialize(currentTheme === 'light-mode' ? 'dark-mode' : 'light-mode'),
   )
 
-  return json(null, { headers })
+  return data(null, { headers })
 }

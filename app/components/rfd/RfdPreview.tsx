@@ -6,11 +6,11 @@
  * Copyright Oxide Computer Company
  */
 
-import { Link } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
 
 import { useRootLoaderData } from '~/root'
 import type { RfdListItem } from '~/services/rfd.server'
@@ -53,7 +53,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   })
   const { rfds } = useRootLoaderData()
 
-  const timeoutRef = useRef<any>()
+  const timeoutRef = useRef<any>(null)
 
   const showRfdHover = useCallback(
     (e: MouseEvent, href: string) => {

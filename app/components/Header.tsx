@@ -8,8 +8,8 @@
 
 import { buttonStyle } from '@oxide/design-system'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { Link, useFetcher } from '@remix-run/react'
 import { useCallback, useState } from 'react'
+import { Link, useFetcher } from 'react-router'
 
 import Icon from '~/components/Icon'
 import NewRfdButton from '~/components/NewRfdButton'

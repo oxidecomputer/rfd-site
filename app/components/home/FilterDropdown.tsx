@@ -8,8 +8,8 @@
 
 import { Badge, type BadgeColor } from '@oxide/design-system'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { useSearchParams } from '@remix-run/react'
 import { type ReactNode } from 'react'
+import { useSearchParams } from 'react-router'
 
 import {
   DropdownItem,

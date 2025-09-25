@@ -94,7 +94,7 @@ const RfdInlineComments = ({ comments }: { comments: ListReviewsCommentsType }) 
   useEffect(() => {
     // Get a list of elements with data-lineno
     // This is used to attach comments to their associated rendered line
-    let lineNumbers =
+    const lineNumbers =
       typeof document !== 'undefined' ? document.querySelectorAll('[data-lineno]') : []
 
     const newComments: Comment = {}
@@ -423,12 +423,11 @@ export const CommentThreadBlock = ({
           }
 
           const renderer = {
-            code(code: string, infostring: string) {
-              const match = (infostring || '').match(/\S*/)
-              const lang = match ? match[0] : ''
-              let _code = code.replace(/\n$/, '') + '\n'
+            code({ text, lang }: { text: string; lang?: string }) {
+              const langString = (lang || '').match(/\S*/)?.[0] || ''
+              let _code = text.replace(/\n$/, '') + '\n'
 
-              if (lang === 'suggestion') {
+              if (langString === 'suggestion') {
                 return renderToString(
                   <CodeSuggestion
                     original={original}
@@ -438,7 +437,7 @@ export const CommentThreadBlock = ({
                 )
               }
 
-              const cls = lang ? `class="lang-${lang}"` : ''
+              const cls = langString ? `class="lang-${langString}"` : ''
 
               return `<pre><code ${cls}>${_code}</code></pre>\n`
             },

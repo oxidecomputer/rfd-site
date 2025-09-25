@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { json, type ActionFunction } from '@remix-run/node'
+import { data, type ActionFunction } from 'react-router'
 
 import { inlineCommentsCookie } from '~/services/cookies.server'
 
@@ -18,5 +18,5 @@ export const action: ActionFunction = async ({ request }) => {
   const newVal = await inlineCommentsCookie.serialize(showInlineComments === false)
   headers.append('Set-Cookie', newVal)
 
-  return json(null, { headers })
+  return data(null, { headers })
 }

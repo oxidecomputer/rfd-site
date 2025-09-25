@@ -13,8 +13,6 @@ import {
   useIntersectionObserver,
 } from '@oxide/design-system/components'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
-import { redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import {
@@ -26,6 +24,15 @@ import {
   useRef,
   useState,
 } from 'react'
+import {
+  Await,
+  redirect,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from 'react-router'
 import { flat } from 'remeda'
 
 import { opts } from '~/components/AsciidocBlocks'
@@ -200,7 +207,7 @@ export default function Rfd() {
               <span className="1200:inline hidden">RFD</span> {number}
             </div>
             <div className="800:col-span-11 1200:col-span-10 col-span-12 flex items-baseline">
-              <h1 className="text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 w-full text-balance pr-4 print:pr-0 print:text-center">
+              <h1 className="text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 w-full pr-4 text-balance print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
@@ -212,7 +219,7 @@ export default function Rfd() {
             <AccessWarning groups={groups} />
           </div>
         </Container>
-        <div className="border-secondary print:max-w-1200 border-b print:m-auto print:rounded-lg print:border">
+        <div className="border-secondary border-b print:m-auto print:max-w-1200 print:rounded-lg print:border">
           {state && (
             <PropertyRow
               label="State"
@@ -280,7 +287,7 @@ export default function Rfd() {
             ref={bodyRef}
           >
             <Asciidoc document={content as DocumentBlock} options={opts} />
-            <div className="1200:sticky 1200:block w-(--toc-width) top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] shrink-0 grow overflow-auto print:hidden">
+            <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
               <Suspense
                 fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
               >
@@ -362,7 +369,7 @@ const PropertyRow = ({
   >
     <Container isGrid>
       <div className="text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:text-raise relative col-span-4 flex h-10 items-center print:col-span-2">
-        <div className="border-secondary absolute bottom-2 right-0 top-2 hidden w-px border-r print:block" />
+        <div className="border-secondary absolute top-2 right-0 bottom-2 hidden w-px border-r print:block" />
         {label}
       </div>
       <div className="text-sans-md text-default 800:col-span-9 1200:col-span-8 col-span-8 flex h-10 items-center print:col-span-10">

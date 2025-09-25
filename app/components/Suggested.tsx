@@ -6,9 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
-import { Link } from '@remix-run/react'
 import cn from 'classnames'
 import { cloneElement, type ReactElement, type ReactNode } from 'react'
+import { Link } from 'react-router'
 
 import Icon from '~/components/Icon'
 import type { RfdListItem } from '~/services/rfd.server'
@@ -87,7 +87,7 @@ export const SuggestedTemplate = ({
   color,
 }: {
   children: ReactNode
-  icon: ReactElement
+  icon: ReactElement<React.HTMLAttributes<HTMLElement>>
   color: string
 }) => (
   <div className={cn('w-full', `${color}-theme`)}>

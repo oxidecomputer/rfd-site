@@ -7,8 +7,8 @@
  */
 import { useDialogStore } from '@ariakit/react'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
+import { useLoaderData } from 'react-router'
 
 import type { loader } from '~/routes/rfd.$slug'
 

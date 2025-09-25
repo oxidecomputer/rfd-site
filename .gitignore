@@ -21,3 +21,6 @@ test-results/
 
 // chromatic
 build-archive.log
+test-results/
+
+.react-router/

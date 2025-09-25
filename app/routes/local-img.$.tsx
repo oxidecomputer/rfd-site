@@ -7,8 +7,8 @@
  */
 
 import fs from 'fs/promises'
-import type { LoaderFunctionArgs } from '@remix-run/node'
 import { lookup } from 'mime-types'
+import type { LoaderFunctionArgs } from 'react-router'
 
 // serve images (technically any file) straight from local rfd repo when we're
 // in local mode
@@ -24,7 +24,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
   try {
     const buffer = await fs.readFile(`${process.env.LOCAL_RFD_REPO}/rfd/${filename}`)
 
-    return new Response(buffer, {
+    return new Response(new Uint8Array(buffer), {
       headers: {
         'Content-Type': lookup(filename) || 'text/html',
       },

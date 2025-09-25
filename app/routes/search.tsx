@@ -7,7 +7,7 @@
  */
 
 import type { SearchResults } from '@oxide/rfd.ts/client'
-import { type LoaderFunctionArgs } from '@remix-run/node'
+import { type LoaderFunctionArgs } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { searchRfds } from '~/services/rfd.remote.server'

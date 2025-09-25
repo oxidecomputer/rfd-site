@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import type { LoaderFunction } from '@remix-run/node'
+import type { LoaderFunction } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { fetchRfd } from '~/services/rfd.server'

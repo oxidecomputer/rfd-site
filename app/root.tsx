@@ -6,12 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import {
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  type SerializeFrom,
-} from '@remix-run/node'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   isRouteErrorResponse,
   Links,
@@ -22,8 +17,10 @@ import {
   useLoaderData,
   useRouteError,
   useRouteLoaderData,
-} from '@remix-run/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from 'react-router'
 
 // import { auth, isAuthenticated } from '~/services/authn.server'
 import styles from '~/styles/index.css?url'
@@ -89,7 +86,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 }
 
 export function useRootLoaderData() {
-  return useRouteLoaderData('root') as SerializeFrom<typeof loader>
+  return useRouteLoaderData('root') as ReturnType<typeof useLoaderData<typeof loader>>
 }
 
 export function ErrorBoundary() {

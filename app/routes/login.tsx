@@ -7,19 +7,21 @@
  */
 
 import { Button } from '@oxide/design-system'
-import {
-  json,
-  redirect,
-  type ActionFunctionArgs,
-  type LoaderFunction,
-} from '@remix-run/node'
-import { Form, useActionData, useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
+import {
+  data,
+  Form,
+  redirect,
+  useActionData,
+  useLoaderData,
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from 'react-router'
 
 import { auth, getUserFromSession } from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
 
-export let loader: LoaderFunction = async ({ request }) => {
+export let loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)
   const returnTo = url.searchParams.get('returnTo')
   const emailResponse = url.searchParams.get('email')
@@ -37,7 +39,7 @@ export let loader: LoaderFunction = async ({ request }) => {
     headers.append('Set-Cookie', await returnToCookie.serialize(returnTo))
   }
 
-  return json({ emailResponse }, { headers })
+  return data({ emailResponse }, { headers })
 }
 
 export async function action({ request }: ActionFunctionArgs) {

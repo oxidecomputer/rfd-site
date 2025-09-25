@@ -25,7 +25,7 @@ const InlineImage = ({ node }: { node: Block | Inline }) => {
     target = node.getAttribute('target') // Getting target on block nodes
   }
 
-  let uri = node.getImageUri(target)
+  const uri = node.getImageUri(target)
   let url = ''
 
   url = `/rfd/image/${documentAttrs.rfdnumber}/${uri}`

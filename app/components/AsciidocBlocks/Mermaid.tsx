@@ -19,10 +19,11 @@ const Mermaid = memo(function Mermaid({ content }: { content: string }) {
   const [showSource, setShowSource] = useState(false)
   const id = `mermaid-diagram-${useId().replace(/:/g, '_')}`
 
-  const mermaidRef = async (node: HTMLElement | null) => {
+  const mermaidRef = (node: HTMLElement | null) => {
     if (node) {
-      const { svg } = await mermaid.render(id, content)
-      node.innerHTML = svg
+      mermaid.render(id, content).then(({ svg }) => {
+        node.innerHTML = svg
+      })
     }
   }
 

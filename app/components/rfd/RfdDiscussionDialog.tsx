@@ -125,7 +125,7 @@ const RfdDiscussionDialog = ({
       }
     })
 
-    let discussionsArray: Discussions = Object.values(discussions)
+    const discussionsArray: Discussions = Object.values(discussions)
 
     // Add comments that are not attached to a review
     prComments.forEach((comment) => {
@@ -222,7 +222,7 @@ const DialogContent = ({
     <Dialog
       store={dialogStore}
       className="dialog overlay-shadow bg-raise border-secondary fixed top-0 right-0 bottom-0 z-20 flex w-[670px] flex-col border-l print:hidden"
-      backdropProps={{ className: 'backdrop' }}
+      backdrop={<div className="backdrop" />}
     >
       <DialogHeading className="mb-4 p-8">
         <div className="flex items-start justify-between">

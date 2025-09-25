@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { createCookieSessionStorage } from '@remix-run/node'
+import { createCookieSessionStorage } from 'react-router'
 
 function getSecrets(): string[] {
   // Locally we don't do authentication, so a hard-coded secret is fine. I

@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type LoaderFunctionArgs } from '@remix-run/node'
+import { redirect, type LoaderFunctionArgs } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { fetchLocalImage, isLocalMode } from '~/services/rfd.local.server'
@@ -34,7 +34,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       type = 'svg+xml'
     }
 
-    return new Response(localImage, {
+    return new Response(new Uint8Array(localImage), {
       headers: {
         'Content-Type': `image/${type}`,
       },

@@ -6,8 +6,8 @@
  * Copyright Oxide Computer Company
  */
 
-import { useNavigation } from '@remix-run/react'
 import { useEffect, useRef } from 'react'
+import { useNavigation } from 'react-router'
 
 const LOADING_BAR_DELAY_MS = 20
 

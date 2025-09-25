@@ -6,9 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
-import { Link, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { Link, useNavigate } from 'react-router'
 
 import Icon from '~/components/Icon'
 import { useKey } from '~/hooks/use-key'

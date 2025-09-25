@@ -7,18 +7,20 @@
  */
 
 import { Badge } from '@oxide/design-system'
-import { redirect, type ActionFunctionArgs, type LoaderFunctionArgs } from '@remix-run/node'
+import cn from 'classnames'
+import dayjs from 'dayjs'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Link,
+  redirect,
   useFetcher,
   useLoaderData,
   useLocation,
   useNavigate,
   useSearchParams,
-} from '@remix-run/react'
-import cn from 'classnames'
-import dayjs from 'dayjs'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+  type ActionFunctionArgs,
+  type LoaderFunctionArgs,
+} from 'react-router'
 
 import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
@@ -252,7 +254,7 @@ export default function Index() {
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="filter-none! absolute -left-[2.7777777778%] top-0 z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none"
+              className="absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none filter-none!"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
@@ -284,10 +286,10 @@ export default function Index() {
                       )
                     }
                   }}
-                  className="mousetrap text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:outline-none focus:outline-offset-0 focus:ring-2"
+                  className="mousetrap text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
                   placeholder="Filter by title, number or author"
                 />
-                <div className="text-mono-xs text-default border-default pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border">
+                <div className="text-mono-xs text-default border-default pointer-events-none absolute top-1/2 right-3 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border">
                   /
                 </div>
               </div>
@@ -300,7 +302,7 @@ export default function Index() {
             </div>
           </div>
         </Container>
-        <Container className="mb-4 mt-4 flex justify-between">
+        <Container className="mt-4 mb-4 flex justify-between">
           <FilterDropdown />
           <div className="text-mono-sm text-default flex">
             <div className="text-tertiary mr-1 block">Results:</div>
@@ -313,7 +315,7 @@ export default function Index() {
             className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"
           >
             <div
-              className="800:col-span-5 group col-span-12 flex cursor-pointer select-none content-start pl-2"
+              className="800:col-span-5 group col-span-12 flex cursor-pointer content-start pl-2 select-none"
               data-testid="sort-number"
               onClick={() => submitSortOrder('number')}
             >
@@ -326,7 +328,7 @@ export default function Index() {
             <div className="1000:col-span-2 col-span-3">State</div>
 
             <div
-              className="1000:col-span-2 group col-span-3 flex cursor-pointer select-none content-start"
+              className="1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
               onClick={() => submitSortOrder('updated')}
             >
               <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
@@ -357,7 +359,7 @@ const SortIcon = ({
   <div
     className={cn(
       'text-secondary ml-2 h-[14px] flex-col justify-between',
-      isActive ? 'flex' : 'group-hover:flex! hidden group-hover:*:!opacity-40',
+      isActive ? 'flex' : 'hidden group-hover:flex! group-hover:*:!opacity-40',
     )}
   >
     <SortArrowTop className={direction === 'asc' ? '' : 'opacity-40'} />

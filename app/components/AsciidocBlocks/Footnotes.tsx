@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 import { type DocumentBlock } from '@oxide/react-asciidoc'
-import { Link } from '@remix-run/react'
+import { Link } from 'react-router'
 
 import Container from '../Container'
 import { GotoIcon } from '../CustomIcons'

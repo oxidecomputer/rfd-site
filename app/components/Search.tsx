@@ -12,7 +12,6 @@ import {
   type AlgoliaMultipleQueriesQuery,
   type InstantMeiliSearchInstance,
 } from '@meilisearch/instant-meilisearch'
-import { Link, useNavigate } from '@remix-run/react'
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
 import dayjs from 'dayjs'
@@ -26,6 +25,7 @@ import {
   useHits,
   useSearchBox,
 } from 'react-instantsearch'
+import { Link, useNavigate } from 'react-router'
 
 import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
@@ -33,7 +33,7 @@ import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
 import type { RfdItem } from '~/services/rfd.server'
 
 const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  let searchClient = useRef<InstantMeiliSearchInstance>()
+  const searchClient = useRef<InstantMeiliSearchInstance>(null)
 
   useEffect(() => {
     const client: InstantMeiliSearchInstance = instantMeiliSearch(
@@ -98,7 +98,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         <Dialog
           open={open}
           onClose={onClose}
-          className="overlay-shadow bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px] fixed left-1/2 top-4 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0"
+          className="overlay-shadow bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px] fixed top-4 left-1/2 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0"
           aria-label="Search"
           backdrop={<div className="backdrop" />}
         >
@@ -150,7 +150,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
   scores = scores.sort((a, b) => a[1] - b[1])
 
   // Flatten using scores for order
-  let flattenedHits: RFDHit[] = []
+  const flattenedHits: RFDHit[] = []
   scores.forEach((score) => {
     flattenedHits.push(...groupedHits[score[0]])
   })
@@ -257,12 +257,12 @@ const SearchBox = () => {
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
         autoFocus
-        className="text-sans-lg text-raise 600:text-sans-2xl focus:outline-none! w-full bg-transparent px-4"
+        className="text-sans-lg text-raise 600:text-sans-2xl w-full bg-transparent px-4 focus:outline-none!"
         placeholder="Search RFD contents"
       />
       {inputValue !== '' && (
         <button
-          className="600:block absolute right-0 top-1/2 hidden -translate-y-1/2 p-4"
+          className="600:block absolute top-1/2 right-0 hidden -translate-y-1/2 p-4"
           onClick={() => setInputValue('')}
         >
           <Icon name="close" size={12} className="text-tertiary" />
@@ -345,7 +345,7 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
               {isNewSection && (
                 <h3
                   className={cn(
-                    'text-mono-xs text-secondary bg-tertiary leading-6! line-clamp-1 h-6 rounded-t-sm px-3',
+                    'text-mono-xs text-secondary bg-tertiary line-clamp-1 h-6 rounded-t-sm px-3 leading-6!',
                     sectionIsSelected && '600:text-inverse! 600:bg-accent!',
                   )}
                 >
@@ -430,7 +430,9 @@ const fetchRFD = (number: number) => {
 
 const RFDPreview = ({ number }: { number: number }) => {
   // Requests are cached with React Query
-  const query = useQuery(['rfd', number], () => fetchRFD(number), {
+  const query = useQuery({
+    queryKey: ['rfd', number],
+    queryFn: () => fetchRFD(number),
     staleTime: 30000,
     enabled: !!number,
   })
@@ -450,7 +452,7 @@ const RFDPreview = ({ number }: { number: number }) => {
 
           <div className="flex w-full flex-col items-start p-6">
             {rfd.state && <StatusBadge label={rfd.state} />}
-            <div className="text-sans-3xl text-raise text-[32px]! leading-[1.15]! mt-2">
+            <div className="text-sans-3xl text-raise mt-2 text-[32px]! leading-[1.15]!">
               {rfd.title}
             </div>
             <ul className="mt-6 w-full">

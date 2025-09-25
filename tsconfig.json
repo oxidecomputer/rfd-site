@@ -1,5 +1,5 @@
 {
-  "include": ["vite.d.ts", "**/*.ts", "**/*.tsx"],
+  "include": ["vite.d.ts", "**/*.ts", "**/*.tsx", ".react-router/types/**/*"],
   "compilerOptions": {
     "incremental": true,
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
@@ -19,7 +19,9 @@
 
     // Remix takes care of building everything in `remix build`.
     "noEmit": true,
-    "types": ["@remix-run/node", "vite/client"],
-    "skipLibCheck": true
-  }
+    "types": ["@react-router/node", "vite/client"],
+    "skipLibCheck": true,
+    "rootDirs": [".", "./.react-router/types"]
+  },
+  "exclude": ["test-results"]
 }

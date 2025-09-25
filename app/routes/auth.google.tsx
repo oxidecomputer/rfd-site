@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
+import { redirect, type ActionFunction, type LoaderFunction } from 'react-router'
 
 import { auth } from '~/services/auth.server'
 
