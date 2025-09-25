@@ -40,17 +40,14 @@ async function expectRfdPage(page: any, title: string, author: string) {
 }
 
 test.describe('Navigation and Basic Functionality', () => {
-  test('Click around main interface', async ({ page }, testInfo) => {
+  test('Click around main interface', async ({ page }) => {
     await page.goto('/')
-    await setupConsistentView(page)
 
     await expect(
       page.getByRole('heading', { name: 'Requests for Discussion' }),
     ).toBeVisible()
     // we're in public mode so we should see the banner
     await expect(page.getByText('Viewing public RFDs')).toBeVisible()
-
-    await takeSnapshot(page, testInfo)
 
     // can click an RFD
     await page.getByRole('link', { name: 'RFD 223' }).click()
@@ -102,7 +99,7 @@ test.describe('Filtering', () => {
     expect(await rfdLinks.count()).toEqual(1)
   })
 
-  test('Filter by author', async ({ page }) => {
+  test('Filter by author', async ({ page }, testInfo) => {
     await page.goto('/')
 
     const rfdLinks = page.getByRole('link', { name: /^RFD/ })
@@ -114,6 +111,8 @@ test.describe('Filtering', () => {
 
     // but after you filter there are fewer
     expect(await rfdLinks.count()).toEqual(2)
+
+    await takeSnapshot(page, testInfo)
   })
 })
 
@@ -197,13 +196,13 @@ test.describe('Search', () => {
       searchDialog.getByText('RFD 125 Telemetry requirements and building blocks'),
     ).toBeVisible()
 
-    await takeSnapshot(page, testInfo)
-
     // Verify one of the expected search results is present
     const testScenarioResult = searchDialog
       .getByRole('button')
       .filter({ hasText: 'Use cases and requirements' })
     await expect(testScenarioResult).toBeVisible()
+
+    await takeSnapshot(page, testInfo)
 
     // Click on the search result
     await testScenarioResult.click()
