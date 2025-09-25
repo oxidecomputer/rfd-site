@@ -315,6 +315,7 @@ export default function Index() {
           >
             <div
               className="group col-span-12 flex cursor-pointer select-none content-start pl-2 800:col-span-5"
+              data-testid="sort-number"
               onClick={() => submitSortOrder('number')}
             >
               <div className="-ml-1 flex items-center rounded p-1 group-hover:bg-tertiary">
@@ -385,7 +386,10 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
           {rfd.state && <StatusBadge label={rfd.state} />}
         </div>
 
-        <div className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2">
+        <div
+          data-testid="timestamp"
+          className="order-3 col-span-12 flex space-x-2 text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2"
+        >
           <ClientOnly
             fallback={
               <>
