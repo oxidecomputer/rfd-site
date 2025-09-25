@@ -22,6 +22,7 @@ export async function loader({ request }: LoaderFunctionArgs) {
 
 function adaptResults(results: SearchResults) {
   const hits = results.hits.map((hit) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const highlightResult: any = {
       content: {
         value: hit.formatted?.content,
@@ -61,6 +62,7 @@ function adaptResults(results: SearchResults) {
       }
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const adaptedHit: any = {
       content: hit.content,
       objectID: hit.objectId,

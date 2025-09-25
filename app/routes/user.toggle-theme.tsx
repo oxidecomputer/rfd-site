@@ -11,9 +11,10 @@ import { data, type ActionFunction } from 'react-router'
 import { themeCookie } from '~/services/cookies.server'
 
 export const action: ActionFunction = async ({ request }) => {
-  let currentTheme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
+  const currentTheme =
+    (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
 
-  let headers = new Headers()
+  const headers = new Headers()
   headers.append('Cache-Control', 'no-cache')
   headers.append(
     'Set-Cookie',

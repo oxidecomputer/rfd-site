@@ -29,7 +29,7 @@ export async function loader({ params }: LoaderFunctionArgs) {
         'Content-Type': lookup(filename) || 'text/html',
       },
     })
-  } catch (e) {
+  } catch {
     throw new Response('Not Found', { status: 404 })
   }
 }

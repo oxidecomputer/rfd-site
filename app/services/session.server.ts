@@ -29,7 +29,7 @@ function sessionMaxAge(): number {
   return 60 * 60 * 24 * 14 // two weeks in seconds
 }
 
-export let sessionStorage = createCookieSessionStorage({
+export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: '_session',
     sameSite: 'lax', // this helps with CSRF

@@ -43,8 +43,8 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  let theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
-  let inlineComments =
+  const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
+  const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
   const user = await authenticate(request)
@@ -66,7 +66,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
     }
-  } catch (err) {
+  } catch {
     // The only error that should be caught here is the unauthenticated error.
     // And if that occurs we need to log the user out
     await logout(request, '/')

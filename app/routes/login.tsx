@@ -21,7 +21,7 @@ import {
 import { auth, getUserFromSession } from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
 
-export let loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)
   const returnTo = url.searchParams.get('returnTo')
   const emailResponse = url.searchParams.get('email')

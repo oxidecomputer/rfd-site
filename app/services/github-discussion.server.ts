@@ -117,7 +117,7 @@ export async function fetchDiscussion(
       return null
     })
 
-  let prComments = await octokit.paginate(octokit.rest.issues.listComments, {
+  const prComments = await octokit.paginate(octokit.rest.issues.listComments, {
     owner: 'oxidecomputer',
     repo: 'rfd',
     issue_number: pullNumber,

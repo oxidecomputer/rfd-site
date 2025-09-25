@@ -90,7 +90,7 @@ const Image = ({ node }: { node: ImageBlock }) => {
 
   return (
     <>
-      <div
+      <button
         className={`imageblock ${
           node.attributes['align'] ? 'text-' + node.attributes['align'] : ''
         } ${node.attributes['float'] ? node.attributes['float'] : ''} ${
@@ -100,7 +100,7 @@ const Image = ({ node }: { node: ImageBlock }) => {
       >
         <div className="content">{img}</div>
         <Title text={node.title || ''} />
-      </div>
+      </button>
       <Ariakit.Dialog
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}

@@ -6,13 +6,13 @@
  * Copyright Oxide Computer Company
  */
 
-import type { LoaderFunction } from 'react-router'
+import type { LoaderFunctionArgs } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
-export let loader: LoaderFunction = async ({ request, params: { slug } }) => {
+export const loader = async ({ request, params: { slug } }: LoaderFunctionArgs) => {
   const num = parseRfdNum(slug)
   if (!num) throw new Response('Not Found', { status: 404 })
 

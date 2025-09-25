@@ -145,7 +145,7 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[] | unde
 }
 
 export const getAuthors = (rfds: RfdListItem[]): Author[] => {
-  let authors: Author[] = []
+  const authors: Author[] = []
 
   for (const rfd of rfds) {
     if (rfd.authors && rfd.authors.length > 0) {
@@ -311,7 +311,7 @@ export const generateAuthors = (authors: string): Author[] => {
     splitChar = ';'
   }
 
-  let array = authors.split(splitChar).map((author) => {
+  const array = authors.split(splitChar).map((author) => {
     const regex = /<(.+)>/
     const matches = author.match(regex)
     const name = author.replace(regex, '').trim()

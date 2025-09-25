@@ -104,7 +104,7 @@ function listPermissionCheck(permissions: RfdPermission[], check: RfdPermission)
   })
 }
 
-function permissionValue(permission: RfdPermission): any[] | undefined {
+function permissionValue(permission: RfdPermission): number | number[] | undefined {
   switch (typeof permission) {
     case 'string':
       return undefined

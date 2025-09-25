@@ -167,7 +167,7 @@ export default function Rfd() {
 
   useEffect(() => {
     if (content?.sections) {
-      let headings = flattenSections(content.sections)
+      const headings = flattenSections(content.sections)
         .filter((item) => item.level <= 2)
         .map((item) => document.getElementById(item.id))
         .filter(isValue)

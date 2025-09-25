@@ -225,7 +225,7 @@ export default function Index() {
 
   const navigate = useNavigate()
 
-  let { state, pathname, hash } = useLocation()
+  const { state, pathname, hash } = useLocation()
 
   useEffect(() => {
     // Author filter link sets `shouldClearInput: true` we check if it's been
@@ -314,7 +314,7 @@ export default function Index() {
             isGrid
             className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"
           >
-            <div
+            <button
               className="800:col-span-5 group col-span-12 flex cursor-pointer content-start pl-2 select-none"
               data-testid="sort-number"
               onClick={() => submitSortOrder('number')}
@@ -323,11 +323,11 @@ export default function Index() {
                 Number <span className="text-quaternary mx-1 inline-block">/</span> Title
                 <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
               </div>
-            </div>
+            </button>
 
             <div className="1000:col-span-2 col-span-3">State</div>
 
-            <div
+            <button
               className="1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
               onClick={() => submitSortOrder('updated')}
             >
@@ -335,7 +335,7 @@ export default function Index() {
                 Updated
                 <SortIcon isActive={sortAttr === 'updated'} direction={sortDir} />
               </div>
-            </div>
+            </button>
 
             <div className="1000:block col-span-2 hidden">Labels</div>
           </Container>

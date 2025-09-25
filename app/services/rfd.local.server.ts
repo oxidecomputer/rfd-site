@@ -53,7 +53,7 @@ export function fetchLocalRfd(num: number): LocalRfd {
       committedAt: new Date(0),
       visibility: 'private',
     }
-  } catch (e) {
+  } catch {
     throw new Response('Not found', { status: 404 })
   }
 }
@@ -63,7 +63,7 @@ export function fetchLocalImage(num: number, src: string): Buffer | null {
   const imagePath = `${localRepo}/rfd/${numStr}/${src}`
   try {
     return fs.readFileSync(imagePath)
-  } catch (e) {
+  } catch {
     console.error('Image not found', imagePath)
     return null
   }

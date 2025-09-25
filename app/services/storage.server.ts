@@ -33,12 +33,12 @@ export function signUrl(
     throw new Error('Unable to generate image urls without a SIGNING_KEY_NAME configured')
   }
 
-  let key = Buffer.from(signingKey, 'base64')
-  let encodedUrl = encodeURI(decodeURI(url))
+  const key = Buffer.from(signingKey, 'base64')
+  const encodedUrl = encodeURI(decodeURI(url))
 
-  let urlToSign = `${encodedUrl}?Expires=${expiration}&KeyName=${signingKeyName}`
-  let sig = createHmac('sha1', key).update(urlToSign).digest('base64')
-  let cleanedSignature = sig.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
+  const urlToSign = `${encodedUrl}?Expires=${expiration}&KeyName=${signingKeyName}`
+  const sig = createHmac('sha1', key).update(urlToSign).digest('base64')
+  const cleanedSignature = sig.replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_')
 
   return `${urlToSign}&Signature=${cleanedSignature}`
 }

@@ -29,8 +29,8 @@ const regexes = [
 export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   let el: HTMLAnchorElement | HTMLElement | null = element
 
-  var x = el.offsetLeft
-  var y = el.offsetTop
+  let x = el.offsetLeft
+  let y = el.offsetTop
 
   while ((el = el.offsetParent as HTMLElement)) {
     // We want to stop when we reach the parent to the <RfdPreview /> element
@@ -53,17 +53,19 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   })
   const { rfds } = useRootLoaderData()
 
-  const timeoutRef = useRef<any>(null)
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const showRfdHover = useCallback(
     (e: MouseEvent, href: string) => {
-      clearTimeout(timeoutRef.current)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
 
       const showRfdPreview = () => {
         const el = e.target as HTMLAnchorElement // making a little assumption here
         let hrefMatch: string | null = null
 
-        for (let regex of regexes) {
+        for (const regex of regexes) {
           const match = href.match(regex)?.at(-1)
 
           if (match) {
@@ -182,7 +184,9 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
     const links = document.querySelectorAll<HTMLAnchorElement>('.asciidoc-body#content a')
 
     function handleClearTimeout() {
-      clearTimeout(timeoutRef.current)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
 
     const removes: (() => void)[] = []
@@ -272,7 +276,7 @@ export const generateAuthors = (authors: string): Author[] => {
     splitChar = ';'
   }
 
-  let array = authors.split(splitChar).map((author) => {
+  const array = authors.split(splitChar).map((author) => {
     const regex = /<(.+)>/
     const matches = author.match(regex)
     const name = author.replace(regex, '').trim()

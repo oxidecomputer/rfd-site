@@ -400,7 +400,7 @@ export const CommentThreadBlock = ({
             change = 'remove'
           }
 
-          let code = change ? line.slice(1) : line
+          const code = change ? line.slice(1) : line
 
           return (
             <CodeLine
@@ -425,7 +425,7 @@ export const CommentThreadBlock = ({
           const renderer = {
             code({ text, lang }: { text: string; lang?: string }) {
               const langString = (lang || '').match(/\S*/)?.[0] || ''
-              let _code = text.replace(/\n$/, '') + '\n'
+              const _code = text.replace(/\n$/, '') + '\n'
 
               if (langString === 'suggestion') {
                 return renderToString(

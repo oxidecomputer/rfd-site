@@ -16,9 +16,9 @@ const key = 'random-key-string'
 
 describe('Image url signing', () => {
   it('Handles simple filenames', () => {
-    let url = 'https://oxide.computer/file.png'
+    const url = 'https://oxide.computer/file.png'
 
-    let signedUrl = signUrl(url, expiration, key, keyName)
+    const signedUrl = signUrl(url, expiration, key, keyName)
 
     expect(signedUrl).toBe(
       'https://oxide.computer/file.png?Expires=1665719939&KeyName=key-name&Signature=jAfxkbTs53ZhIWxq9G8qEXKyiRo',
@@ -28,13 +28,13 @@ describe('Image url signing', () => {
   it('Generates the same url independent of source url encoding', () => {
     // Use both the non-encoded and the encoded form of this url to ensure that either one can be
     // run through the signing step to generate the same valid url
-    let url = 'https://oxide.computer/file with spaces.png'
+    const url = 'https://oxide.computer/file with spaces.png'
 
     // This is the result of running `url` through `encodeURI`
-    let encodedUrl = 'https://oxide.computer/file%20with%20spaces.png'
+    const encodedUrl = 'https://oxide.computer/file%20with%20spaces.png'
 
-    let signedUrl = signUrl(url, expiration, key, keyName)
-    let signedEncodedUrl = signUrl(encodedUrl, expiration, key, keyName)
+    const signedUrl = signUrl(url, expiration, key, keyName)
+    const signedEncodedUrl = signUrl(encodedUrl, expiration, key, keyName)
 
     // Verify that the baseline url was signed correctly and encoded
     expect(signedUrl).toBe(

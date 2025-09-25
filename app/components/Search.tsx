@@ -15,7 +15,7 @@ import {
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import type { BaseHit, Hit } from 'instantsearch.js'
+import type { BaseHit, Hit, SearchResponse } from 'instantsearch.js'
 import { createRef, Fragment, useEffect, useRef, useState } from 'react'
 import {
   Configure,
@@ -36,7 +36,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const searchClient = useRef<InstantMeiliSearchInstance>(null)
 
   useEffect(() => {
-    const client: InstantMeiliSearchInstance = instantMeiliSearch(
+    const { searchClient: client } = instantMeiliSearch(
       'https://search.rfd.shared.oxide.computer',
     )
 
@@ -54,6 +54,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
       // that are required by the response type
       search: async function search(
         requests: readonly AlgoliaMultipleQueriesQuery[],
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       ): Promise<{ results: any[] }> {
         // If the query is too short, immediately return empty results
         if (
@@ -250,13 +251,16 @@ const SearchBox = () => {
     refine(inputValue)
   }, [refine, inputValue])
 
+  useEffect(() => {
+    inputRef.current?.focus()
+  }, [])
+
   return (
     <div className="relative w-full">
       <input
         ref={inputRef}
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
-        autoFocus
         className="text-sans-lg text-raise 600:text-sans-2xl w-full bg-transparent px-4 focus:outline-none!"
         placeholder="Search RFD contents"
       />
@@ -282,7 +286,7 @@ type RFDHit = Hit<BaseHit> & {
 }
 
 // Used to groups results by RFD
-const groupBy = <T, K extends keyof any>(arr: T[], key: (i: T) => K) =>
+const groupBy = <T, K extends PropertyKey>(arr: T[], key: (i: T) => K) =>
   arr.reduce(
     (groups, item) => {
       const k = key(item)

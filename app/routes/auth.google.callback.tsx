@@ -10,6 +10,6 @@ import type { LoaderFunction } from 'react-router'
 
 import { handleAuthenticationCallback } from '~/services/auth.server'
 
-export let loader: LoaderFunction = async ({ request }) => {
+export const loader: LoaderFunction = async ({ request }) => {
   return handleAuthenticationCallback('rfd-google', request)
 }
