@@ -252,7 +252,7 @@ export default function Index() {
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none filter-none!"
+              className="filter-none! absolute -left-[2.7777777778%] top-0 z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
@@ -284,10 +284,10 @@ export default function Index() {
                       )
                     }
                   }}
-                  className="mousetrap text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
+                  className="mousetrap text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:outline-none focus:outline-offset-0 focus:ring-2"
                   placeholder="Filter by title, number or author"
                 />
-                <div className="text-mono-xs text-default border-default pointer-events-none absolute top-1/2 right-3 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border">
+                <div className="text-mono-xs text-default border-default pointer-events-none absolute right-3 top-1/2 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border">
                   /
                 </div>
               </div>
@@ -300,7 +300,7 @@ export default function Index() {
             </div>
           </div>
         </Container>
-        <Container className="mt-4 mb-4 flex justify-between">
+        <Container className="mb-4 mt-4 flex justify-between">
           <FilterDropdown />
           <div className="text-mono-sm text-default flex">
             <div className="text-tertiary mr-1 block">Results:</div>
@@ -313,7 +313,8 @@ export default function Index() {
             className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"
           >
             <div
-              className="group 800:col-span-5 col-span-12 flex cursor-pointer content-start pl-2 select-none"
+              className="800:col-span-5 group col-span-12 flex cursor-pointer select-none content-start pl-2"
+              data-testid="sort-number"
               onClick={() => submitSortOrder('number')}
             >
               <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
@@ -325,7 +326,7 @@ export default function Index() {
             <div className="1000:col-span-2 col-span-3">State</div>
 
             <div
-              className="group 1000:col-span-2 col-span-3 flex cursor-pointer content-start select-none"
+              className="1000:col-span-2 group col-span-3 flex cursor-pointer select-none content-start"
               onClick={() => submitSortOrder('updated')}
             >
               <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
@@ -356,7 +357,7 @@ const SortIcon = ({
   <div
     className={cn(
       'text-secondary ml-2 h-[14px] flex-col justify-between',
-      isActive ? 'flex' : 'hidden group-hover:flex! group-hover:*:!opacity-40',
+      isActive ? 'flex' : 'group-hover:flex! hidden group-hover:*:!opacity-40',
     )}
   >
     <SortArrowTop className={direction === 'asc' ? '' : 'opacity-40'} />
@@ -372,7 +373,7 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
           to={`/rfd/${rfd.formattedNumber}`}
           key={rfd.formattedNumber}
           prefetch="intent"
-          className="group text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md order-2 col-span-12 -m-4 p-4 pr-10"
+          className="text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md group order-2 col-span-12 -m-4 p-4 pr-10"
         >
           <div className="800:group-hover:bg-hover -m-2 inline-flex flex-col rounded-lg p-2">
             <div>RFD {rfd.number}</div>
@@ -384,7 +385,10 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
           {rfd.state && <StatusBadge label={rfd.state} />}
         </div>
 
-        <div className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2">
+        <div
+          className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2"
+          data-testid="timestamp"
+        >
           <ClientOnly
             fallback={
               <>

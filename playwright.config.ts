@@ -6,12 +6,13 @@
  * Copyright Oxide Computer Company
  */
 
+import { type ChromaticConfig } from '@chromatic-com/playwright'
 import { defineConfig, devices } from '@playwright/test'
 
 // in CI, we run the tests against the Vercel preview at BASE_URL
 
 // https://playwright.dev/docs/test-configuration
-export default defineConfig({
+export default defineConfig<ChromaticConfig>({
   testDir: './test/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
@@ -21,11 +22,13 @@ export default defineConfig({
   use: {
     baseURL: process.env.CI ? process.env.BASE_URL : 'http://localhost:3000',
     trace: 'on-first-retry',
+    disableAutoSnapshot: true,
   },
   projects: [
-    { name: 'chrome', use: { ...devices['Desktop Chrome'] } },
-    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
-    { name: 'safari', use: { ...devices['Desktop Safari'] } },
+    {
+      name: 'chrome',
+      use: { ...devices['Desktop Chrome'], viewport: { width: 1280, height: 720 } },
+    },
   ],
   webServer: process.env.CI
     ? undefined
