@@ -29,11 +29,6 @@ async function hideTimestamps(page: any) {
   })
 }
 
-async function setupConsistentView(page: any) {
-  await hideTimestamps(page)
-  await page.getByTestId('sort-number').click()
-}
-
 async function expectRfdPage(page: any, title: string, author: string) {
   await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible()
   await expect(page.getByText(`Authors${author}`)).toBeVisible()
@@ -85,6 +80,7 @@ test.describe('Navigation and Basic Functionality', () => {
 test.describe('Filtering', () => {
   test('Filter by title', async ({ page }, testInfo) => {
     await page.goto('/')
+    await hideTimestamps(page)
 
     const rfdLinks = page.getByRole('link', { name: /^RFD/ })
 
@@ -101,6 +97,7 @@ test.describe('Filtering', () => {
 
   test('Filter by author', async ({ page }, testInfo) => {
     await page.goto('/')
+    await hideTimestamps(page)
 
     const rfdLinks = page.getByRole('link', { name: /^RFD/ })
 
@@ -143,6 +140,7 @@ test.describe('Direct RFD Access', () => {
   for (const { rfd, title, author } of rfdTestCases) {
     test(`Direct link to public RFD ${rfd}`, async ({ page }, testInfo) => {
       await page.goto(`/rfd/${rfd}`)
+      await hideTimestamps(page)
 
       await expectRfdPage(page, title, author)
       await limitContentHeight(page)
