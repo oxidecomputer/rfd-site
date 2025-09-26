@@ -311,7 +311,7 @@ export default function Rfd() {
 
                     return (
                       <>
-                        {title && comments && reviews && pullNumber ? (
+                        {user && title && comments && reviews && pullNumber ? (
                           <RfdDiscussionDialog
                             rfdNumber={number}
                             title={title}
