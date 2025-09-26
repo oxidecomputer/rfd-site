@@ -1,5 +1,3 @@
-// @ts-check
-
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { includeIgnoreFile } from '@eslint/compat'
@@ -21,6 +19,9 @@ export default tseslint.config(
   {
     ...playwright.configs['flat/recommended'],
     files: ['test/e2e/**'],
+    rules: {
+      'playwright/no-standalone-expect': 'off',
+    },
   },
   {
     rules: {
@@ -35,5 +36,8 @@ export default tseslint.config(
       'no-param-reassign': 'error',
       'no-return-assign': 'error',
     },
+  },
+  {
+    ignores: ['types/**', '*.config.js', '*.config.mjs'],
   },
 )

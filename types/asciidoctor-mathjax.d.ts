@@ -7,7 +7,7 @@
  */
 
 declare module '@djencks/asciidoctor-mathjax' {
-  // eslint-disable-next-line @typescript-eslint/consistent-type-imports
+   
   type Registry = import('@asciidoctor/core').Extensions.Registry
   type Config = {}
 

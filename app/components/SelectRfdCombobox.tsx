@@ -33,7 +33,7 @@ const SelectRfdCombobox = ({
   // memoized to avoid render churn in useKey
   const toggleCombobox = useCallback(() => setOpen(!open), [setOpen, open])
 
-  useKey('mod+/', toggleCombobox)
+  useKey('mod+/', toggleCombobox, { global: true })
 
   const handleDismiss = () => setOpen(false)
 

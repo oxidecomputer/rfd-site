@@ -53,7 +53,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
     return false // Returning false prevents default behaviour in Firefox
   }, [open])
 
-  useKey('mod+k', toggleSearchMenu)
+  useKey('mod+k', toggleSearchMenu, { global: true })
 
   return (
     <div className="sticky top-0 z-20">
@@ -75,6 +75,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           <button
             className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
             onClick={toggleSearchMenu}
+            aria-label="Search"
           >
             <Icon name="search" size={16} />
           </button>

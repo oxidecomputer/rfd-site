@@ -11,7 +11,7 @@
     "fmt:check": "prettier --check --ignore-path ./.gitignore . ",
     "e2ec": "npx playwright test --project=chrome",
     "chromatic": "chromatic --playwright --exit-zero-on-changes",
-    "lint": "eslint app"
+    "lint": "eslint ."
   },
   "dependencies": {
     "@ariakit/react": "^0.4.18",
