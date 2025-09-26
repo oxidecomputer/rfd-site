@@ -261,7 +261,7 @@ export default function Index() {
               }}
             />
 
-            <div className="1000:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[130px] relative flex w-full flex-col items-center justify-start">
+            <div className="1000:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[97px] relative flex w-full flex-col items-center justify-start">
               <h1 className="text-sans-2xl text-raise 800:text-sans-3xl text-center">
                 Requests for Discussion
               </h1>
@@ -286,7 +286,7 @@ export default function Index() {
                       )
                     }
                   }}
-                  className="mousetrap text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
+                  className="mousetrap placeholder:text-tertiary text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
                   placeholder="Filter by title, number or author"
                 />
                 <div className="text-mono-xs text-default border-default pointer-events-none absolute top-1/2 right-3 flex h-5 w-5 -translate-y-1/2 items-center justify-center rounded border">
@@ -319,7 +319,7 @@ export default function Index() {
               data-testid="sort-number"
               onClick={() => submitSortOrder('number')}
             >
-              <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
+              <div className="text-mono-xs group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
                 Number <span className="text-quaternary mx-1 inline-block">/</span> Title
                 <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
               </div>
@@ -328,7 +328,7 @@ export default function Index() {
             <div className="1000:col-span-2 col-span-3">State</div>
 
             <button
-              className="1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
+              className="text-mono-xs 1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
               onClick={() => submitSortOrder('updated')}
             >
               <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">

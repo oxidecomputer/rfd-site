@@ -180,7 +180,7 @@ const ComboboxWrapper = ({
             }}
             placeholder="Search"
             spellCheck="false"
-            className="mousetrap text-sans-lg text-raise bg-raise 600:h-auto 600:py-3 600:text-sans-md h-12 w-full appearance-none rounded border-none px-3 focus:outline-offset-0 focus:outline-none"
+            className="placeholder:text-tertiary text-sans-lg text-raise bg-raise 600:h-auto 600:py-3 600:text-sans-md h-12 w-full appearance-none rounded border-none px-3 focus:outline-offset-0 focus:outline-none"
           />
           <button
             className="hover:bg-raise-hover text-mono-sm text-secondary border-l-secondary 600:hidden block border-l px-4"

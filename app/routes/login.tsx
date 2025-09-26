@@ -89,7 +89,7 @@ export default function Login() {
 
         <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
       </div>
-      <div className="overlay-shadow bg-raise border-secondary 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-4 rounded-lg border p-8 text-center transition-all">
+      <div className="overlay-shadow bg-raise border-secondary 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg border p-6 text-center transition-all">
         {!showEmailForm && (
           <>
             <h1 className="text-sans-2xl text-accent mb-8">Sign in</h1>
