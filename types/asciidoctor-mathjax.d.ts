@@ -7,7 +7,6 @@
  */
 
 declare module '@djencks/asciidoctor-mathjax' {
-   
   type Registry = import('@asciidoctor/core').Extensions.Registry
   type Config = {}
 

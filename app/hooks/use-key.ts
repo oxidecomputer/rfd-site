@@ -7,7 +7,6 @@
  */
 
 import Mousetrap from 'mousetrap'
-import Mousetrap from 'mousetrap'
 
 import 'mousetrap/plugins/global-bind/mousetrap-global-bind'
 
