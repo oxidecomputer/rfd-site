@@ -288,44 +288,46 @@ export default function Rfd() {
           >
             <Asciidoc document={content as DocumentBlock} options={opts} />
             <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
-              <Suspense
-                fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
-              >
-                <Await
-                  resolve={discussionPromise}
-                  errorElement={
-                    <CommentCount
-                      error={true}
-                      isLoading={false}
-                      count={0}
-                      onClick={() => {}}
-                    />
-                  }
+              {user && (
+                <Suspense
+                  fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
                 >
-                  {(discussion) => {
-                    if (!discussion) {
-                      return <></>
+                  <Await
+                    resolve={discussionPromise}
+                    errorElement={
+                      <CommentCount
+                        error={true}
+                        isLoading={false}
+                        count={0}
+                        onClick={() => {}}
+                      />
                     }
+                  >
+                    {(discussion) => {
+                      if (!discussion) {
+                        return <></>
+                      }
 
-                    const { reviews, comments, pullNumber, prComments } = discussion
+                      const { reviews, comments, pullNumber, prComments } = discussion
 
-                    return (
-                      <>
-                        {user && title && comments && reviews && pullNumber ? (
-                          <RfdDiscussionDialog
-                            rfdNumber={number}
-                            title={title}
-                            pullNumber={pullNumber}
-                            comments={comments}
-                            prComments={prComments}
-                            reviews={reviews}
-                          />
-                        ) : null}
-                      </>
-                    )
-                  }}
-                </Await>
-              </Suspense>
+                      return (
+                        <>
+                          {title && comments && reviews && pullNumber ? (
+                            <RfdDiscussionDialog
+                              rfdNumber={number}
+                              title={title}
+                              pullNumber={pullNumber}
+                              comments={comments}
+                              prComments={prComments}
+                              reviews={reviews}
+                            />
+                          ) : null}
+                        </>
+                      )
+                    }}
+                  </Await>
+                </Suspense>
+              )}
               {content && (
                 <DesktopOutline
                   toc={content.sections}
