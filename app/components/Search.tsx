@@ -261,7 +261,7 @@ const SearchBox = () => {
         ref={inputRef}
         value={inputValue}
         onChange={(event) => setInputValue(event.currentTarget.value)}
-        className="text-sans-lg text-raise 600:text-sans-2xl w-full bg-transparent px-4 focus:outline-none!"
+        className="placeholder:text-tertiary text-sans-lg text-raise 600:text-sans-2xl w-full bg-transparent px-4 focus:outline-none!"
         placeholder="Search RFD contents"
       />
       {inputValue !== '' && (

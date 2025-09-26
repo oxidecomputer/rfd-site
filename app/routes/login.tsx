@@ -127,7 +127,7 @@ export default function Login() {
               <input
                 placeholder="Email address"
                 name="email"
-                className="mousetrap overlay-shadow text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
+                className="mousetrap placeholder:text-tertiary overlay-shadow text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
               />
               {actionData?.errorMessage && (
                 <div className="text-destructive">{actionData?.errorMessage}</div>
