@@ -7,6 +7,7 @@
  */
 
 import { Dialog, DialogDismiss, type DialogStore } from '@ariakit/react'
+import { Button } from '@oxide/design-system'
 import cn from 'classnames'
 
 import Icon from '~/components/Icon'
@@ -23,11 +24,17 @@ const Modal = ({
   title,
   children,
   width = 'medium',
+  onSubmit,
+  isLoading = false,
+  disabled = false,
 }: {
   dialogStore: DialogStore
   title: string
   children: React.ReactElement
   width?: Width
+  onSubmit?: () => void
+  isLoading?: boolean
+  disabled?: boolean
 }) => {
   return (
     <>
@@ -49,6 +56,33 @@ const Modal = ({
         <main className="text-sans-md text-default overflow-y-auto px-4 py-6">
           {children}
         </main>
+
+        {onSubmit && (
+          <footer className="border-secondary flex items-center justify-end border-t px-3 py-3">
+            <div className="space-x-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => {
+                  dialogStore.hide()
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                type="submit"
+                onClick={() => !disabled && onSubmit()}
+                loading={isLoading}
+                className={
+                  disabled ? 'pointer-events-none cursor-not-allowed opacity-40' : ''
+                }
+              >
+                Create RFD
+              </Button>
+            </div>
+          </footer>
+        )}
       </Dialog>
     </>
   )
