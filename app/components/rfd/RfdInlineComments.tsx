@@ -91,10 +91,6 @@ const RfdInlineComments = ({ pullNumber }: { pullNumber: number }) => {
   const { data: discussion } = useDiscussionQuery(pullNumber)
 
   useEffect(() => {
-    setIsLoaded(true)
-  }, [])
-
-  useEffect(() => {
     if (!discussion?.comments) return
 
     // Get a list of elements with data-lineno
@@ -146,9 +142,13 @@ const RfdInlineComments = ({ pullNumber }: { pullNumber: number }) => {
     // Group comments by block
     // in_reply_to_id
     setInlineComments(newComments)
+
+    setTimeout(() => {
+      setIsLoaded(true)
+    }, 50)
   }, [discussion?.comments])
 
-  if (!inlineComments || !isLoaded) return null
+  if (!inlineComments) return null
 
   return (
     <Container className="z-10 print:hidden">
