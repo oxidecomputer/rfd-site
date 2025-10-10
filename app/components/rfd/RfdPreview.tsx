@@ -6,11 +6,11 @@
  * Copyright Oxide Computer Company
  */
 
-import { Link } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
+import { Link } from 'react-router'
 
 import { useRootLoaderData } from '~/root'
 import type { RfdListItem } from '~/services/rfd.server'
@@ -29,8 +29,8 @@ const regexes = [
 export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   let el: HTMLAnchorElement | HTMLElement | null = element
 
-  var x = el.offsetLeft
-  var y = el.offsetTop
+  let x = el.offsetLeft
+  let y = el.offsetTop
 
   while ((el = el.offsetParent as HTMLElement)) {
     // We want to stop when we reach the parent to the <RfdPreview /> element
@@ -53,17 +53,19 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   })
   const { rfds } = useRootLoaderData()
 
-  const timeoutRef = useRef<any>()
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
 
   const showRfdHover = useCallback(
     (e: MouseEvent, href: string) => {
-      clearTimeout(timeoutRef.current)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
 
       const showRfdPreview = () => {
         const el = e.target as HTMLAnchorElement // making a little assumption here
         let hrefMatch: string | null = null
 
-        for (let regex of regexes) {
+        for (const regex of regexes) {
           const match = href.match(regex)?.at(-1)
 
           if (match) {
@@ -182,7 +184,9 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
     const links = document.querySelectorAll<HTMLAnchorElement>('.asciidoc-body#content a')
 
     function handleClearTimeout() {
-      clearTimeout(timeoutRef.current)
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
     }
 
     const removes: (() => void)[] = []
@@ -207,13 +211,13 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   return (
     <div
       ref={floatingEl}
-      className="overlay-shadow absolute z-10 mt-8 flex w-[24rem] rounded-lg border p-3 bg-raise border-secondary"
+      className="overlay-shadow bg-raise border-secondary absolute z-10 mt-8 flex w-[24rem] rounded-lg border p-3"
       style={{ top: rfdPreviewPos.top, left: rfdPreviewPos.left }}
     >
       <Link
         prefetch="intent"
         to={`/rfd/${formattedNumber}`}
-        className="mr-2 block text-sans-lg text-accent-tertiary hover:text-accent-secondary"
+        className="text-sans-lg text-accent-tertiary hover:text-accent-secondary mr-2 block"
       >
         {number}
       </Link>
@@ -221,7 +225,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
         <Link
           prefetch="intent"
           to={`/rfd/${formattedNumber}`}
-          className="mb-1 block text-sans-lg hover:text-default"
+          className="text-sans-lg hover:text-default mb-1 block"
         >
           {title}
         </Link>
@@ -230,7 +234,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
             <Fragment key={author.name}>
               <Link
                 className={cn(
-                  'inline-block hover:text-default',
+                  'hover:text-default inline-block',
                   !author.email && 'pointer-events-none',
                 )}
                 to={
@@ -245,7 +249,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
             </Fragment>
           ))}
         </div>
-        <div className="flex space-x-1 text-sans-sm text-tertiary">
+        <div className="text-sans-sm text-tertiary flex space-x-1">
           {state && <div>{state.charAt(0).toUpperCase() + state.slice(1)}</div>}
           <span className="text-quaternary">•</span>
           <div>{dayjs(latestMajorChangeAt).fromNow()}</div>
@@ -272,7 +276,7 @@ export const generateAuthors = (authors: string): Author[] => {
     splitChar = ';'
   }
 
-  let array = authors.split(splitChar).map((author) => {
+  const array = authors.split(splitChar).map((author) => {
     const regex = /<(.+)>/
     const matches = author.match(regex)
     const name = author.replace(regex, '').trim()

@@ -6,12 +6,12 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type ActionFunction, type LoaderFunction } from '@remix-run/node'
+import { redirect, type ActionFunctionArgs } from 'react-router'
 
 import { auth } from '~/services/auth.server'
 
-export let loader: LoaderFunction = () => redirect('/login')
+export const loader = () => redirect('/login')
 
-export let action: ActionFunction = ({ request }) => {
+export const action = ({ request }: ActionFunctionArgs) => {
   return auth.authenticate('rfd-github', request)
 }

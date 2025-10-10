@@ -7,8 +7,8 @@
  */
 
 import { useDialogStore } from '@ariakit/react'
-import { Link } from '@remix-run/react'
 import { type ReactNode } from 'react'
+import { Link } from 'react-router'
 
 import Icon from '~/components/Icon'
 
@@ -33,16 +33,16 @@ export function PublicBanner() {
   return (
     <>
       {/* The [&+*]:pt-10 style is to ensure the page container isn't pushed out of screen as it uses 100vh for layout */}
-      <label className="flex h-10 w-full items-center justify-center text-sans-md text-info-secondary bg-info-secondary print:hidden">
+      <div className="text-sans-md text-info-secondary bg-info-secondary flex h-10 w-full items-center justify-center print:hidden">
         <Icon name="info" size={16} className="mr-2" />
         Viewing public RFDs.
         <button
-          className="ml-2 flex items-center gap-0.5 text-sans-md hover:text-info"
+          className="text-sans-md hover:text-info ml-2 flex items-center gap-0.5"
           onClick={() => dialog.toggle()}
         >
           Learn more <Icon name="next-arrow" size={12} />
         </button>
-      </label>
+      </div>
 
       <Modal dialogStore={dialog} title="Oxide Public RFDs">
         <div className="space-y-4">

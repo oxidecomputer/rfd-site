@@ -7,8 +7,8 @@
  */
 import { useDialogStore } from '@ariakit/react'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { useLoaderData } from '@remix-run/react'
 import { useState } from 'react'
+import { useLoaderData } from 'react-router'
 
 import type { loader } from '~/routes/rfd.$slug'
 
@@ -24,7 +24,7 @@ const MoreDropdown = () => {
   return (
     <>
       <Dropdown.Root modal={false}>
-        <Dropdown.Trigger className="rounded border p-2 align-[3px] border-default hover:bg-hover">
+        <Dropdown.Trigger className="border-default hover:bg-hover rounded border p-2 align-[3px]">
           <Icon name="more" size={12} className="text-default" />
         </Dropdown.Trigger>
 

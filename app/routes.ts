@@ -6,11 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-export default {
-  plugins: {
-    'tailwindcss/nesting': {},
-    tailwindcss: {},
-    // use `npx autoprefixer --info` to see autoprefixer debug info
-    autoprefixer: {},
-  },
-}
+import { type RouteConfig } from '@react-router/dev/routes'
+import { flatRoutes } from '@react-router/fs-routes'
+
+export default flatRoutes() satisfies RouteConfig

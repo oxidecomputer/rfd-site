@@ -6,10 +6,10 @@
  * Copyright Oxide Computer Company
  */
 
-import type { LoaderFunction } from '@remix-run/node'
+import type { LoaderFunctionArgs } from 'react-router'
 
 import { handleAuthenticationCallback } from '~/services/auth.server'
 
-export let loader: LoaderFunction = async ({ request }) => {
+export const loader = async ({ request }: LoaderFunctionArgs) => {
   return handleAuthenticationCallback('rfd-magic-link', request)
 }

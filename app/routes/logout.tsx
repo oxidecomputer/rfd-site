@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import type { ActionFunction } from '@remix-run/node'
+import type { ActionFunction } from 'react-router'
 
 import { logout } from '~/services/auth.server'
 

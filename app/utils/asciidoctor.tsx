@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 import { type Block, type Html5Converter } from '@asciidoctor/core'
-import { InlineConverter, loadAsciidoctor } from '@oxide/design-system/components/dist'
+import { InlineConverter, loadAsciidoctor } from '@oxide/design-system/components'
 import { renderToString } from 'react-dom/server'
 
 import { InlineImage } from '~/components/AsciidocBlocks/Image'

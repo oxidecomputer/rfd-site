@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { createCookie } from '@remix-run/node'
+import { createCookie } from 'react-router'
 
 export const returnToCookie = createCookie('_return_to', {
   sameSite: 'lax',

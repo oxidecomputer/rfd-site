@@ -7,7 +7,7 @@
  */
 
 import cn from 'classnames'
-import React from 'react'
+import React, { JSX } from 'react'
 
 // all the cuteness of tw.span`text-green-500 uppercase` with zero magic
 

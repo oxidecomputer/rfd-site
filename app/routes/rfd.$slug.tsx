@@ -11,21 +11,27 @@ import {
   useActiveSectionTracking,
   useDelegatedReactRouterLinks,
   useIntersectionObserver,
-} from '@oxide/design-system/components/dist'
+} from '@oxide/design-system/components'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
-import { redirect, type LoaderFunctionArgs, type MetaFunction } from '@remix-run/node'
-import { Await, useLoaderData, useLocation, useNavigate } from '@remix-run/react'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import {
   Fragment,
-  Suspense,
+  ReactNode,
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
 } from 'react'
+import {
+  redirect,
+  useLoaderData,
+  useLocation,
+  useNavigate,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from 'react-router'
 import { flat } from 'remeda'
 
 import { opts } from '~/components/AsciidocBlocks'
@@ -35,13 +41,12 @@ import Container from '~/components/Container'
 import Header from '~/components/Header'
 import AccessWarning from '~/components/rfd/AccessWarning'
 import MoreDropdown from '~/components/rfd/MoreDropdown'
-import RfdDiscussionDialog, { CommentCount } from '~/components/rfd/RfdDiscussionDialog'
+import RfdDiscussionDialog from '~/components/rfd/RfdDiscussionDialog'
 import RfdInlineComments from '~/components/rfd/RfdInlineComments'
 import RfdPreview from '~/components/rfd/RfdPreview'
 import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
-import { fetchDiscussion } from '~/services/github-discussion.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
@@ -104,8 +109,6 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   return {
     rfd,
     groups,
-    // this must not be awaited, it is being deferred
-    discussionPromise: fetchDiscussion(num, rfd?.discussion, user),
   }
 }
 
@@ -117,19 +120,19 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   }
 }
 
-export default function Rfd() {
-  const { pathname, hash } = useLocation()
+const getPullNumber = (discussionLink: string): number | null => {
+  const match = discussionLink.match(/\/pull\/(\d+)$/)
+  if (!match) return null
+  return parseInt(match[1], 10)
+}
 
-  const { rfd, groups, discussionPromise } = useLoaderData<typeof loader>()
-  const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
-
-  const { user, inlineComments } = useRootLoaderData()
-
-  // This check is merely cosmetic. It hides UI elements that the user does not have access to and
-  // which will fail if they try to use
-  const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
-
-  const bodyRef = useRef<HTMLDivElement>(null)
+const SectionTrackingOutlines = ({
+  dialog,
+  sections,
+}: {
+  dialog: ReactNode
+  sections: DocumentSection[]
+}) => {
   const [activeItem, setActiveItem] = useState('')
 
   const onActiveElementUpdate = useCallback(
@@ -159,15 +162,55 @@ export default function Rfd() {
   )
 
   useEffect(() => {
-    if (content?.sections) {
-      let headings = flattenSections(content.sections)
+    if (sections) {
+      const headings = flattenSections(sections)
         .filter((item) => item.level <= 2)
         .map((item) => document.getElementById(item.id))
         .filter(isValue)
 
       setSections(headings)
     }
-  }, [content?.sections, setSections])
+  }, [sections, setSections])
+
+  return (
+    <>
+      {/* Desktop Outline */}
+      <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
+        {dialog}
+        <DesktopOutline
+          toc={sections}
+          activeItem={activeItem}
+          className="1200:block hidden"
+        />
+      </div>
+
+      {/* Mobile Outline */}
+      <div className="fixed inset-x-0 bottom-0 *:mb-0">
+        <SmallScreenOutline
+          toc={sections}
+          activeItem={activeItem}
+          className="1200:hidden block"
+        />
+      </div>
+    </>
+  )
+}
+
+export default function Rfd() {
+  const { pathname, hash } = useLocation()
+
+  const { rfd, groups } = useLoaderData<typeof loader>()
+  const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
+
+  const pullNumber = rfd.discussion ? getPullNumber(rfd.discussion) : null
+
+  const { user, inlineComments } = useRootLoaderData()
+
+  // This check is merely cosmetic. It hides UI elements that the user does not have access to and
+  // which will fail if they try to use
+  const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
+
+  const bodyRef = useRef<HTMLDivElement>(null)
 
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -177,18 +220,14 @@ export default function Rfd() {
     <div ref={containerRef}>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
-      <main className="relative mt-12 800:mt-16 print:mt-0">
-        {inlineComments && (
-          <Suspense fallback={null}>
-            <Await resolve={discussionPromise} errorElement={<></>}>
-              {(discussion) => <RfdInlineComments comments={discussion?.comments || []} />}
-            </Await>
-          </Suspense>
+      <main className="800:mt-16 relative mt-12 print:mt-0">
+        {inlineComments && user && pullNumber && (
+          <RfdInlineComments pullNumber={pullNumber} />
         )}
         <RfdPreview currentRfd={number} />
-        <Container isGrid className="page-header mb-12 800:mb-16">
+        <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
-            <div className="flex 800:col-start-2 1200:col-start-3 print:hidden">
+            <div className="800:col-start-2 1200:col-start-3 flex print:hidden">
               <a href={rfd.discussion || ''} target="_blank" rel="noreferrer">
                 <StatusBadge label={state} />
               </a>
@@ -196,11 +235,11 @@ export default function Rfd() {
           )}
 
           <div className="col-span-12 grid grid-cols-12 items-baseline">
-            <div className="hidden text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 print:hidden">
-              <span className="hidden 1200:inline">RFD</span> {number}
+            <div className="text-sans-lg text-accent-tertiary 800:col-span-1 800:block 1200:col-span-2 hidden print:hidden">
+              <span className="1200:inline hidden">RFD</span> {number}
             </div>
-            <div className="col-span-12 flex items-baseline 800:col-span-11 1200:col-span-10">
-              <h1 className="w-full pr-4 text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 print:pr-0 print:text-center">
+            <div className="800:col-span-11 1200:col-span-10 col-span-12 flex items-baseline">
+              <h1 className="text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 w-full pr-4 text-balance print:pr-0 print:text-center">
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
@@ -212,7 +251,7 @@ export default function Rfd() {
             <AccessWarning groups={groups} />
           </div>
         </Container>
-        <div className="border-b border-secondary print:m-auto print:max-w-1200 print:rounded-lg print:border">
+        <div className="border-secondary border-b print:m-auto print:max-w-1200 print:rounded-lg print:border">
           {state && (
             <PropertyRow
               label="State"
@@ -267,80 +306,39 @@ export default function Rfd() {
           )}
           <PropertyRow label="Updated">
             <div data-testid="timestamp">
-              <ClientOnly fallback={<div className="h-4 w-32 rounded bg-tertiary" />}>
+              <ClientOnly fallback={<div className="bg-tertiary h-4 w-32 rounded" />}>
                 {() => <>{dayjs(latestMajorChangeAt).format('MMM D YYYY, h:mm A')}</>}
               </ClientOnly>
             </div>
           </PropertyRow>
         </div>
 
-        <Container className="mt-12 800:mt-16" isGrid>
+        <Container className="800:mt-16 mt-12" isGrid>
           <div
-            className="col-span-12 flex 800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3"
+            className="800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3 col-span-12 flex"
             ref={bodyRef}
           >
-            <Asciidoc document={content as DocumentBlock} options={opts} />
-            <div className="top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-[var(--toc-width)] flex-shrink-0 flex-grow overflow-auto 1200:sticky 1200:block print:hidden">
-              <Suspense
-                fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
-              >
-                <Await
-                  resolve={discussionPromise}
-                  errorElement={
-                    <CommentCount
-                      error={true}
-                      isLoading={false}
-                      count={0}
-                      onClick={() => {}}
-                    />
+            {content && (
+              <>
+                <Asciidoc document={content as DocumentBlock} options={opts} />
+                <SectionTrackingOutlines
+                  sections={content?.sections}
+                  dialog={
+                    user && title && pullNumber ? (
+                      <RfdDiscussionDialog
+                        rfdNumber={number}
+                        pullNumber={pullNumber}
+                        title={title}
+                      />
+                    ) : null
                   }
-                >
-                  {(discussion) => {
-                    if (!discussion) {
-                      return <></>
-                    }
-
-                    const { reviews, comments, pullNumber, prComments } = discussion
-
-                    return (
-                      <>
-                        {title && comments && reviews && pullNumber ? (
-                          <RfdDiscussionDialog
-                            rfdNumber={number}
-                            title={title}
-                            pullNumber={pullNumber}
-                            comments={comments}
-                            prComments={prComments}
-                            reviews={reviews}
-                          />
-                        ) : null}
-                      </>
-                    )
-                  }}
-                </Await>
-              </Suspense>
-              {content && (
-                <DesktopOutline
-                  toc={content.sections}
-                  activeItem={activeItem}
-                  className="hidden 1200:block"
                 />
-              )}
-            </div>
+              </>
+            )}
           </div>
         </Container>
         <Footnotes doc={content as DocumentBlock} />
       </main>
-      <div className="fixed inset-x-0 bottom-0 children:mb-0">
-        {content && (
-          <SmallScreenOutline
-            toc={content.sections}
-            activeItem={activeItem}
-            className="block 1200:hidden"
-            key={pathname}
-          />
-        )}
-      </div>
     </div>
   )
 }
@@ -356,16 +354,16 @@ const PropertyRow = ({
 }) => (
   <div
     className={cn(
-      'flex w-full items-center border-t border-secondary print:py-2 print:border-default',
+      'border-secondary print:border-default flex w-full items-center border-t print:py-2',
       className,
     )}
   >
     <Container isGrid>
-      <div className="relative col-span-4 flex h-10 items-center text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:col-span-2 print:text-raise">
-        <div className="absolute bottom-2 right-0 top-2 hidden w-px border-r border-secondary print:block" />
+      <div className="text-mono-sm text-tertiary 800:col-span-1 1200:col-span-2 print:text-raise relative col-span-4 flex h-10 items-center print:col-span-2">
+        <div className="border-secondary absolute top-2 right-0 bottom-2 hidden w-px border-r print:block" />
         {label}
       </div>
-      <div className="col-span-8 flex h-10 items-center text-sans-md text-default 800:col-span-9 1200:col-span-8 print:col-span-10">
+      <div className="text-sans-md text-default 800:col-span-9 1200:col-span-8 col-span-8 flex h-10 items-center print:col-span-10">
         {children}
       </div>
     </Container>

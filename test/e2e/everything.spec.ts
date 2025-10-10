@@ -7,9 +7,10 @@
  */
 
 import { expect, takeSnapshot, test } from '@chromatic-com/playwright'
+import { Page } from '@playwright/test'
 
 // Test helper functions
-async function limitContentHeight(page: any) {
+async function limitContentHeight(page: Page) {
   await page.evaluate(() => {
     const content = document.querySelector('main')
     if (content) {
@@ -19,7 +20,7 @@ async function limitContentHeight(page: any) {
   })
 }
 
-async function hideTimestamps(page: any) {
+async function hideTimestamps(page: Page) {
   await page.addStyleTag({
     content: `
       [data-testid*="timestamp"] {
@@ -29,7 +30,7 @@ async function hideTimestamps(page: any) {
   })
 }
 
-async function expectRfdPage(page: any, title: string, author: string) {
+async function expectRfdPage(page: Page, title: string, author: string) {
   await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible()
   await expect(page.getByText(`Authors${author}`)).toBeVisible()
 }
@@ -170,34 +171,35 @@ test.describe('Authentication', () => {
 test.describe('Search', () => {
   test.use({ cropToViewport: true })
 
-  const searchHelpers = {
-    async openSearchDialog(page: any) {
-      await page.keyboard.press(`ControlOrMeta+k`)
-      return page.getByRole('dialog', { name: 'Search' })
-    },
-
-    async performSearch(page: any, query: string) {
-      const searchDialog = await this.openSearchDialog(page)
-      await expect(searchDialog).toBeVisible()
-      await page.keyboard.insertText(query)
-      return searchDialog
-    },
-  }
-
   test('Search functionality and navigation', async ({ page }, testInfo) => {
+    const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
+    const searchButton = page.getByRole('button', { name: 'Search' })
+
     await page.goto('/')
 
-    const searchDialog = await searchHelpers.performSearch(page, 'test')
+    const searchDialog = page.getByRole('dialog', { name: 'Search' })
+    await expect(searchDialog).toBeHidden()
+
+    // Test keyboard open and close
+    await openSearchMenu()
+    await expect(searchDialog).toBeVisible()
+    await page.keyboard.press('Escape')
+    await expect(searchDialog).toBeHidden()
+
+    // Test button to open
+    await searchButton.click()
+    await expect(searchDialog).toBeVisible()
+
+    await page.keyboard.insertText('test')
 
     // Wait for search results to appear
-    await expect(
-      searchDialog.getByText('RFD 125 Telemetry requirements and building blocks'),
-    ).toBeVisible()
+    await expect(searchDialog.getByText('RFD 363 Minibar')).toBeVisible()
 
     // Verify one of the expected search results is present
     const testScenarioResult = searchDialog
       .getByRole('button')
-      .filter({ hasText: 'Use cases and requirements' })
+      .filter({ hasText: 'Manufacturing Test Needs' })
+      .first()
     await expect(testScenarioResult).toBeVisible()
 
     await takeSnapshot(page, testInfo)
@@ -206,54 +208,58 @@ test.describe('Search', () => {
     await testScenarioResult.click()
 
     // Verify we navigated to the correct RFD and section
-    await expect(page).toHaveURL(/\/rfd\/125#_use_cases_and_requirements/)
+    await expect(page).toHaveURL(/\/rfd\/363#_test_the_ignition_target/)
     await expect(
       page.getByRole('heading', {
-        name: 'Telemetry requirements and building blocks',
+        name: 'Minibar',
         level: 1,
       }),
     ).toBeVisible()
 
     // Verify we're at the correct section
-    await expect(
-      page.getByRole('heading', { name: 'Use cases and requirements', level: 2 }),
-    ).toBeVisible()
+    await expect(page.getByRole('link', { name: 'Test the Ignition Target' })).toBeVisible()
   })
 
   test('Search result navigation to different RFD', async ({ page }, testInfo) => {
+    const searchButton = page.getByRole('button', { name: 'Search' })
+
     await page.goto('/')
 
-    const searchDialog = await searchHelpers.openSearchDialog(page)
+    const searchDialog = page.getByRole('dialog', { name: 'Search' })
+    await expect(searchDialog).toBeHidden()
+
+    await searchButton.click()
     await expect(searchDialog).toBeVisible()
 
     await takeSnapshot(page, testInfo)
 
     // Type search query
-    await page.keyboard.insertText('test')
+    await page.keyboard.insertText('web console')
 
-    await expect(
-      page.getByRole('heading', { name: 'RFD 532 Versioning for' }),
-    ).toBeVisible()
+    await expect(page.getByRole('heading', { name: 'RFD 223 Web Console' })).toBeVisible()
 
     // Navigate through results with arrow keys
     await page.keyboard.press('ArrowDown')
     await page.keyboard.press('ArrowDown')
     await page.keyboard.press('ArrowDown')
 
-    // Click on the "Assumptions" result from RFD 523
-    const assumptionsResult = searchDialog
+    // Click on the "Manufacturing Test Needs" result from RFD 363
+    const architecturesResult = searchDialog
       .getByRole('button')
-      .filter({ hasText: 'Assumptions' })
-    await expect(assumptionsResult).toBeVisible()
-    await assumptionsResult.click()
+      .filter({ hasText: 'Architectures' })
+      .first()
+    await expect(architecturesResult).toBeVisible()
+    await architecturesResult.click()
 
-    // Verify we navigated to RFD 532 and the correct section
-    await expect(page).toHaveURL(/\/rfd\/532#_assumptions/)
+    // Verify we navigated to RFD 223 and the correct section
+    await expect(page).toHaveURL(/\/rfd\/223#_browser_only/)
     await expect(
-      page.getByRole('heading', { name: 'Versioning for internal HTTP APIs', level: 1 }),
+      page.getByRole('heading', { name: 'Web Console Architecture', level: 1 }),
     ).toBeVisible()
 
     // Verify we're at the correct section
-    await expect(page.getByRole('heading', { name: 'Assumptions', level: 2 })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Architectures', level: 2 }),
+    ).toBeVisible()
   })
 })

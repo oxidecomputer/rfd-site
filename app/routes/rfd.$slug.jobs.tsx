@@ -5,7 +5,7 @@
  *
  * Copyright Oxide Computer Company
  */
-import { json, type LoaderFunctionArgs } from '@remix-run/node'
+import { data, type LoaderFunctionArgs } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { fetchRfdJobs } from '~/services/rfd.server'
@@ -14,11 +14,11 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   const rfdNumber = parseInt(params.slug || '')
 
   if (isNaN(rfdNumber)) {
-    return json({ error: 'Invalid RFD number' }, { status: 400 })
+    return data({ error: 'Invalid RFD number' }, { status: 400 })
   }
 
   const user = await authenticate(request)
   const jobs = await fetchRfdJobs(rfdNumber, user)
 
-  return json(jobs)
+  return data(jobs)
 }

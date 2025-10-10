@@ -6,9 +6,10 @@
  * Copyright Oxide Computer Company
  */
 
-declare module '@djencks/asciidoctor-mathjax' {
-  type Registry = import('@asciidoctor/core').Extensions.Registry
-  type Config = {}
+import type { Config } from '@react-router/dev/config'
+import { vercelPreset } from '@vercel/react-router/vite'
 
-  function register(registry: Registry, config?: Config): Registry
-}
+export default {
+  presets: [vercelPreset()],
+  ssr: true,
+} satisfies Config

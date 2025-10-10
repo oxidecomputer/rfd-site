@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { handleDocument } from '@oxide/design-system/components/dist'
+import { handleDocument } from '@oxide/design-system/components'
 import type { DocumentBlock, DocumentSection } from '@oxide/react-asciidoc'
 import type {
   AccessGroup_for_RfdPermission,
@@ -145,7 +145,7 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[] | unde
 }
 
 export const getAuthors = (rfds: RfdListItem[]): Author[] => {
-  let authors: Author[] = []
+  const authors: Author[] = []
 
   for (const rfd of rfds) {
     if (rfd.authors && rfd.authors.length > 0) {
@@ -199,6 +199,7 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
       attributes: {
         rfdnumber: rfd.rfdNumber,
       },
+      sourcemap: true,
     })
     content = await handleDocument(doc)
   }
@@ -261,6 +262,7 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
       attributes: {
         rfdnumber: rfd.number,
       },
+      sourcemap: true,
     })
     content = await handleDocument(doc)
   }
@@ -311,7 +313,7 @@ export const generateAuthors = (authors: string): Author[] => {
     splitChar = ';'
   }
 
-  let array = authors.split(splitChar).map((author) => {
+  const array = authors.split(splitChar).map((author) => {
     const regex = /<(.+)>/
     const matches = author.match(regex)
     const name = author.replace(regex, '').trim()

@@ -6,23 +6,14 @@
  * Copyright Oxide Computer Company
  */
 
-import { vitePlugin as remix } from '@remix-run/dev'
-import { vercelPreset } from '@vercel/remix/vite'
+import { reactRouter } from '@react-router/dev/vite'
+import tailwindcss from '@tailwindcss/vite'
 import { defineConfig } from 'vite'
 import tsconfigPaths from 'vite-tsconfig-paths'
 
 import { LocalRfdPlugin } from './vite/local-rfd-plugin'
 
-declare module '@remix-run/server-runtime' {
-  interface Future {
-    v3_singleFetch: true
-  }
-}
-
-const plugins = [
-  remix({ presets: [vercelPreset()], future: { v3_singleFetch: true } }),
-  tsconfigPaths(),
-]
+const plugins = [tailwindcss(), reactRouter(), tsconfigPaths()]
 
 const localRepo = process.env.LOCAL_RFD_REPO
 if (localRepo) plugins.push(LocalRfdPlugin(localRepo))

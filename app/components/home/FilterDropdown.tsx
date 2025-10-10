@@ -8,8 +8,8 @@
 
 import { Badge, type BadgeColor } from '@oxide/design-system'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
-import { useSearchParams } from '@remix-run/react'
 import { type ReactNode } from 'react'
+import { useSearchParams } from 'react-router'
 
 import {
   DropdownItem,
@@ -68,10 +68,10 @@ const FilterDropdown = () => {
   }
 
   return (
-    <div className="flex h-4 items-center text-mono-sm text-default">
+    <div className="text-mono-sm text-default flex h-4 items-center">
       <Dropdown.Root modal={false}>
         <Dropdown.Trigger className="-m-2 ml-0 p-2">
-          <Icon name="filter" size={12} className="flex-shrink-0" />
+          <Icon name="filter" size={12} className="shrink-0" />
         </Dropdown.Trigger>
 
         <DropdownMenu align="start">
@@ -119,7 +119,7 @@ const FilterDropdown = () => {
 
       {(authorNameParam || authorEmailParam) && (
         <>
-          <div className="ml-3 mr-1 block text-tertiary">Author:</div>
+          <div className="text-tertiary mr-1 ml-3 block">Author:</div>
           <FilterBadge onClick={clearAuthor} color="purple">
             {authorNameParam || authorEmailParam}
           </FilterBadge>
@@ -128,7 +128,7 @@ const FilterDropdown = () => {
 
       {labelParam && (
         <>
-          <div className="ml-3 mr-1 block text-tertiary">Label:</div>
+          <div className="text-tertiary mr-1 ml-3 block">Label:</div>
           <FilterBadge onClick={clearLabel} color="blue">
             {labelParam}
           </FilterBadge>

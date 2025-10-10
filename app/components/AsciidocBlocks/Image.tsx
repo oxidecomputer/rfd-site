@@ -25,7 +25,7 @@ const InlineImage = ({ node }: { node: Block | Inline }) => {
     target = node.getAttribute('target') // Getting target on block nodes
   }
 
-  let uri = node.getImageUri(target)
+  const uri = node.getImageUri(target)
   let url = ''
 
   url = `/rfd/image/${documentAttrs.rfdnumber}/${uri}`
@@ -90,7 +90,7 @@ const Image = ({ node }: { node: ImageBlock }) => {
 
   return (
     <>
-      <div
+      <button
         className={`imageblock ${
           node.attributes['align'] ? 'text-' + node.attributes['align'] : ''
         } ${node.attributes['float'] ? node.attributes['float'] : ''} ${
@@ -100,14 +100,14 @@ const Image = ({ node }: { node: ImageBlock }) => {
       >
         <div className="content">{img}</div>
         <Title text={node.title || ''} />
-      </div>
+      </button>
       <Ariakit.Dialog
         open={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
         className="fixed [&_img]:mx-auto"
         backdrop={<div className="backdrop" />}
       >
-        <Ariakit.DialogDismiss className="fixed left-1/2 top-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 cursor-zoom-out p-20">
+        <Ariakit.DialogDismiss className="fixed top-1/2 left-1/2 flex h-full w-full -translate-x-1/2 -translate-y-1/2 cursor-zoom-out p-20">
           <img
             src={url}
             className={`max-h-full max-w-full rounded object-contain`}

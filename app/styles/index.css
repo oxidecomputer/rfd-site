@@ -6,28 +6,41 @@
  * Copyright Oxide Computer Company
  */
 
-@import './lib/fonts.css';
-@import '@oxide/design-system/styles/dist/main.css';
-@import '@oxide/design-system/styles/dist/yellow.css';
-@import '@oxide/design-system/styles/dist/purple.css';
-@import '@oxide/design-system/styles/dist/green.css';
-@import '@oxide/design-system/styles/dist/blue.css';
-@import '@oxide/design-system/components/dist/asciidoc.css';
-@import '@oxide/design-system/components/dist/button.css';
-@import '@oxide/design-system/components/dist/spinner.css';
+@import './lib/fonts.css' layer(base);
+@import '@oxide/design-system/styles/main.css';
+@import '@oxide/design-system/styles/yellow.css';
+@import '@oxide/design-system/styles/purple.css';
+@import '@oxide/design-system/styles/green.css';
+@import '@oxide/design-system/styles/blue.css';
+@import '@oxide/design-system/styles/tailwind.css';
+@import '@oxide/design-system/components/asciidoc.css';
+
+@import '@oxide/design-system/components/asciidoc.css';
+@import '@oxide/design-system/components/button.css';
+@import '@oxide/design-system/components/spinner.css';
 
 @import './lib/asciidoc.css';
 @import './lib/highlight.css';
 @import './lib/github-markdown.css';
 @import './lib/loading-bar.css';
 
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import 'tailwindcss';
+@source '../../node_modules/@oxide/design-system/dist/components';
 
-:root {
-  --toc-width: 240px;
-  --header-height: 60px;
+@layer utilities {
+  :root {
+    --toc-width: 240px;
+    --header-height: 60px;
+    --container-px: 1.25rem; /* px-5 */
+
+    @media (min-width: 600px) {
+      --container-px: 2.5rem; /* px-10 */
+    }
+
+    @media only screen and (max-width: 1200px) {
+      --toc-width: 200px;
+    }
+  }
 }
 
 .light-mode {
@@ -38,12 +51,6 @@
 .light-mode picture,
 .light-mode video {
   filter: invert(1) hue-rotate(180deg);
-}
-
-@media only screen and (max-width: 1200px) {
-  :root {
-    --toc-width: 200px;
-  }
 }
 
 html,
@@ -66,7 +73,7 @@ body {
 @layer base {
   body {
     /* leading override is gross, fix later */
-    @apply !leading-[1.33] text-sans-sm text-raise;
+    @apply text-sans-sm text-raise leading-[1.33]!;
   }
 }
 
@@ -93,7 +100,7 @@ button:focus-visible,
 [role='button']:focus-visible,
 input[type='radio']:focus-visible,
 input[type='checkbox']:focus-visible {
-  @apply outline-0 ring-2 ring-accent-tertiary;
+  @apply ring-accent-tertiary ring-2 outline-0;
 }
 
 a:focus,
@@ -106,7 +113,7 @@ input[type='checkbox']:focus {
   outline: 2px solid black;
   outline-offset: -2px;
   box-shadow: none;
-  @apply outline-0 ring-2 ring-accent-tertiary;
+  @apply ring-accent-tertiary ring-2 outline-0;
 }
 
 a:focus:not(:focus-visible),
@@ -116,7 +123,7 @@ button:focus:not(:focus-visible),
 [role='button']:focus:not(:focus-visible),
 input[type='radio']:focus:not(:focus-visible),
 input[type='checkbox']:focus:not(:focus-visible) {
-  @apply outline-0 ring-0;
+  @apply ring-0 outline-0;
 }
 
 .link-with-underline {
@@ -135,20 +142,20 @@ table.inline-table {
     @apply bg-tertiary;
 
     tr th {
-      @apply h-8 border-y pr-4 text-left text-mono-sm border-default;
+      @apply text-mono-sm border-default h-8 border-y pr-4 text-left;
     }
 
     tr th:first-child {
-      @apply rounded-bl rounded-tl border-l;
+      @apply rounded-tl rounded-bl border-l;
     }
 
     tr th:last-child {
-      @apply rounded-br rounded-tr border-r;
+      @apply rounded-tr rounded-br border-r;
     }
   }
   tbody {
     td {
-      @apply h-10 border-b border-b-default;
+      @apply border-b-default h-10 border-b align-middle;
     }
   }
 }

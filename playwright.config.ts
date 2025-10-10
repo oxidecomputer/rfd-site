@@ -16,8 +16,10 @@ export default defineConfig<ChromaticConfig>({
   testDir: './test/e2e',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
+  // Retry on CI only
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 1 : undefined,
+  // use all available cores (2) on github actions. use fewer locally
+  workers: process.env.CI ? '100%' : '66%',
   timeout: 60000,
   use: {
     baseURL: process.env.CI ? process.env.BASE_URL : 'http://localhost:3000',

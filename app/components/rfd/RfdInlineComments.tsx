@@ -17,7 +17,7 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
-import { Badge } from '@oxide/design-system/components/dist'
+import { Badge } from '@oxide/design-system/components'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -29,6 +29,7 @@ import diff from 'simple-text-diff'
 
 import Container from '~/components/Container'
 import Icon from '~/components/Icon'
+import { useDiscussionQuery } from '~/hooks/use-discussion-query'
 import useWindowSize from '~/hooks/use-window-size'
 import type {
   ListReviewsCommentsType,
@@ -83,23 +84,23 @@ export const matchCommentToBlock = (
   return block
 }
 
-const RfdInlineComments = ({ comments }: { comments: ListReviewsCommentsType }) => {
+const RfdInlineComments = ({ pullNumber }: { pullNumber: number }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [inlineComments, setInlineComments] = useState<Comment>({})
 
-  useEffect(() => {
-    setIsLoaded(true)
-  }, [])
+  const { data: discussion } = useDiscussionQuery(pullNumber)
 
   useEffect(() => {
+    if (!discussion?.comments) return
+
     // Get a list of elements with data-lineno
     // This is used to attach comments to their associated rendered line
-    let lineNumbers =
+    const lineNumbers =
       typeof document !== 'undefined' ? document.querySelectorAll('[data-lineno]') : []
 
     const newComments: Comment = {}
 
-    comments.forEach((comment) => {
+    discussion.comments.forEach((comment) => {
       const block = matchCommentToBlock(
         comment.line,
         lineNumbers as NodeListOf<HTMLElement>,
@@ -141,9 +142,13 @@ const RfdInlineComments = ({ comments }: { comments: ListReviewsCommentsType }) 
     // Group comments by block
     // in_reply_to_id
     setInlineComments(newComments)
-  }, [comments])
 
-  if (!inlineComments || !isLoaded) return null
+    setTimeout(() => {
+      setIsLoaded(true)
+    }, 50)
+  }, [discussion?.comments])
+
+  if (!inlineComments) return null
 
   return (
     <Container className="z-10 print:hidden">
@@ -230,13 +235,13 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
         }}
         {...getReferenceProps()}
       >
-        <div className="inline-flex items-center justify-center rounded-full p-[2px] bg-tertiary">
+        <div className="bg-tertiary inline-flex items-center justify-center rounded-full p-[2px]">
           {users.slice(0, 3).map((user, index) => {
             return (
               <div
                 key={index}
                 className={cn(
-                  'h-[24px] w-[24px] overflow-hidden rounded-full border-2 bg-secondary',
+                  'bg-secondary h-[24px] w-[24px] overflow-hidden rounded-full border-2',
                   index > 0 && '-ml-2',
                 )}
                 style={{ borderColor: 'var(--surface-tertiary)' }}
@@ -300,11 +305,11 @@ const CodeSuggestion = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border text-raise border-secondary',
+        'text-raise border-secondary overflow-hidden rounded-lg border',
         isOverlay ? 'bg-default' : 'bg-raise',
       )}
     >
-      <div className="w-full border-b px-2 py-2 text-mono-xs text-tertiary border-b-secondary">
+      <div className="text-mono-xs text-tertiary border-b-secondary w-full border-b px-2 py-2">
         Suggestion
       </div>
       <CodeLine change="remove" code={textDiff.before} />
@@ -360,16 +365,16 @@ export const CommentThreadBlock = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-lg border border-secondary',
-        isOverlay ? 'overlay-shadow w-[560px] bg-raise' : 'w-full bg-default',
+        'border-secondary overflow-hidden rounded-lg border',
+        isOverlay ? 'overlay-shadow bg-raise w-[560px]' : 'bg-default w-full',
       )}
     >
       {/* Meta */}
-      <div className="flex items-center justify-between p-3 bg-secondary">
+      <div className="bg-secondary flex items-center justify-between p-3">
         <a href={htmlUrl} target="_blank" rel="noreferrer" className="hover:opacity-80">
-          <div className="flex items-center !normal-case text-mono-sm">
+          <div className="text-mono-sm flex items-center normal-case!">
             {isOverlay && (
-              <span className="mr-1 text-sans-sm text-secondary">Comment on </span>
+              <span className="text-sans-sm text-secondary mr-1">Comment on </span>
             )}
             {path}
 
@@ -387,10 +392,9 @@ export const CommentThreadBlock = ({
           </button>
         )}
       </div>
-      {/* )} */}
 
       {/* Code */}
-      <div className={cn('border-b border-t border-secondary', isOverlay && 'border-t')}>
+      <div className={cn('border-secondary border-t border-b', isOverlay && 'border-t')}>
         {lines.map((line, index) => {
           let change: Change = null
 
@@ -400,7 +404,7 @@ export const CommentThreadBlock = ({
             change = 'remove'
           }
 
-          let code = change ? line.slice(1) : line
+          const code = change ? line.slice(1) : line
 
           return (
             <CodeLine
@@ -423,12 +427,11 @@ export const CommentThreadBlock = ({
           }
 
           const renderer = {
-            code(code: string, infostring: string) {
-              const match = (infostring || '').match(/\S*/)
-              const lang = match ? match[0] : ''
-              let _code = code.replace(/\n$/, '') + '\n'
+            code({ text, lang }: { text: string; lang?: string }) {
+              const langString = (lang || '').match(/\S*/)?.[0] || ''
+              const _code = text.replace(/\n$/, '') + '\n'
 
-              if (lang === 'suggestion') {
+              if (langString === 'suggestion') {
                 return renderToString(
                   <CodeSuggestion
                     original={original}
@@ -438,7 +441,7 @@ export const CommentThreadBlock = ({
                 )
               }
 
-              const cls = lang ? `class="lang-${lang}"` : ''
+              const cls = langString ? `class="lang-${langString}"` : ''
 
               return `<pre><code ${cls}>${_code}</code></pre>\n`
             },
@@ -449,7 +452,7 @@ export const CommentThreadBlock = ({
           return (
             <div
               key={comment.id}
-              className="flex border-b p-3 border-b-secondary last:border-b-0"
+              className="border-b-secondary flex border-b p-3 last:border-b-0"
             >
               <img
                 src={comment.user.avatar_url}
@@ -470,7 +473,7 @@ export const CommentThreadBlock = ({
                         {comment.user.login}
                       </a>
                     </div>
-                    <div className="ml-1 text-sans-md text-secondary">
+                    <div className="text-sans-md text-secondary ml-1">
                       <time dateTime={comment.created_at}>
                         {dayjs(comment.created_at).fromNow()}
                       </time>
@@ -478,7 +481,7 @@ export const CommentThreadBlock = ({
                   </div>
                 </div>
                 <div
-                  className="github-markdown asciidoc-body mt-2 w-full pr-4 text-left text-sans-md text-default"
+                  className="github-markdown asciidoc-body text-sans-md text-default mt-2 w-full pr-4 text-left"
                   dangerouslySetInnerHTML={{ __html: marked.parse(comment.body) }}
                 />
 
@@ -527,10 +530,10 @@ const CommentReactions = ({ reactions }: { reactions: Reactions }) => {
         return (
           <div
             key={key}
-            className="flex items-center rounded-lg border p-1 text-mono-sm text-default border-secondary"
+            className="text-mono-sm text-default border-secondary flex items-center rounded-lg border p-1"
           >
             {emoji}
-            <span className="ml-1 inline-block text-mono-sm text-default">{count}</span>
+            <span className="text-mono-sm text-default ml-1 inline-block">{count}</span>
           </div>
         )
       })}
@@ -548,11 +551,11 @@ const CodeLine = ({
   lineNumber?: number | null
 }) => {
   return (
-    <div className="flex text-mono-code">
+    <div className="text-mono-code flex">
       {lineNumber && (
         <div
           className={cn(
-            'flex w-16 flex-shrink-0 justify-end py-1 pl-4 pr-2',
+            'flex w-16 shrink-0 justify-end py-1 pr-2 pl-4',
             change === 'add' && 'bg-accent-secondary-hover',
             change === 'remove' && 'bg-destructive-secondary-hover',
           )}
@@ -562,12 +565,12 @@ const CodeLine = ({
       )}
       <div
         className={cn(
-          'flex flex-grow whitespace-pre-wrap py-1 pl-2 pr-6',
+          'flex grow py-1 pr-6 pl-2 whitespace-pre-wrap',
           change === 'add' && 'bg-accent-secondary',
           change === 'remove' && 'bg-destructive-secondary',
         )}
       >
-        <div className="w-2 flex-shrink-0">
+        <div className="w-2 shrink-0">
           {change === 'add' && '+'}
           {change === 'remove' && '-'}
         </div>

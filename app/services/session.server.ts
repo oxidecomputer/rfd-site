@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { createCookieSessionStorage } from '@remix-run/node'
+import { createCookieSessionStorage } from 'react-router'
 
 function getSecrets(): string[] {
   // Locally we don't do authentication, so a hard-coded secret is fine. I
@@ -29,7 +29,7 @@ function sessionMaxAge(): number {
   return 60 * 60 * 24 * 14 // two weeks in seconds
 }
 
-export let sessionStorage = createCookieSessionStorage({
+export const sessionStorage = createCookieSessionStorage({
   cookie: {
     name: '_session',
     sameSite: 'lax', // this helps with CSRF

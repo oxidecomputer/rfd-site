@@ -19,12 +19,12 @@ const Container = ({
   children: React.ReactNode
   isGrid?: boolean
 }) => (
-  <div className={cn('w-full px-5 600:px-10', wrapperClassName)}>
+  <div className={cn('600:px-10 w-full px-5', wrapperClassName)}>
     <div
       className={cn(
         'm-auto max-w-1200',
         className,
-        isGrid ? 'grid grid-cols-12 gap-4 600:gap-6' : '',
+        isGrid ? '600:gap-6 grid grid-cols-12 gap-4' : '',
       )}
     >
       {children}

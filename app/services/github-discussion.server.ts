@@ -64,7 +64,7 @@ export type IssueCommentType = ListIssueCommentsType[number]
 /** Includes auth check: non-internal users can't see discussion */
 export async function fetchDiscussion(
   rfd: number,
-  discussionLink: string | undefined,
+  pullNumber: number,
   user: User | null,
 ): Promise<{
   reviews: ListReviewsType
@@ -75,16 +75,9 @@ export async function fetchDiscussion(
   const octokit = getOctokitClient()
 
   if (!octokit) return null
-  if (!discussionLink) return null
   if (!user) return null
   const userPermissions = await getUserPermissions(user)
-  if (!(await any(userPermissions, [{ GetDiscussion: rfd }, 'GetDiscussionsAll'])))
-    return null
-
-  const match = discussionLink.match(/\/pull\/(\d+)$/)
-  if (!match) return null
-
-  const pullNumber = parseInt(match[1], 10)
+  if (!any(userPermissions, [{ GetDiscussion: rfd }, 'GetDiscussionsAll'])) return null
 
   const reviews: ListReviewsResponseType = await octokit.rest.pulls.listReviews({
     owner: 'oxidecomputer',
@@ -117,7 +110,7 @@ export async function fetchDiscussion(
       return null
     })
 
-  let prComments = await octokit.paginate(octokit.rest.issues.listComments, {
+  const prComments = await octokit.paginate(octokit.rest.issues.listComments, {
     owner: 'oxidecomputer',
     repo: 'rfd',
     issue_number: pullNumber,

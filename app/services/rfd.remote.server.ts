@@ -150,7 +150,7 @@ export async function searchRfds(
   const rfdClient = client(user?.token || undefined)
   const query: SearchRfdsQueryParams = { q: '' }
 
-  for (let [k, v] of params) {
+  for (const [k, v] of params) {
     switch (k) {
       case 'q':
         query.q = v

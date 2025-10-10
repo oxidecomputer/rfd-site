@@ -6,13 +6,13 @@
  * Copyright Oxide Computer Company
  */
 
-import { redirect, type LoaderFunction } from '@remix-run/node'
+import { redirect, type LoaderFunction } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { fetchRfdPdf } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
-export let loader: LoaderFunction = async ({ request, params: { slug } }) => {
+export const loader: LoaderFunction = async ({ request, params: { slug } }) => {
   const num = parseRfdNum(slug)
   if (!num) throw new Response('Not Found', { status: 404 })
 

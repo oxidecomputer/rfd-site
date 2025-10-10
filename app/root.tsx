@@ -6,12 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import {
-  type LinksFunction,
-  type LoaderFunctionArgs,
-  type MetaFunction,
-  type SerializeFrom,
-} from '@remix-run/node'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
   isRouteErrorResponse,
   Links,
@@ -22,8 +17,10 @@ import {
   useLoaderData,
   useRouteError,
   useRouteLoaderData,
-} from '@remix-run/react'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+  type LinksFunction,
+  type LoaderFunctionArgs,
+  type MetaFunction,
+} from 'react-router'
 
 // import { auth, isAuthenticated } from '~/services/authn.server'
 import styles from '~/styles/index.css?url'
@@ -46,8 +43,8 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  let theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
-  let inlineComments =
+  const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
+  const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
   const user = await authenticate(request)
@@ -69,7 +66,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
     }
-  } catch (err) {
+  } catch {
     // The only error that should be caught here is the unauthenticated error.
     // And if that occurs we need to log the user out
     await logout(request, '/')
@@ -89,7 +86,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 }
 
 export function useRootLoaderData() {
-  return useRouteLoaderData('root') as SerializeFrom<typeof loader>
+  return useRouteLoaderData('root') as ReturnType<typeof useLoaderData<typeof loader>>
 }
 
 export function ErrorBoundary() {
@@ -145,7 +142,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <Outlet />
         {localMode && (
-          <div className="overlay-shadow fixed bottom-6 left-6 z-10 rounded p-2 text-sans-sm text-notice bg-notice-secondary">
+          <div className="overlay-shadow text-sans-sm text-notice bg-notice-secondary fixed bottom-6 left-6 z-10 rounded p-2">
             Local authoring mode
           </div>
         )}

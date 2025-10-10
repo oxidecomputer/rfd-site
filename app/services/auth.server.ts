@@ -60,7 +60,7 @@ const fetchUser = async (accessToken: string) => {
 
     const expiresAt = new Date((decodedToken?.payload.exp ?? 0) * 1000)
 
-    let user: User = {
+    const user: User = {
       id: apiUser.info.id,
       email,
       displayName,
@@ -185,7 +185,7 @@ function sanitizeRedirect(path: string): string {
 
   // Allow url params for the index
   if (decoded.startsWith('?')) {
-    let params = new URLSearchParams(decoded)
+    const params = new URLSearchParams(decoded)
     return `/?${params.toString()}`
   }
 
