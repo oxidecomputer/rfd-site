@@ -124,6 +124,7 @@ const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string
       {process.env.NODE_ENV === 'production' && (
         <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
       )}
+      <meta name="color-scheme" content="dark" />
     </head>
     <body className="mb-32">
       {children}
