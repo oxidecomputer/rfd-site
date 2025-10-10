@@ -84,11 +84,11 @@ export const matchCommentToBlock = (
   return block
 }
 
-const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
+const RfdInlineComments = ({ pullNumber }: { pullNumber: number }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [inlineComments, setInlineComments] = useState<Comment>({})
 
-  const { data: discussion } = useDiscussionQuery(rfdNumber)
+  const { data: discussion } = useDiscussionQuery(pullNumber)
 
   useEffect(() => {
     setIsLoaded(true)
@@ -392,7 +392,6 @@ export const CommentThreadBlock = ({
           </button>
         )}
       </div>
-      {/* )} */}
 
       {/* Code */}
       <div className={cn('border-secondary border-t border-b', isOverlay && 'border-t')}>

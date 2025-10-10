@@ -15,7 +15,15 @@ import {
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  Fragment,
+  ReactNode,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   redirect,
   useLoaderData,
@@ -118,21 +126,13 @@ const getPullNumber = (discussionLink: string): number | null => {
   return parseInt(match[1], 10)
 }
 
-export default function Rfd() {
-  const { pathname, hash } = useLocation()
-
-  const { rfd, groups } = useLoaderData<typeof loader>()
-  const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
-
-  const pullNumber = rfd.discussion ? getPullNumber(rfd.discussion) : null
-
-  const { user, inlineComments } = useRootLoaderData()
-
-  // This check is merely cosmetic. It hides UI elements that the user does not have access to and
-  // which will fail if they try to use
-  const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
-
-  const bodyRef = useRef<HTMLDivElement>(null)
+const SectionTrackingOutlines = ({
+  dialog,
+  sections,
+}: {
+  dialog: ReactNode
+  sections: DocumentSection[]
+}) => {
   const [activeItem, setActiveItem] = useState('')
 
   const onActiveElementUpdate = useCallback(
@@ -162,15 +162,55 @@ export default function Rfd() {
   )
 
   useEffect(() => {
-    if (content?.sections) {
-      const headings = flattenSections(content.sections)
+    if (sections) {
+      const headings = flattenSections(sections)
         .filter((item) => item.level <= 2)
         .map((item) => document.getElementById(item.id))
         .filter(isValue)
 
       setSections(headings)
     }
-  }, [content?.sections, setSections])
+  }, [sections, setSections])
+
+  return (
+    <>
+      {/* Desktop Outline */}
+      <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
+        {dialog}
+        <DesktopOutline
+          toc={sections}
+          activeItem={activeItem}
+          className="1200:block hidden"
+        />
+      </div>
+
+      {/* Mobile Outline */}
+      <div className="fixed inset-x-0 bottom-0 *:mb-0">
+        <SmallScreenOutline
+          toc={sections}
+          activeItem={activeItem}
+          className="1200:hidden block"
+        />
+      </div>
+    </>
+  )
+}
+
+export default function Rfd() {
+  const { pathname, hash } = useLocation()
+
+  const { rfd, groups } = useLoaderData<typeof loader>()
+  const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
+
+  const pullNumber = rfd.discussion ? getPullNumber(rfd.discussion) : null
+
+  const { user, inlineComments } = useRootLoaderData()
+
+  // This check is merely cosmetic. It hides UI elements that the user does not have access to and
+  // which will fail if they try to use
+  const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
+
+  const bodyRef = useRef<HTMLDivElement>(null)
 
   const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
@@ -181,7 +221,9 @@ export default function Rfd() {
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 print:mt-0">
-        {inlineComments && <RfdInlineComments rfdNumber={number} />}
+        {inlineComments && user && pullNumber && (
+          <RfdInlineComments pullNumber={pullNumber} />
+        )}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
@@ -276,37 +318,27 @@ export default function Rfd() {
             className="800:col-span-10 800:col-start-2 1200:col-span-10 1200:col-start-3 col-span-12 flex"
             ref={bodyRef}
           >
-            <Asciidoc document={content as DocumentBlock} options={opts} />
-            <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
-              {user && title && pullNumber && (
-                <RfdDiscussionDialog
-                  rfdNumber={number}
-                  pullNumber={pullNumber}
-                  title={title}
+            {content && (
+              <>
+                <Asciidoc document={content as DocumentBlock} options={opts} />
+                <SectionTrackingOutlines
+                  sections={content?.sections}
+                  dialog={
+                    user && title && pullNumber ? (
+                      <RfdDiscussionDialog
+                        rfdNumber={number}
+                        pullNumber={pullNumber}
+                        title={title}
+                      />
+                    ) : null
+                  }
                 />
-              )}
-              {content && (
-                <DesktopOutline
-                  toc={content.sections}
-                  activeItem={activeItem}
-                  className="1200:block hidden"
-                />
-              )}
-            </div>
+              </>
+            )}
           </div>
         </Container>
         <Footnotes doc={content as DocumentBlock} />
       </main>
-      <div className="fixed inset-x-0 bottom-0 *:mb-0">
-        {content && (
-          <SmallScreenOutline
-            toc={content.sections}
-            activeItem={activeItem}
-            className="1200:hidden block"
-            key={pathname}
-          />
-        )}
-      </div>
     </div>
   )
 }

@@ -18,11 +18,10 @@ import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { marked } from 'marked'
-import { useMemo, useRef } from 'react'
+import { useMemo } from 'react'
 
 import Icon from '~/components/Icon'
 import { useDiscussionQuery } from '~/hooks/use-discussion-query'
-import { useIsOverflow } from '~/hooks/use-is-overflow'
 import type {
   IssueCommentType,
   ListIssueCommentsType,
@@ -232,14 +231,16 @@ const DialogContent = ({
       className="dialog overlay-shadow bg-raise border-secondary fixed top-0 right-0 bottom-0 z-20 flex w-[670px] flex-col border-l print:hidden"
       backdrop={<div className="backdrop" />}
     >
-      <DialogHeading className="mb-4 p-8">
+      <DialogHeading className="p-8">
         <div className="flex items-start justify-between">
           <div className="text-sans-2xl pr-4">
             RFD {rfdNumber} {title}
           </div>
-          <DialogDismiss className="-m-2 p-2">
-            <Icon name="close" size={12} className="text-secondary mt-2" />
-          </DialogDismiss>
+          <div className="mt-2">
+            <DialogDismiss className="hover:bg-hover -m-2 rounded p-2">
+              <Icon name="close" size={12} className="text-secondary" />
+            </DialogDismiss>
+          </div>
         </div>
         <a
           href={`https://github.com/oxidecomputer/rfd/pull/${pullNumber}`}
@@ -261,9 +262,6 @@ const DiscussionReviewGroup = ({
   discussions: Discussions
   pullNumber: number
 }) => {
-  const overflowRef = useRef<HTMLDivElement>(null)
-  const { scrollStart } = useIsOverflow(overflowRef)
-
   const reviewCount = Object.keys(discussions).length
 
   return (
@@ -271,10 +269,9 @@ const DiscussionReviewGroup = ({
       <div
         className={cn(
           'border-t-secondary relative top-0 right-0 left-0 z-10 -mb-px h-px flex-grow-1 border-t',
-          scrollStart && reviewCount > 0 ? 'opacity-0' : 'opacity-100 transition-opacity',
         )}
       />
-      <main className="relative h-full overflow-y-auto p-8 pt-4" ref={overflowRef}>
+      <main className="relative h-full overflow-y-auto p-8 pt-4">
         {reviewCount > 0 ? (
           <>
             {discussions.map((discussion, index) => {
