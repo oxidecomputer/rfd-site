@@ -301,7 +301,7 @@ const CodeSuggestion = ({
   suggestion: string
   isOverlay: boolean
 }) => {
-  const textDiff = diff.diffPatch(original, suggestion)
+  const textDiff = diff.diffPatchBySeparator(original, suggestion, ' ')
   return (
     <div
       className={cn(
