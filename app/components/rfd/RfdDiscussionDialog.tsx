@@ -21,6 +21,7 @@ import { marked } from 'marked'
 import { useMemo, useRef } from 'react'
 
 import Icon from '~/components/Icon'
+import { useDiscussionQuery } from '~/hooks/use-discussion-query'
 import { useIsOverflow } from '~/hooks/use-is-overflow'
 import type {
   IssueCommentType,
@@ -54,27 +55,31 @@ type Discussions = (ReviewDiscussion | IssueComment)[]
 type CommentThread = Record<string, ListReviewsCommentsType>
 
 const RfdDiscussionDialog = ({
-  reviews,
-  comments,
-  title,
   rfdNumber,
   pullNumber,
-  prComments,
+  title,
 }: {
-  reviews: ListReviewsType
-  comments: ListReviewsCommentsType
-  prComments: ListIssueCommentsType
-  title: string
   rfdNumber: number
   pullNumber: number
+  title: string
 }) => {
-  const dialog = useDialogStore({ animated: true })
+  const dialog = useDialogStore()
+  const { data: discussion, isLoading, error } = useDiscussionQuery(pullNumber, true)
 
   const discussions = useMemo((): Discussions => {
-    if (!reviews || !comments || !prComments) {
+    if (!discussion?.reviews || !discussion?.comments || !discussion?.prComments) {
       return []
     }
 
+    const {
+      reviews,
+      comments,
+      prComments,
+    }: {
+      reviews: ListReviewsType
+      comments: ListReviewsCommentsType
+      prComments: ListIssueCommentsType
+    } = discussion
     const threads: CommentThread = {}
     comments.forEach((comment) => {
       // If it is check if that comment already has it's own thread
@@ -148,14 +153,15 @@ const RfdDiscussionDialog = ({
     })
 
     return discussionsArray
-  }, [reviews, comments, prComments])
+  }, [discussion])
 
   return (
     <>
       <CommentCount
         onClick={dialog.toggle}
-        count={comments.length + prComments.length}
-        isLoading={false}
+        count={discussion ? discussion.comments.length + discussion.prComments.length : 0}
+        isLoading={isLoading}
+        error={!!error}
       />
 
       <DialogContent
@@ -180,6 +186,7 @@ export const CommentCount = ({
   onClick: () => void
   error?: boolean
 }) => {
+  const disabled = isLoading || error
   return (
     <div className="bg-default sticky top-0 w-full pb-4">
       <button
@@ -188,9 +195,10 @@ export const CommentCount = ({
           'flex items-center space-x-2 rounded border p-2 print:hidden',
           error
             ? 'text-error bg-error-secondary border-error-secondary'
-            : 'text-tertiary border-default hover:bg-hover',
+            : 'text-tertiary border-default',
+          !disabled && 'hover:bg-hover',
         )}
-        disabled={isLoading || error}
+        disabled={disabled}
       >
         <Icon name="chat" size={16} />
         {isLoading ? (

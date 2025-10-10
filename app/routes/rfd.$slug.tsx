@@ -15,17 +15,8 @@ import {
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import cn from 'classnames'
 import dayjs from 'dayjs'
+import { Fragment, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
-  Fragment,
-  Suspense,
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-} from 'react'
-import {
-  Await,
   redirect,
   useLoaderData,
   useLocation,
@@ -42,13 +33,12 @@ import Container from '~/components/Container'
 import Header from '~/components/Header'
 import AccessWarning from '~/components/rfd/AccessWarning'
 import MoreDropdown from '~/components/rfd/MoreDropdown'
-import RfdDiscussionDialog, { CommentCount } from '~/components/rfd/RfdDiscussionDialog'
+import RfdDiscussionDialog from '~/components/rfd/RfdDiscussionDialog'
 import RfdInlineComments from '~/components/rfd/RfdInlineComments'
 import RfdPreview from '~/components/rfd/RfdPreview'
 import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
-import { fetchDiscussion } from '~/services/github-discussion.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
@@ -111,8 +101,6 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   return {
     rfd,
     groups,
-    // this must not be awaited, it is being deferred
-    discussionPromise: fetchDiscussion(num, rfd?.discussion, user),
   }
 }
 
@@ -124,11 +112,19 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
   }
 }
 
+const getPullNumber = (discussionLink: string): number | null => {
+  const match = discussionLink.match(/\/pull\/(\d+)$/)
+  if (!match) return null
+  return parseInt(match[1], 10)
+}
+
 export default function Rfd() {
   const { pathname, hash } = useLocation()
 
-  const { rfd, groups, discussionPromise } = useLoaderData<typeof loader>()
+  const { rfd, groups } = useLoaderData<typeof loader>()
   const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
+
+  const pullNumber = rfd.discussion ? getPullNumber(rfd.discussion) : null
 
   const { user, inlineComments } = useRootLoaderData()
 
@@ -185,13 +181,7 @@ export default function Rfd() {
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 print:mt-0">
-        {inlineComments && (
-          <Suspense fallback={null}>
-            <Await resolve={discussionPromise} errorElement={<></>}>
-              {(discussion) => <RfdInlineComments comments={discussion?.comments || []} />}
-            </Await>
-          </Suspense>
-        )}
+        {inlineComments && <RfdInlineComments rfdNumber={number} />}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
@@ -288,45 +278,12 @@ export default function Rfd() {
           >
             <Asciidoc document={content as DocumentBlock} options={opts} />
             <div className="1200:sticky 1200:block top-[calc(2rem+(var(--header-height)))] hidden max-h-[calc(100vh-(var(--header-height)+3rem))] w-(--toc-width) shrink-0 grow overflow-auto print:hidden">
-              {user && (
-                <Suspense
-                  fallback={<CommentCount isLoading={true} count={0} onClick={() => {}} />}
-                >
-                  <Await
-                    resolve={discussionPromise}
-                    errorElement={
-                      <CommentCount
-                        error={true}
-                        isLoading={false}
-                        count={0}
-                        onClick={() => {}}
-                      />
-                    }
-                  >
-                    {(discussion) => {
-                      if (!discussion) {
-                        return <></>
-                      }
-
-                      const { reviews, comments, pullNumber, prComments } = discussion
-
-                      return (
-                        <>
-                          {title && comments && reviews && pullNumber ? (
-                            <RfdDiscussionDialog
-                              rfdNumber={number}
-                              title={title}
-                              pullNumber={pullNumber}
-                              comments={comments}
-                              prComments={prComments}
-                              reviews={reviews}
-                            />
-                          ) : null}
-                        </>
-                      )
-                    }}
-                  </Await>
-                </Suspense>
+              {user && title && pullNumber && (
+                <RfdDiscussionDialog
+                  rfdNumber={number}
+                  pullNumber={pullNumber}
+                  title={title}
+                />
               )}
               {content && (
                 <DesktopOutline

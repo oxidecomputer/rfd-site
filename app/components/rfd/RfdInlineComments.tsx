@@ -29,6 +29,7 @@ import diff from 'simple-text-diff'
 
 import Container from '~/components/Container'
 import Icon from '~/components/Icon'
+import { useDiscussionQuery } from '~/hooks/use-discussion-query'
 import useWindowSize from '~/hooks/use-window-size'
 import type {
   ListReviewsCommentsType,
@@ -83,15 +84,19 @@ export const matchCommentToBlock = (
   return block
 }
 
-const RfdInlineComments = ({ comments }: { comments: ListReviewsCommentsType }) => {
+const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [inlineComments, setInlineComments] = useState<Comment>({})
+
+  const { data: discussion } = useDiscussionQuery(rfdNumber)
 
   useEffect(() => {
     setIsLoaded(true)
   }, [])
 
   useEffect(() => {
+    if (!discussion?.comments) return
+
     // Get a list of elements with data-lineno
     // This is used to attach comments to their associated rendered line
     const lineNumbers =
@@ -99,7 +104,7 @@ const RfdInlineComments = ({ comments }: { comments: ListReviewsCommentsType }) 
 
     const newComments: Comment = {}
 
-    comments.forEach((comment) => {
+    discussion.comments.forEach((comment) => {
       const block = matchCommentToBlock(
         comment.line,
         lineNumbers as NodeListOf<HTMLElement>,
@@ -141,7 +146,7 @@ const RfdInlineComments = ({ comments }: { comments: ListReviewsCommentsType }) 
     // Group comments by block
     // in_reply_to_id
     setInlineComments(newComments)
-  }, [comments])
+  }, [discussion?.comments])
 
   if (!inlineComments || !isLoaded) return null
 

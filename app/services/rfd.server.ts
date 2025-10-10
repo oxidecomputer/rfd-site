@@ -199,6 +199,7 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
       attributes: {
         rfdnumber: rfd.rfdNumber,
       },
+      sourcemap: true,
     })
     content = await handleDocument(doc)
   }
@@ -261,6 +262,7 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
       attributes: {
         rfdnumber: rfd.number,
       },
+      sourcemap: true,
     })
     content = await handleDocument(doc)
   }
