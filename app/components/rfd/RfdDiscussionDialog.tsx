@@ -236,7 +236,7 @@ const DialogContent = ({
           <div className="text-sans-2xl pr-4">
             RFD {rfdNumber} {title}
           </div>
-          <div className="mt-2">
+          <div className="mt-1.5">
             <DialogDismiss className="hover:bg-hover -m-2 rounded p-2">
               <Icon name="close" size={12} className="text-secondary" />
             </DialogDismiss>
