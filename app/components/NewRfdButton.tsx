@@ -56,7 +56,14 @@ const CreateRfdModal = ({
   const { newRfdNumber } = useRootLoaderData()
   const fetcher = useFetcher()
 
-  const body = ''
+  const body = `:state: prediscussion
+:discussion:
+:authors: ${name || data.name} <${email || data.email}>
+
+= RFD ${newRfdNumber} ${title || '{title}'}
+
+== Determinations
+`
 
   const handleSubmit = () => {
     fetcher.submit(
@@ -70,7 +77,8 @@ const CreateRfdModal = ({
   }
 
   const formDisabled = fetcher.state !== 'idle'
-  const isFormInvalid = !title.trim()
+  const isFormInvalid =
+    !title.trim() || !(name || data.name).trim() || !(email || data.email).trim()
   const submitDisabled = formDisabled || isFormInvalid
 
   return (
@@ -119,14 +127,6 @@ const CreateRfdModal = ({
               : 'bg-default border-secondary',
           )}
         >
-          {`:state: prediscussion
-:discussion:
-:authors: ${name ? name : data.name} <${email ? email : data.email}>
-
-= RFD ${newRfdNumber} ${title ? title : '{title}'}
-
-== Determinations
-`}
           {body}
           <div
             className="absolute bottom-0 left-0 h-[100px] w-full"
