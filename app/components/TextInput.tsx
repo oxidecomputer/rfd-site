@@ -32,6 +32,8 @@ export const TextInput = forwardRef<HTMLInputElement, TextInputBaseProps>(
           )}
           disabled={disabled}
           {...fieldProps}
+          autoComplete="off"
+          data-1p-ignore
         />
       </div>
     )
