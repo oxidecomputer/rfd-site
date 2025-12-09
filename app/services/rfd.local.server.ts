@@ -19,7 +19,7 @@ export type LocalRfd = {
   state: string
   content: string
   committedAt: Date
-  visibility: 'private'
+  visibility: 'private' | 'public'
 }
 
 export function isLocalMode(): boolean {
@@ -41,6 +41,8 @@ export function fetchLocalRfd(num: number): LocalRfd {
     // we used to parse the whole document for state and title, but this is
     // dramatically faster for live reload and seems to work fine
     const state = findLineStartingWith(content, ':state: ') || 'unknown'
+    const visibilityAttr = findLineStartingWith(content, ':visibility: ')
+    const visibility = visibilityAttr === 'public' ? 'public' : 'private'
 
     let title = findLineStartingWith(content, '= ') || 'Title Not Found'
     title = title.replace(`RFD ${parseInt(numStr)}`, '')
@@ -51,7 +53,7 @@ export function fetchLocalRfd(num: number): LocalRfd {
       state: state,
       content,
       committedAt: new Date(0),
-      visibility: 'private',
+      visibility,
     }
   } catch {
     throw new Response('Not found', { status: 404 })

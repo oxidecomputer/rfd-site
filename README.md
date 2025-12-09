@@ -96,6 +96,12 @@ current branch. Missing RFDs will 404. If you are working on two RFDs and they'r
 different branches, you cannot preview both at the same time unless you make a temporary
 combined branch that contains both.
 
+To "Sign in" to the site in local mode without OAuth, add the `LOCAL_DEV_USER` env var:
+
+```sh
+LOCAL_RFD_REPO=~/oxide/rfd LOCAL_DEV_USER=1 npm run dev
+```
+
 ### Configuration
 
 When running in a non-local mode, the following settings must be specified:

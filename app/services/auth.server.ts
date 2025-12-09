@@ -20,6 +20,7 @@ import { Authenticator } from 'remix-auth'
 import { isTruthy } from '~/utils/isTruthy'
 
 import { returnToCookie } from './cookies.server'
+import { isLocalMode } from './rfd.local.server'
 import { client, fetchRemoteGroups, handleApiResponse } from './rfd.remote.server'
 import { sessionStorage } from './session.server'
 
@@ -136,6 +137,17 @@ export async function getUserFromSession(request: Request): Promise<User | null>
 }
 
 export async function authenticate(request: Request) {
+  if (isLocalMode() && process.env.LOCAL_DEV_USER) {
+    return {
+      id: 'local-dev',
+      email: 'dev@localhost',
+      displayName: 'Local Dev',
+      token: 'local-dev-token',
+      permissions: [],
+      groups: [],
+      expiresAt: new Date(Date.now() + 86400000), // 24 hours from now
+    } as User
+  }
   return await getUserFromSession(request)
 }
 
