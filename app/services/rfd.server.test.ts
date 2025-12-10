@@ -49,11 +49,13 @@ const mockPrivateRfd = {
 
 describe('fetchRfd', () => {
   afterEach(() => {
+    vi.unstubAllEnvs()
     vi.mocked(isLocalMode).mockReset()
     vi.mocked(fetchLocalRfd).mockReset()
   })
 
   it('returns public RFD when user is not logged in', async () => {
+    vi.stubEnv('LOCAL_DEV_USER', '1')
     vi.mocked(isLocalMode).mockReturnValue(true)
     vi.mocked(fetchLocalRfd).mockReturnValue(mockPublicRfd)
 
@@ -64,6 +66,7 @@ describe('fetchRfd', () => {
   })
 
   it('returns private RFD when user is logged in', async () => {
+    vi.stubEnv('LOCAL_DEV_USER', '1')
     vi.mocked(isLocalMode).mockReturnValue(true)
     vi.mocked(fetchLocalRfd).mockReturnValue(mockPrivateRfd)
 
@@ -73,7 +76,8 @@ describe('fetchRfd', () => {
     expect(rfd?.title).toBe('Private RFD')
   })
 
-  it('does not return private RFD when user is not logged in', async () => {
+  it('does not return private RFD when user is not logged in and LOCAL_DEV_USER is set', async () => {
+    vi.stubEnv('LOCAL_DEV_USER', '1')
     vi.mocked(isLocalMode).mockReturnValue(true)
     vi.mocked(fetchLocalRfd).mockReturnValue(mockPrivateRfd)
 
@@ -81,15 +85,27 @@ describe('fetchRfd', () => {
 
     expect(rfd).toBeUndefined()
   })
+
+  it('returns private RFD when LOCAL_DEV_USER is not set', async () => {
+    vi.mocked(isLocalMode).mockReturnValue(true)
+    vi.mocked(fetchLocalRfd).mockReturnValue(mockPrivateRfd)
+
+    const rfd = await fetchRfd(2, null)
+
+    expect(rfd).not.toBeUndefined()
+    expect(rfd?.title).toBe('Private RFD')
+  })
 })
 
 describe('fetchRfds', () => {
   afterEach(() => {
+    vi.unstubAllEnvs()
     vi.mocked(isLocalMode).mockReset()
     vi.mocked(fetchLocalRfds).mockReset()
   })
 
-  it('returns only public RFDs when user is not logged in', async () => {
+  it('returns only public RFDs when user is not logged in and LOCAL_DEV_USER is set', async () => {
+    vi.stubEnv('LOCAL_DEV_USER', '1')
     vi.mocked(isLocalMode).mockReturnValue(true)
     vi.mocked(fetchLocalRfds).mockReturnValue([mockPublicRfd, mockPrivateRfd])
 
@@ -100,10 +116,20 @@ describe('fetchRfds', () => {
   })
 
   it('returns all RFDs when user is logged in', async () => {
+    vi.stubEnv('LOCAL_DEV_USER', '1')
     vi.mocked(isLocalMode).mockReturnValue(true)
     vi.mocked(fetchLocalRfds).mockReturnValue([mockPublicRfd, mockPrivateRfd])
 
     const rfds = await fetchRfds(mockUser)
+
+    expect(rfds).toHaveLength(2)
+  })
+
+  it('returns all RFDs when LOCAL_DEV_USER is not set (previous behavior)', async () => {
+    vi.mocked(isLocalMode).mockReturnValue(true)
+    vi.mocked(fetchLocalRfds).mockReturnValue([mockPublicRfd, mockPrivateRfd])
+
+    const rfds = await fetchRfds(null)
 
     expect(rfds).toHaveLength(2)
   })

@@ -87,8 +87,10 @@ export async function fetchRfd(
   try {
     if (isLocalMode()) {
       const rfd = fetchLocalRfd(num)
-      // Filter out private RFDs for logged-out users
-      if (rfd.visibility === 'private' && !user) return undefined
+      // Filter out private RFDs for logged-out users when LOCAL_DEV_USER is set
+      if (process.env.LOCAL_DEV_USER && rfd.visibility === 'private' && !user) {
+        return undefined
+      }
       return localRfdToItem(rfd)
     } else {
       const rfd = await fetchRemoteRfd(num, user)
@@ -138,8 +140,13 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[] | unde
   try {
     if (isLocalMode()) {
       return fetchLocalRfds()
-        // Filter out private RFDs for logged-out users
-        .filter((rfd) => rfd.visibility === 'public' || user)
+        .filter((rfd) => {
+          // Filter out private RFDs for logged-out users when LOCAL_DEV_USER is set
+          if (process.env.LOCAL_DEV_USER && rfd.visibility === 'private' && !user) {
+            return false
+          }
+          return true
+        })
         .map(localRfdToListItem)
     } else {
       return (await fetchRemoteRfds(user)).map(apiRfdMetaToListItem)
