@@ -82,6 +82,13 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           <Search open={open} onClose={() => setOpen(false)} />
           <NewRfdButton />
 
+          <button
+            className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            <Icon name="contrast" size={16} />
+          </button>
           {user ? (
             <Dropdown.Root modal={false}>
               <Dropdown.Trigger className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover 600:w-auto 600:px-3 flex h-8 w-8 items-center justify-center rounded border">
@@ -92,7 +99,6 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
               </Dropdown.Trigger>
 
               <DropdownMenu>
-                <DropdownItem onSelect={toggleTheme}>Toggle theme</DropdownItem>
                 <DropdownItem onSelect={toggleInlineComments}>
                   {inlineComments ? 'Hide' : 'Show'} inline comments
                 </DropdownItem>
