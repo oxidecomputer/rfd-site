@@ -29,6 +29,7 @@ import { Link, useNavigate } from 'react-router'
 
 import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
+import { formatRfdNum } from '~/utils/canonicalUrl'
 import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
 import type { RfdItem } from '~/services/rfd.server'
 
@@ -170,7 +171,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
         if (e.key === 'Enter') {
           const selectedItem = flattenedHits[selectedIdx]
           if (!selectedItem) return
-          navigate(`/rfd/${selectedItem.rfd_number}#${selectedItem.anchor}`)
+          navigate(`/rfd/${formatRfdNum(selectedItem.rfd_number)}#${selectedItem.anchor}`)
           // needed despite key={pathname + hash} logic in case we navigate
           // to the page we're already on
           dismissSearch()
@@ -377,7 +378,7 @@ const HitItem = ({ hit, isSelected }: { hit: RFDHit; isSelected: boolean }) => {
           )}
         />
       )}
-      <Link to={`/rfd/${hit.rfd_number}#${hit.anchor}`} className="block" prefetch="intent">
+      <Link to={`/rfd/${formatRfdNum(hit.rfd_number)}#${hit.anchor}`} className="block" prefetch="intent">
         <li
           className={cn(
             'px-4 py-4',
@@ -466,7 +467,7 @@ const RFDPreview = ({ number }: { number: number }) => {
                     item.level === 1 && (
                       <div className="border-b-default w-full border-b py-2" key={item.id}>
                         <Link
-                          to={`/rfd/${rfd.number}#${item.id}`}
+                          to={`/rfd/${rfd.formattedNumber}#${item.id}`}
                           className="block"
                           prefetch="intent"
                         >

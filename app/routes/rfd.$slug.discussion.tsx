@@ -10,6 +10,7 @@ import { redirect, type LoaderFunctionArgs } from 'react-router'
 
 import { authenticate } from '~/services/auth.server'
 import { fetchRfd } from '~/services/rfd.server'
+import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
 import { resp404 } from './rfd.$slug'
@@ -24,7 +25,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // !rfd covers both non-existent and private RFDs for the logged-out user. In
   // both cases, once they log in, if they have permission to read it, they'll
   // get the redirect, otherwise they will get 404.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${num}/discussion`)
+  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}/discussion`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.
