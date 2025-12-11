@@ -74,6 +74,10 @@ export default function Index() {
 
     if (authorEmailParam || authorNameParam) {
       rfds = rfds.filter((rfd) => {
+        if (rfd.state === 'abandoned') {
+          return false
+        }
+
         if (!rfd.authors) {
           return false
         }
