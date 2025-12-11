@@ -55,3 +55,43 @@ export const GotoIcon = ({ className }: { className?: string }) => (
     />
   </svg>
 )
+
+export const SunIcon = ({ className, size = 16 }: { className?: string; size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <circle cx="8" cy="8" r="3" stroke="currentColor" strokeWidth="1.5" />
+    <path d="M8 1V3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M8 13V15" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M15 8H13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M3 8H1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M12.95 3.05L11.54 4.46" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M4.46 11.54L3.05 12.95" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M12.95 12.95L11.54 11.54" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    <path d="M4.46 4.46L3.05 3.05" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+  </svg>
+)
+
+export const MoonIcon = ({ className, size = 16 }: { className?: string; size?: number }) => (
+  <svg
+    width={size}
+    height={size}
+    viewBox="0 0 16 16"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <path
+      d="M14.5 9.5C13.5 10.5 12 11 10.5 11C7 11 4 8 4 4.5C4 3 4.5 1.5 5.5 0.5C2.5 1.5 0.5 4.5 0.5 8C0.5 12.1 3.9 15.5 8 15.5C11.5 15.5 14.5 13.5 15.5 10.5C15.2 10.2 14.8 9.8 14.5 9.5Z"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    />
+  </svg>
+)
