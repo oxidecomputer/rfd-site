@@ -44,8 +44,8 @@
     "mime-types": "^3.0.1",
     "mousetrap": "^1.6.5",
     "octokit": "^5.0.3",
-    "react": "^19.2.1",
-    "react-dom": "^19.2.1",
+    "react": "^19.2.2",
+    "react-dom": "^19.2.2",
     "react-instantsearch": "^7.16.3",
     "react-router": "^7.10.0",
     "remeda": "^2.32.0",
@@ -53,7 +53,6 @@
     "remix-auth-oauth2": "^3.4.1",
     "shiki": "^3.13.0",
     "simple-text-diff": "^1.7.0",
-    "tunnel-rat": "^0.1.2",
     "zod": "^3.23.8"
   },
   "devDependencies": {
@@ -96,6 +95,6 @@
     "vitest": "^3.2.4"
   },
   "engines": {
-    "node": "^22.x"
+    "node": ">=22"
   }
 }
