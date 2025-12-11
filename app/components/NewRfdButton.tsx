@@ -22,6 +22,7 @@ const NewRfdButton = () => {
       <button
         onClick={dialog.toggle}
         className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-tertiary flex h-8 w-8 items-center justify-center rounded border"
+        aria-label="Create new RFD"
       >
         <Icon name="add-roundel" size={16} />
       </button>

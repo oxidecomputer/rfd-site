@@ -29,6 +29,10 @@ export type SmallRfdItems = {
 export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
   const { user, rfds, localMode, inlineComments } = useRootLoaderData()
 
+  // Show create button in local mode or in production only for logged-in internal users
+  const userIsInternal = user?.groups.some((group) => group === 'oxide-employee')
+  const showCreateButton = localMode || userIsInternal
+
   const fetcher = useFetcher()
 
   const toggleTheme = () => {
@@ -80,7 +84,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
             <Icon name="search" size={16} />
           </button>
           <Search open={open} onClose={() => setOpen(false)} />
-          <NewRfdButton />
+          {showCreateButton && <NewRfdButton />}
 
           {user ? (
             <Dropdown.Root modal={false}>
