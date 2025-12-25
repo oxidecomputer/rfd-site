@@ -168,6 +168,28 @@ test.describe('Authentication', () => {
   })
 })
 
+test.describe('Theme Toggle', () => {
+  test('Theme toggle button is visible when signed out', async ({ page }) => {
+    await page.goto('/')
+
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' })
+    await expect(themeToggle).toBeVisible()
+  })
+
+  test('Theme toggle changes theme when clicked', async ({ page }) => {
+    await page.goto('/')
+
+    const html = page.locator('html')
+    const themeToggle = page.getByRole('button', { name: 'Toggle theme' })
+
+    const initialTheme = await html.getAttribute('class')
+
+    await themeToggle.click()
+
+    await expect(html).not.toHaveClass(initialTheme || '')
+  })
+})
+
 test.describe('Search', () => {
   test.use({ cropToViewport: true })
 

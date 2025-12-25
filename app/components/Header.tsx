@@ -11,6 +11,7 @@ import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useCallback, useState } from 'react'
 import { Link, useFetcher } from 'react-router'
 
+import { MoonIcon, SunIcon } from '~/components/CustomIcons'
 import Icon from '~/components/Icon'
 import NewRfdButton from '~/components/NewRfdButton'
 import { useKey } from '~/hooks/use-key'
@@ -27,7 +28,7 @@ export type SmallRfdItems = {
 }
 
 export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
-  const { user, rfds, localMode, inlineComments } = useRootLoaderData()
+  const { user, rfds, localMode, inlineComments, theme } = useRootLoaderData()
 
   const fetcher = useFetcher()
 
@@ -82,6 +83,13 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           <Search open={open} onClose={() => setOpen(false)} />
           <NewRfdButton />
 
+          <button
+            className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
+            onClick={toggleTheme}
+            aria-label="Toggle theme"
+          >
+            {theme === 'light-mode' ? <MoonIcon size={16} /> : <SunIcon size={16} />}
+          </button>
           {user ? (
             <Dropdown.Root modal={false}>
               <Dropdown.Trigger className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover 600:w-auto 600:px-3 flex h-8 w-8 items-center justify-center rounded border">
@@ -92,7 +100,6 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
               </Dropdown.Trigger>
 
               <DropdownMenu>
-                <DropdownItem onSelect={toggleTheme}>Toggle theme</DropdownItem>
                 <DropdownItem onSelect={toggleInlineComments}>
                   {inlineComments ? 'Hide' : 'Show'} inline comments
                 </DropdownItem>
