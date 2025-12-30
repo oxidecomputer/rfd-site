@@ -6,16 +6,20 @@
  * Copyright Oxide Computer Company
  */
 
-import { useDialogStore } from '@ariakit/react'
+import { useDialogStore, type DialogStore } from '@ariakit/react'
+import cn from 'classnames'
+import { useState } from 'react'
+import { useFetcher } from 'react-router'
 
 import Icon from '~/components/Icon'
 import { useRootLoaderData } from '~/root'
 
 import Modal from './Modal'
+import { TextInput } from './TextInput'
 
 const NewRfdButton = () => {
   const dialog = useDialogStore()
-  const newRfdNumber = useRootLoaderData().newRfdNumber
+  const { user } = useRootLoaderData()
 
   return (
     <>
@@ -26,39 +30,123 @@ const NewRfdButton = () => {
         <Icon name="add-roundel" size={16} />
       </button>
 
-      <Modal dialogStore={dialog} title="Create new RFD">
-        <>
-          <p>
-            There is a prototype script in the rfd{' '}
-            <a
-              href="https://github.com/oxidecomputer/rfd"
-              className="text-accent-tertiary hover:text-accent-secondary"
-            >
-              repository
-            </a>
-            ,{' '}
-            <code className="align-[1px]; text-mono-code bg-raise border-secondary mr-px ml-px rounded border px-[4px] py-px">
-              scripts/new.sh
-            </code>
-            , that will create a new RFD when used like the code below.
-          </p>
-
-          <p className="mt-2">
-            {newRfdNumber
-              ? 'The snippet below automatically updates to ensure the new RFD number is correct.'
-              : 'Replace the number below with the next free number'}
-          </p>
-          <pre className="text-mono-code border-secondary 800:px-7 800:py-6 mt-4 overflow-x-auto rounded border px-5 py-4">
-            <code className="text-mono-code text-[0.825rem]!">
-              <span className="text-quaternary mr-2 inline-block select-none">$</span>
-              scripts/new.sh{' '}
-              {newRfdNumber ? newRfdNumber.toString().padStart(4, '0') : '0042'} "My title
-              here"
-            </code>
-          </pre>
-        </>
-      </Modal>
+      <CreateRfdModal
+        data={{
+          title: 'Untitled',
+          name: user?.displayName || '',
+          email: user?.email || '',
+        }}
+        dialog={dialog}
+      />
     </>
+  )
+}
+
+const CreateRfdModal = ({
+  data,
+  dialog,
+}: {
+  data: { title: string; name: string; email: string }
+  dialog: DialogStore
+}) => {
+  const [title, setTitle] = useState('')
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+
+  const { newRfdNumber } = useRootLoaderData()
+  const fetcher = useFetcher()
+
+  const body = `:state: prediscussion
+:discussion:
+:authors: ${name || data.name} <${email || data.email}>
+
+= RFD ${newRfdNumber} ${title || '{title}'}
+
+== Determinations
+`
+
+  const handleSubmit = () => {
+    fetcher.submit(
+      { title, body },
+      {
+        method: 'post',
+        action: `/api/new-rfd`,
+        encType: 'application/json',
+      },
+    )
+  }
+
+  const formDisabled = fetcher.state !== 'idle'
+  const isFormInvalid =
+    !title.trim() || !(name || data.name).trim() || !(email || data.email).trim()
+  const submitDisabled = formDisabled || isFormInvalid
+
+  return (
+    <Modal
+      dialogStore={dialog}
+      title="Create new RFD"
+      onSubmit={handleSubmit}
+      disabled={submitDisabled}
+      isLoading={fetcher.state === 'loading' || fetcher.state === 'submitting'}
+    >
+      <fetcher.Form className="space-y-4">
+        <div className="space-y-2">
+          <TextInput
+            name="title"
+            placeholder="Title"
+            value={title}
+            onChange={(el) => setTitle(el.target.value)}
+            disabled={formDisabled}
+            required
+          />
+          <div className="flex w-full gap-2">
+            <TextInput
+              name="name"
+              placeholder={data.name !== '' ? data.name : 'Author name'}
+              value={name}
+              onChange={(el) => setName(el.target.value)}
+              disabled={formDisabled}
+              className="w-1/3"
+            />
+            <TextInput
+              name="email"
+              placeholder={data.email !== '' ? data.email : 'Author email'}
+              value={email}
+              onChange={(el) => setEmail(el.target.value)}
+              disabled={formDisabled}
+              className="w-2/3"
+            />
+          </div>
+        </div>
+
+        <pre
+          className={cn(
+            'relative h-[160px] overflow-hidden rounded-lg border p-4 select-none',
+            formDisabled
+              ? 'text-quaternary bg-disabled border-default'
+              : 'bg-default border-secondary',
+          )}
+        >
+          {body}
+          <div
+            className="absolute bottom-0 left-0 h-[100px] w-full"
+            style={{
+              background: `linear-gradient(0, ${
+                formDisabled ? 'var(--surface-disabled)' : 'var(--surface-default)'
+              } 0%, rgba(8, 15, 17, 0) 100%)`,
+            }}
+          />
+        </pre>
+        {fetcher.state === 'idle' &&
+          fetcher.data &&
+          !fetcher.data.ok &&
+          fetcher.data.message && (
+            <div className="text-sans-lg text-error-secondary my-2">
+              {fetcher.data.message}
+            </div>
+          )}
+      </fetcher.Form>
+    </Modal>
   )
 }
 
