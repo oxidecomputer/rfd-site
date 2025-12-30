@@ -49,13 +49,13 @@ const SelectRfdCombobox = ({
             isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
           )}
         >
-          {currentRfd ? currentRfd.title : 'Select a RFD'}
+          {currentRfd ? currentRfd.title : 'Select an RFD'}
         </div>
       </div>
       <button
         onClick={toggleCombobox}
         className="text-tertiary border-secondary hover:bg-hover 600:ml-6 ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border"
-        aria-label="Select a RFD"
+        aria-label="Select an RFD"
       >
         <Icon name="select-arrows" size={6} className="shrink-0" height={14} />
       </button>

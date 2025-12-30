@@ -68,7 +68,7 @@ test.describe('Navigation and Basic Functionality', () => {
 
     await expect(page.getByRole('banner').getByPlaceholder('Search')).toBeHidden()
 
-    await page.getByRole('button', { name: 'Select a RFD' }).click()
+    await page.getByRole('button', { name: 'Select an RFD' }).click()
     await page.getByRole('banner').getByPlaceholder('Search').fill('Mission')
     await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
 
