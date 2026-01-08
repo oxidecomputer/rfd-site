@@ -17,14 +17,6 @@ import type { RfdListItem } from '~/services/rfd.server'
 
 dayjs.extend(relativeTime)
 
-interface Path {
-  pathname: string
-  search: string
-  hash: string
-}
-
-type To = string | Partial<Path>
-
 const rfdLinkRegexes = [
   /#rfd[-_]?([0-9]{1,4})/i,
   /^https:\/\/rfd\.shared\.oxide\.computer\/rfd\/(\d+)/,
@@ -43,6 +35,8 @@ export function extractRfdNumber(href: string): number | null {
   return null
 }
 
+// Gets offset top for nested elements
+// e.g. anchors inside tables
 export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   let el: HTMLAnchorElement | HTMLElement | null = element
 
@@ -91,6 +85,8 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
     setPreview(null)
   }, [currentRfd])
 
+  // Based on https://github.com/remix-run/react-router-website/blob/main/app/ui/delegate-markdown-links.ts
+  // Converts regular AsciiDoc a tags and makes them React Routery
   useEffect(() => {
     const node = nodeRef.current
     if (!node) return
@@ -101,14 +97,14 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
       const a = event.target.closest('a')
 
       if (
-        a &&
-        a.hasAttribute('href') &&
-        event.button === 0 &&
-        (!a.target || a.target === '_self') &&
-        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey)
+        a && // is anchor or has anchor parent
+        a.hasAttribute('href') && // has an href
+        a.host === window.location.host && // is internal
+        event.button === 0 && // left click
+        (!a.target || a.target === '_self') && // Let browser handle "target=_blank" etc.
+        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) // not modified
       ) {
-        const href = a.getAttribute('href') || ''
-        const rfdNum = extractRfdNumber(href)
+        const rfdNum = extractRfdNumber(a.getAttribute('href') || '')
 
         if (rfdNum !== null) {
           event.preventDefault()
@@ -122,7 +118,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
         if (a.host === window.location.host) {
           event.preventDefault()
           const { pathname, search, hash } = a
-          navigate({ pathname, search, hash } as To)
+          navigate({ pathname, search, hash })
         }
       }
     }
@@ -134,8 +130,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
       const anchor = event.target.closest('a')
       if (!anchor) return
 
-      const href = anchor.getAttribute('href') || ''
-      const rfdNum = extractRfdNumber(href)
+      const rfdNum = extractRfdNumber(anchor.getAttribute('href') || '')
 
       if (rfdNum === null || rfdNum === currentRfd) return
 
@@ -182,6 +177,17 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
     type Point = [number, number]
     type Polygon = Point[]
 
+    // 1┌────────────┐2
+    //  └────────────┘\
+    //  |              \
+    //  ┌───────────────┐3
+    //  │               │
+    // 5└───────────────┘4
+    //
+    // Returns a set of points for each corner of a polygon
+    // that the cursor can safely be within without closing
+    // the floating preview. Plus a buffer of 10px to avoid
+    // it being too sensitive
     const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Polygon => {
       const buffer = 10
       const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
@@ -248,7 +254,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
     <div
       ref={previewRef}
       className="overlay-shadow bg-raise border-secondary absolute z-10 flex w-[24rem] rounded-lg border p-3"
-      style={{ top: preview.position.top + 32, left: preview.position.left }}
+      style={{ top: preview.position.top + 28, left: preview.position.left }}
     >
       <Link
         prefetch="intent"
