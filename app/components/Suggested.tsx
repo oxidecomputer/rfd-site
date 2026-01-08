@@ -11,9 +11,7 @@ import { cloneElement, type ReactElement, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import Icon from '~/components/Icon'
-import type { RfdListItem } from '~/services/rfd.server'
-
-import type { Author } from './rfd/RfdPreview'
+import type { Author, RfdListItem } from '~/services/rfd.server'
 
 const Comma = () => <span className="text-notice-tertiary mr-1 inline-block">,</span>
 

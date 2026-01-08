@@ -9,7 +9,6 @@ import {
   DesktopOutline,
   SmallScreenOutline,
   useActiveSectionTracking,
-  useDelegatedReactRouterLinks,
   useIntersectionObserver,
 } from '@oxide/design-system/components'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
@@ -28,7 +27,6 @@ import {
   redirect,
   useLoaderData,
   useLocation,
-  useNavigate,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from 'react-router'
@@ -212,9 +210,7 @@ export default function Rfd() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
-  useDelegatedReactRouterLinks(navigate, containerRef, title || '')
 
   return (
     <div ref={containerRef}>
@@ -224,7 +220,7 @@ export default function Rfd() {
         {inlineComments && user && pullNumber && (
           <RfdInlineComments pullNumber={pullNumber} />
         )}
-        <RfdPreview currentRfd={number} />
+        <RfdPreview currentRfd={number} nodeRef={containerRef} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
             <div className="800:col-start-2 1200:col-start-3 flex print:hidden">
