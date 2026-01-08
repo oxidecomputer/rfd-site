@@ -181,28 +181,34 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   }, [rfdPreview, handleHover])
 
   useEffect(() => {
-    const links = document.querySelectorAll<HTMLAnchorElement>('.asciidoc-body#content a')
+    const container = document.querySelector<HTMLElement>('.asciidoc-body#content')
+    if (!container) return
 
-    function handleClearTimeout() {
-      if (timeoutRef.current) {
+    function handleMouseOver(e: MouseEvent) {
+      const target = e.target as HTMLElement
+      const anchor = target.closest<HTMLAnchorElement>('a')
+      if (anchor) {
+        showRfdHover(e, anchor.href)
+      }
+    }
+
+    function handleMouseOut(e: MouseEvent) {
+      if (!timeoutRef.current) return
+      const target = e.target as HTMLElement
+      const anchor = target.closest<HTMLAnchorElement>('a')
+      if (anchor) {
         clearTimeout(timeoutRef.current)
       }
     }
 
-    const removes: (() => void)[] = []
+    container.addEventListener('mouseover', handleMouseOver)
+    container.addEventListener('mouseout', handleMouseOut)
 
-    links.forEach((el) => {
-      const showHover = (e: MouseEvent) => showRfdHover(e, el.href)
-      el.addEventListener('mouseover', showHover)
-      el.addEventListener('mouseout', handleClearTimeout)
-      removes.push(() => {
-        el.removeEventListener('mouseover', showHover)
-        el.removeEventListener('mouseout', handleClearTimeout)
-      })
-    })
-
-    return () => removes.forEach((remove) => remove())
-  }, [showRfdHover])
+    return () => {
+      container.removeEventListener('mouseover', handleMouseOver)
+      container.removeEventListener('mouseout', handleMouseOut)
+    }
+  }, [showRfdHover, currentRfd, rfds])
 
   if (!rfdPreview) return null
 
