@@ -26,13 +26,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // We're replicating some functionality from `fetchRfd` but here we just
   // want the raw content and I don't want to bloat the returned object
   try {
-    if (isLocalMode()) {
-      const localRfd = fetchLocalRfd(num)
-      rfd = localRfd
-    } else {
-      const remoteRfd = await fetchRemoteRfd(num, user)
-      rfd = remoteRfd
-    }
+    rfd = isLocalMode() ? fetchLocalRfd(num) : await fetchRemoteRfd(num, user)
   } catch (err) {
     console.error('Failed to fetch RFD', err)
     throw resp404()
