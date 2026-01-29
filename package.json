@@ -5,6 +5,7 @@
   "scripts": {
     "build": "react-router build",
     "dev": "react-router dev",
+    "start": "react-router-serve ./build/server/index.js",
     "test": "vitest --config test/vitest.config.ts",
     "tsc": "tsc --noEmit",
     "fmt": "prettier --write --ignore-path ./.gitignore  .",

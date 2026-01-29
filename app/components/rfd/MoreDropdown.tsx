@@ -10,6 +10,7 @@ import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useState } from 'react'
 import { useLoaderData } from 'react-router'
 
+import { useRootLoaderData } from '~/root'
 import type { loader } from '~/routes/rfd.$slug'
 
 import { DropdownItem, DropdownLink, DropdownMenu } from '../Dropdown'
@@ -18,6 +19,7 @@ import RfdJobsMonitor from './RfdJobsMonitor'
 
 const MoreDropdown = () => {
   const { rfd } = useLoaderData<typeof loader>()
+  const { features } = useRootLoaderData()
   const [dialogOpen, setDialogOpen] = useState(false)
   const jobsDialogStore = useDialogStore({ open: dialogOpen, setOpen: setDialogOpen })
 
@@ -31,9 +33,11 @@ const MoreDropdown = () => {
         <DropdownMenu>
           <DropdownItem onSelect={jobsDialogStore.toggle}>Processing jobs</DropdownItem>
 
-          <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
-            GitHub discussion
-          </DropdownLink>
+          {features.discussions && (
+            <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
+              GitHub discussion
+            </DropdownLink>
+          )}
 
           <DropdownLink to={rfd.link || ''} disabled={!rfd.link}>
             GitHub source
@@ -47,7 +51,9 @@ const MoreDropdown = () => {
             </DropdownLink>
           )}
 
-          <DropdownLink to={`/rfd/${rfd.number}/pdf`}>View PDF</DropdownLink>
+          {features.pdf && (
+            <DropdownLink to={`/rfd/${rfd.number}/pdf`}>View PDF</DropdownLink>
+          )}
         </DropdownMenu>
       </Dropdown.Root>
 
