@@ -23,5 +23,5 @@
     "skipLibCheck": true,
     "rootDirs": [".", "./.react-router/types"]
   },
-  "exclude": ["test-results"]
+  "exclude": ["test-results", "server.ts", "react-router.config.ts"]
 }

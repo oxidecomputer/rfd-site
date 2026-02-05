@@ -51,7 +51,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
       // for daily usage of the site, but does not allow for indefinite access
       const defaultExpiration = 24 * 60 * 60
 
-      return redirect(getExpiringUrl(path, defaultExpiration))
+      return redirect(await getExpiringUrl(path, defaultExpiration))
     } else {
       throw new Response('Forbidden', {
         status: 403,

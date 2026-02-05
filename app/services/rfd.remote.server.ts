@@ -49,24 +49,41 @@ export function isHttpError(error: Error): error is HttpError {
   return !!(error as HttpError).status
 }
 
+/**
+ * Get the backend URL for server-to-server API calls.
+ * Falls back to RFD_API for backwards compatibility.
+ */
 export function getRfdApiUrl(): string {
   // If we are in local mode then we can simply return an empty value
   if (process.env.LOCAL_RFD_REPO) {
     return ''
   }
 
+  const url = process.env.RFD_API_BACKEND_URL || process.env.RFD_API
+
   // Otherwise crash the system if we do not have an API target set
-  if (!process.env.RFD_API) {
-    throw Error('Env var RFD_API must be set when not running in local mode')
+  if (!url) {
+    throw Error(
+      'Env var RFD_API_BACKEND_URL or RFD_API must be set when not running in local mode',
+    )
   }
 
-  return process.env.RFD_API
+  return url
+}
+
+/**
+ * Get the frontend URL for OAuth redirects (where user's browser is directed).
+ * Falls back to RFD_API for backwards compatibility.
+ */
+export function getRfdApiFrontendUrl(): string {
+  return process.env.RFD_API_FRONTEND_URL || process.env.RFD_API || ''
 }
 
 export function client(token?: string): Api {
   return new ApiWithRetry({
     host: getRfdApiUrl(),
     token,
+    authorizationHost: getRfdApiFrontendUrl(),
     baseParams: {
       headers: { Connection: 'keep-alive' },
     },

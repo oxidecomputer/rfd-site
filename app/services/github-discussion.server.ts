@@ -15,10 +15,19 @@ import { any } from '~/utils/permission'
 import { getUserPermissions, type User } from './auth.server'
 import { getSiteConfig } from './config.server'
 
+const githubUrl = new URL(
+  `https://${process.env.GITHUB_HOST || 'github.com/oxidecomputer/rfd'}`,
+)
+const baseUrl = githubUrl.host.startsWith('github.com')
+  ? 'https://api.github.com'
+  : `https://${githubUrl.host}/api/v3`
+const [, owner, repo] = githubUrl.pathname.split('/')
+
 function getOctokitClient() {
   if (process.env.GITHUB_API_KEY) {
     return new Octokit({
       auth: process.env.GITHUB_API_KEY,
+      baseUrl,
     })
   } else if (
     process.env.GITHUB_APP_ID &&
@@ -32,6 +41,7 @@ function getOctokitClient() {
         privateKey: process.env.GITHUB_PRIVATE_KEY,
         installationId: process.env.GITHUB_INSTALLATION_ID,
       },
+      baseUrl,
     })
   } else {
     return null

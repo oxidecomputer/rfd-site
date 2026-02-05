@@ -61,6 +61,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
+  const githubRepoUrl = `https://${process.env.GITHUB_HOST || 'github.com/oxidecomputer/rfd'}`
 
   const user = await authenticate(request)
   try {
@@ -82,6 +83,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       labels,
       localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
+      githubRepoUrl,
     }
   } catch {
     // The only error that should be caught here is the unauthenticated error.
@@ -101,6 +103,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     labels: [],
     localMode: isLocalMode(),
     newRfdNumber: undefined,
+    githubRepoUrl,
   }
 }
 
@@ -147,6 +150,10 @@ const Layout = ({
       <link rel="icon" href="/favicon.svg" />
       <link rel="icon" type="image/png" href="/favicon.png" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
+      {/* Use plausible analytics only on Vercel */}
+      {process.env.NODE_ENV === 'production' && !process.env.TELEMETRY_DISABLE && (
+        <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
+      )}
       <meta name="color-scheme" content="dark" />
       {process.env.NODE_ENV === 'production' && headScript && (
         <script dangerouslySetInnerHTML={{ __html: headScript }} />

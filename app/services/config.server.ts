@@ -13,11 +13,37 @@ let cachedConfig: SiteConfig | null = null
 /**
  * Get the site configuration.
  *
- * Throws if site.config.ts is not found - configuration is required.
+ * Configuration can be loaded from:
+ * 1. External .ts file via SITE_CONFIG_PATH env var (for Deno runtime)
+ * 2. Bundled site.config.ts (default, for development and Node.js)
+ *
+ * Throws if no configuration is found.
  */
 export async function getSiteConfig(): Promise<SiteConfig> {
   if (cachedConfig) return cachedConfig
 
+  // Check for external config path (works with Deno runtime)
+  const configPath = process.env.SITE_CONFIG_PATH
+  if (configPath) {
+    try {
+      // Convert to file:// URL for dynamic import
+      const fileUrl = configPath.startsWith('file://') ? configPath : `file://${configPath}`
+      const module = await import(fileUrl)
+      cachedConfig = module.default
+
+      if (!cachedConfig) {
+        throw new Error(`${configPath} must export a default config object`)
+      }
+
+      return cachedConfig
+    } catch (error) {
+      throw new Error(
+        `Failed to load config from SITE_CONFIG_PATH (${configPath}): ${error}`,
+      )
+    }
+  }
+
+  // Fall back to bundled config
   try {
     // @ts-expect-error - Dynamic import is supported at runtime by Vite
     const module = await import('../../site.config')
@@ -30,8 +56,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
     return cachedConfig
   } catch (_error) {
     throw new Error(
-      'site.config.ts is required but not found. ' +
-        'Copy the existing site.config.ts and customize for your organization.',
+      'No site config found. Either set SITE_CONFIG_PATH env var to a .ts config file, ' +
+        'or ensure site.config.ts is bundled with the application.',
     )
   }
 }

@@ -20,3 +20,19 @@ test-results
 # System files
 *.log
 .DS_Store
+
+# Editor/IDE
+.claude
+.flox
+
+# Lock files (deno.lock regenerated during build)
+deno.lock
+
+# Documentation/config not needed in image
+*.md
+.prettierrc
+.licenserc.yaml
+.gitattributes
+playwright.config.ts
+eslint.config.mjs
+vercel.json

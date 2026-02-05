@@ -7,12 +7,25 @@
  */
 
 import type { Config } from '@react-router/dev/config'
-import { vercelPreset } from '@vercel/react-router/vite'
 
-// Only use Vercel preset when deploying to Vercel
-const isVercel = process.env.VERCEL === '1'
+const buildTarget = process.env.BUILD_TARGET || 'vercel'
 
-export default {
-  presets: isVercel ? [vercelPreset()] : [],
+const config: Config = {
   ssr: true,
-} satisfies Config
+}
+
+if (buildTarget === 'vercel') {
+  const { vercelPreset } = await import('@vercel/react-router/vite')
+  config.presets = [vercelPreset()]
+} else {
+  // Deno/container build - write manifest for the Deno server
+  config.buildEnd = async ({ buildManifest }) => {
+    const { writeFile } = await import('node:fs/promises')
+    await writeFile(
+      'build/server/manifest.json',
+      JSON.stringify(buildManifest, null, 2),
+    )
+  }
+}
+
+export default config satisfies Config

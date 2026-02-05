@@ -18,7 +18,12 @@ import {
   type LoaderFunctionArgs,
 } from 'react-router'
 
-import { auth, getUserFromSession } from '~/services/auth.server'
+import {
+  auth,
+  getEnabledProviders,
+  getUserFromSession,
+  isProviderEnabled,
+} from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -39,10 +44,15 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     headers.append('Set-Cookie', await returnToCookie.serialize(returnTo))
   }
 
-  return data({ emailResponse }, { headers })
+  const enabledProviders = getEnabledProviders()
+  return data({ emailResponse, enabledProviders }, { headers })
 }
 
 export async function action({ request }: ActionFunctionArgs) {
+  if (!isProviderEnabled('email')) {
+    return { errorMessage: 'Email authentication is not available' }
+  }
+
   try {
     await auth.authenticate('rfd-magic-link', request)
   } catch (err) {
@@ -59,8 +69,57 @@ export async function action({ request }: ActionFunctionArgs) {
 export default function Login() {
   const loaderData = useLoaderData<typeof loader>()
   const actionData = useActionData<typeof action>()
-  const [showEmailForm, setShowEmailForm] = useState(!!loaderData.emailResponse)
+
+  const { enabledProviders } = loaderData
+  const hasGoogle = enabledProviders.includes('google')
+  const hasGithub = enabledProviders.includes('github')
+  const hasEmail = enabledProviders.includes('email')
+  const hasOAuth = hasGoogle || hasGithub
+
+  // Show email form directly if only email is enabled, or if email was sent
+  const [showEmailForm, setShowEmailForm] = useState(
+    !!loaderData.emailResponse || (!hasOAuth && hasEmail),
+  )
   const emailSuccess = loaderData.emailResponse === 'sent'
+
+  // Handle no providers enabled
+  if (enabledProviders.length === 0) {
+    return (
+      <>
+        <div
+          className="fixed h-screen w-screen opacity-80"
+          style={{
+            background:
+              'radial-gradient(200% 100% at 50% 100%, #161B1D 0%, var(--surface-default) 100%)',
+          }}
+        >
+          <div className="border-b-secondary flex h-(--header-height) w-full items-center justify-between border-b px-3">
+            <div className="space-y-1">
+              <div className="bg-secondary h-3 w-16 rounded" />
+              <div className="bg-secondary h-3 w-24 rounded" />
+            </div>
+
+            <div className="bg-secondary h-6 w-24 rounded" />
+          </div>
+
+          <div className="border-b-secondary mt-20 w-full border-b pb-16">
+            <div className="mx-auto w-2/3 max-w-[1080px]">
+              <div className="bg-secondary h-10 w-full rounded" />
+              <div className="bg-secondary mt-4 h-10 w-2/3 rounded" />
+            </div>
+          </div>
+
+          <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
+        </div>
+        <div className="overlay-shadow bg-raise border-secondary 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg border p-6 text-center transition-all">
+          <h1 className="text-sans-2xl text-accent mb-4">Authentication Unavailable</h1>
+          <p className="text-secondary">
+            No authentication providers are configured. Please contact an administrator.
+          </p>
+        </div>
+      </>
+    )
+  }
 
   return (
     <>
@@ -93,25 +152,31 @@ export default function Login() {
         {!showEmailForm && (
           <>
             <h1 className="text-sans-2xl text-accent mb-8">Sign in</h1>
-            <Form action="/auth/google" method="post">
-              <Button className="w-full" type="submit">
-                Continue with Google
-              </Button>
-            </Form>
-            <Form action="/auth/github" method="post">
-              <Button className="w-full" variant="secondary" type="submit">
-                Continue with GitHub
-              </Button>
-            </Form>
-            <div>
-              <Button
-                className="w-full"
-                variant="secondary"
-                onClick={() => setShowEmailForm(true)}
-              >
-                Continue with Email
-              </Button>
-            </div>
+            {hasGoogle && (
+              <Form action="/auth/google" method="post">
+                <Button className="w-full" type="submit">
+                  Continue with Google
+                </Button>
+              </Form>
+            )}
+            {hasGithub && (
+              <Form action="/auth/github" method="post">
+                <Button className="w-full" variant="secondary" type="submit">
+                  Continue with GitHub
+                </Button>
+              </Form>
+            )}
+            {hasEmail && (
+              <div>
+                <Button
+                  className="w-full"
+                  variant="secondary"
+                  onClick={() => setShowEmailForm(true)}
+                >
+                  Continue with Email
+                </Button>
+              </div>
+            )}
           </>
         )}
         {showEmailForm && emailSuccess && (
@@ -136,16 +201,18 @@ export default function Login() {
                 Send login link
               </Button>
             </Form>
-            <div>
-              <Button
-                className="w-full"
-                type="submit"
-                variant="secondary"
-                onClick={() => setShowEmailForm(false)}
-              >
-                Cancel
-              </Button>
-            </div>
+            {hasOAuth && (
+              <div>
+                <Button
+                  className="w-full"
+                  type="submit"
+                  variant="secondary"
+                  onClick={() => setShowEmailForm(false)}
+                >
+                  Cancel
+                </Button>
+              </div>
+            )}
           </>
         )}
       </div>

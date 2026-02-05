@@ -101,19 +101,55 @@ combined branch that contains both.
 When running in a non-local mode, the following settings must be specified:
 
 - `SESSION_SECRET` - Key that will be used to signed cookies
+- `TELEMETRY_DISABLE` - Disable all remote telemetry. Set to any non-empty value to disable (e.g., `1`, `true`, `yes`). Leave unset or set to empty string to enable.
 
-- `RFD_API` - Backend RFD API to communicate with (i.e. https://api.server.com)
-- `RFD_API_CLIENT_ID` - OAuth client id create via the RFD API
-- `RFD_API_CLIENT_SECRET` - OAuth client secret create via the RFD API
+#### Authentication
+
+##### API URL Configuration
+
+The RFD API URL can be configured in two ways:
+
+- `RFD_API` - Single URL for both server-to-server calls and OAuth redirects (legacy,
+  simplest)
+- `RFD_API_BACKEND_URL` + `RFD_API_FRONTEND_URL` - Split URLs for deployments where rfd-site
+  uses internal networking to reach rfd-api while users access a public endpoint
+
+When using split URLs:
+
+- `RFD_API_BACKEND_URL` - URL for server-to-server API calls (e.g., internal load balancer)
+- `RFD_API_FRONTEND_URL` - URL for OAuth redirects where user's browser is directed
+
+You can mix configurations: set one of the new vars and use `RFD_API` as fallback for the
+other. Existing deployments using only `RFD_API` will continue to work unchanged.
+
+##### OAuth Credentials
+
+- `RFD_API_CLIENT_ID` - OAuth client id created via the RFD API
+- `RFD_API_CLIENT_SECRET` - OAuth client secret created via the RFD API
 - `RFD_API_GOOGLE_CALLBACK_URL` - Should be of the form of
   `https://{rfd_site_hostname}/auth/google/callback`
 - `RFD_API_GITHUB_CALLBACK_URL` - Should be of the form of
   `https://{rfd_site_hostname}/auth/github/callback`
+- `RFD_API_MLINK_SECRET` - Client secret for magic link (email) authentication
+
+- `AUTH_PROVIDERS` - Comma-delimited list of enabled authentication providers. Valid values
+  are `github`, `google`, and `email`. If not set, all providers are enabled by default.
+  Providers with missing required environment variables are automatically disabled.
+  Examples:
+  - `AUTH_PROVIDERS=github,google` - Enable only GitHub and Google OAuth
+  - `AUTH_PROVIDERS=email` - Enable only email (magic link) authentication
+
+#### Storage
 
 - `STORAGE_URL` - Url of bucket for static assets
 - `STORAGE_KEY_NAME` - Name of the key defined in `STORAGE_KEY`
 - `STORAGE_KEY` - Key for generating signed static asset urls
 
+#### GitHub Integration
+
+- `GITHUB_HOST` - GitHub host for the RFD repository. Defaults to
+  `github.com/oxidecomputer/rfd`. Set this to use a GitHub Enterprise instance or a
+  different repository location (e.g., `github.example.com/org/rfd`).
 - `GITHUB_APP_ID` - App id for fetching GitHub PR discussions
 - `GITHUB_INSTALLATION_ID` - Installation id of GitHub App
 - `GITHUB_PRIVATE_KEY` - Private key of the GitHub app for discussion fetching

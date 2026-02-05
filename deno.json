@@ -1,0 +1,20 @@
+{
+  "nodeModulesDir": "auto",
+  "unstable": ["bare-node-builtins"],
+  "imports": {
+    "@std/media-types": "jsr:@std/media-types@^1.0.0",
+    "@std/path": "jsr:@std/path@^1.0.0",
+    "@octokit/auth-app": "npm:@octokit/auth-app@^7.0.0"
+  },
+  "tasks": {
+    "dev": "NODE_ENV=development deno run --allow-all --watch server.ts",
+    "start": "deno run --allow-all server.ts",
+    "build": "deno run -A npm:react-router@latest build",
+    "compile": "deno compile --allow-all --unstable-bare-node-builtins --include=build --output=rfd-server server.ts"
+  },
+  "compilerOptions": {
+    "lib": ["deno.window", "dom", "dom.iterable", "esnext"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "react"
+  }
+}

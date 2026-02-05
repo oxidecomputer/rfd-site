@@ -6,10 +6,13 @@
  * Copyright Oxide Computer Company
  */
 
-import type { LoaderFunctionArgs } from 'react-router'
+import { redirect, type LoaderFunctionArgs } from 'react-router'
 
-import { handleAuthenticationCallback } from '~/services/auth.server'
+import { handleAuthenticationCallback, isProviderEnabled } from '~/services/auth.server'
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  if (!isProviderEnabled('email')) {
+    throw redirect('/login')
+  }
   return handleAuthenticationCallback('rfd-magic-link', request)
 }
