@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { Badge, type BadgeColor } from '@oxide/design-system'
+import { Badge, type BadgeColor } from '@oxide/design-system/ui'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
@@ -147,10 +147,7 @@ const DropdownFilterItem = ({
   selected: boolean
   children: ReactNode
 }) => (
-  <DropdownItem
-    onSelect={onSelect}
-    classNames={selected ? 'bg-accent-secondary text-accent' : ''}
-  >
+  <DropdownItem onSelect={onSelect} classNames={selected ? 'bg-accent text-accent' : ''}>
     {selected && <Outline />}
     <div className="flex items-center justify-between">
       <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">

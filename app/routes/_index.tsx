@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { Badge } from '@oxide/design-system'
+import { Badge } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -254,7 +254,7 @@ export default function Index() {
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none filter-none!"
+              className="light:invert absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
@@ -266,7 +266,7 @@ export default function Index() {
                 Requests for Discussion
               </h1>
 
-              <div className="800:w-[calc(100%/36*16+4px)] overlay-shadow relative mt-[22px] h-[40px] w-full rounded">
+              <div className="800:w-[calc(100%/36*16+4px)] shadow-border relative mt-[22px] h-[40px] w-full rounded">
                 <input
                   value={input}
                   ref={inputEl}

@@ -11,7 +11,7 @@ import {
   useActiveSectionTracking,
   useDelegatedReactRouterLinks,
   useIntersectionObserver,
-} from '@oxide/design-system/components'
+} from '@oxide/design-system/asciidoc'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import cn from 'classnames'
 import dayjs from 'dayjs'

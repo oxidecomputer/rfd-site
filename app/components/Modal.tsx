@@ -34,7 +34,7 @@ const Modal = ({
       <Dialog
         store={dialogStore}
         className={cn(
-          'bg-raise border-secondary elevation-3 fixed top-[min(50%,500px)] left-1/2 z-30 flex max-h-[min(800px,80vh)] w-[calc(100%-2.5rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col rounded-lg border p-0',
+          'bg-raise shadow-modal fixed top-[min(50%,500px)] left-1/2 z-30 flex max-h-[min(800px,80vh)] w-[calc(100%-2.5rem)] max-w-xl -translate-x-1/2 -translate-y-1/2 flex-col overflow-hidden rounded-lg p-0',
           widthClass[width],
         )}
         backdrop={<div className="backdrop" />}

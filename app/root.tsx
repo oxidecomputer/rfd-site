@@ -43,7 +43,7 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
+  const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark'
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
@@ -111,7 +111,7 @@ export function ErrorBoundary() {
 const queryClient = new QueryClient()
 
 const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => (
-  <html lang="en" className={theme}>
+  <html lang="en" className={theme} data-theme={theme}>
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width,initial-scale=1" />
@@ -124,7 +124,7 @@ const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string
       {process.env.NODE_ENV === 'production' && (
         <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
       )}
-      <meta name="color-scheme" content="dark" />
+      <meta name="color-scheme" content={theme === 'light' ? 'light' : 'dark'} />
     </head>
     <body className="mb-32">
       {children}
@@ -143,7 +143,7 @@ export default function App() {
       <QueryClientProvider client={queryClient}>
         <Outlet />
         {localMode && (
-          <div className="overlay-shadow text-sans-sm text-notice bg-notice-secondary fixed bottom-6 left-6 z-10 rounded p-2">
+          <div className="shadow-border-small text-sans-sm text-notice bg-notice fixed bottom-6 left-6 z-10 rounded p-2">
             Local authoring mode
           </div>
         )}

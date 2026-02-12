@@ -122,7 +122,7 @@
   }
 
   & pre .conum[data-value] {
-    @apply text-accent bg-accent-secondary-hover;
+    @apply text-accent bg-accent-hover;
   }
 
   & svg p {
@@ -175,6 +175,865 @@
 
 @utility conum {
   .asciidoc-body pre &[data-value] {
-    @apply text-accent bg-accent-secondary-hover;
+    @apply text-accent bg-accent-hover;
+  }
+}
+
+/*
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, you can obtain one at https://mozilla.org/MPL/2.0/.
+ *
+ * Copyright Oxide Computer Company
+ */
+
+@utility text-mono-code {
+  @apply text-[0.825em] !normal-case;
+  font-feature-settings: 'calt' 0;
+  letter-spacing: 0;
+}
+
+@utility accent-link {
+  @apply text-accent-secondary hover:text-accent;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+@utility link-with-underline {
+  @apply text-default hover:text-raise;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, currentColor 60%, transparent);
+}
+
+@utility inline-code {
+  @apply text-secondary;
+  @apply bg-raise border-secondary mr-[1px] ml-[1px] rounded-md border px-[4px] py-[1px] align-[1px] text-[0.825em];
+}
+
+@layer components {
+  .asciidoc-body {
+    .line-through {
+      text-decoration: line-through;
+    }
+
+    .quoteblock {
+      @apply text-secondary border-default mt-8 mb-8 border-l pl-[1.6rem];
+    }
+
+    .quoteblock p {
+      @apply text-secondary;
+    }
+
+    .quoteblock .attribution {
+      @apply text-raise mt-8;
+    }
+
+    .attribution cite {
+      @apply block;
+    }
+
+    .admonitionblock .quoteblock {
+      @apply border-success-secondary mt-2 mb-2 pl-[0.75rem];
+    }
+
+    .admonition-content .paragraph {
+      @apply mb-1 last:mb-0;
+    }
+
+    .admonition-content > div:first-of-type {
+      @apply text-sans-semi-md normal-case;
+    }
+
+    .imageblock img {
+      @apply border-tertiary mx-auto h-auto w-auto w-full rounded-lg border object-contain;
+      max-height: max(500px, 75vh);
+    }
+
+    span img {
+      @apply inline;
+    }
+
+    img.transparent-dark {
+      @apply bg-secondary;
+    }
+
+    p a {
+      @apply text-accent-tertiary hover:text-accent-secondary;
+      overflow-wrap: break-word;
+      word-wrap: break-word;
+
+      text-decoration: underline;
+      text-decoration-color: var(--content-accent-tertiary);
+
+      font-weight: 500;
+    }
+
+    /* Use semi-bold for strong */
+    strong {
+      @apply text-raise font-[500];
+    }
+
+    a strong {
+      @apply text-accent-secondary;
+    }
+
+    h2,
+    h3,
+    h4,
+    h5 {
+      @apply text-raise relative mt-10 mb-3;
+    }
+
+    /* Removes top spacing from header if it is the first element */
+    &#content > .sect1:first-of-type > h1:nth-child(1),
+    &#content > .sect1:first-of-type > h2:nth-child(1),
+    &#content > .sect1:first-of-type > h3:nth-child(1),
+    &#content > .sect1:first-of-type > h4:nth-child(1),
+    &#content > .sect1:first-of-type > h5:nth-child(1) {
+      @apply mt-0;
+    }
+
+    h1 a,
+    h2 a,
+    h3 a,
+    h4 a,
+    h5 a {
+      @apply text-raise inline;
+    }
+
+    h1[data-sectnum]:before,
+    h2[data-sectnum]:before,
+    h3[data-sectnum]:before,
+    h4[data-sectnum]:before,
+    h5[data-sectnum]:before {
+      @apply text-tertiary 800:absolute 800:-left-[72px] 800:mr-0 800:w-[60px] 800:text-right 800:text-sans-lg bottom-0 mr-2 inline-block;
+    }
+
+    h3[data-sectnum]:before,
+    h2[data-sectnum]:before {
+      @apply 800:bottom-[2px];
+    }
+
+    h2 {
+      @apply text-sans-2xl;
+    }
+
+    h3 {
+      @apply text-sans-xl;
+    }
+
+    h4,
+    h5 {
+      @apply text-sans-lg text-raise mt-8 mb-2;
+    }
+
+    .anchor,
+    .sectionanchor {
+      position: absolute;
+      margin-top: calc(var(--header-height) * -1 - 20px);
+      visibility: hidden;
+      user-select: none;
+    }
+
+    .dlist dt {
+      @apply text-sans-lg text-raise;
+    }
+
+    .dlist dt:after {
+      content: ':';
+      @apply text-sans-lg text-tertiary;
+    }
+
+    /* Fix overflow text in mermaid */
+    figure svg {
+      line-height: 1 !important;
+    }
+
+    p {
+      @apply text-sans-lg 800:mb-3 mb-[1.25rem] !leading-[1.5];
+    }
+
+    ul li,
+    ol li {
+      @apply mt-[0.325rem];
+    }
+
+    ul,
+    ol {
+      @apply text-mono-sm mb-3 list-disc;
+    }
+
+    li::marker,
+    ol::marker {
+      color: color-mix(in srgb, currentColor 60%, transparent);
+    }
+
+    ul p,
+    ol p {
+      @apply normal-case;
+    }
+
+    ul ul,
+    ul ol,
+    ol ol,
+    ol ul {
+      @apply mb-0;
+    }
+
+    ul ul li {
+      list-style-type: circle;
+    }
+
+    ul ul ul li {
+      list-style-type: square;
+    }
+
+    ul ul ul ul li {
+      list-style-type: disc;
+    }
+
+    ul {
+      @apply list-disc;
+    }
+
+    ol {
+      @apply list-decimal;
+    }
+
+    ul,
+    ol {
+      @apply 800:list-outside list-inside;
+    }
+
+    ul:first-of-type,
+    .github-markdown > ul {
+      @apply 800:ml-4;
+    }
+
+    ol:first-of-type,
+    .github-markdown > ol {
+      @apply 800:ml-6;
+    }
+
+    .tableblock ul,
+    .tableblock ol {
+      @apply list-inside;
+    }
+
+    .quoteblock ul,
+    .quoteblock ol {
+      @apply list-inside;
+    }
+
+    .ulist .ulist,
+    .ulist .olist,
+    .olist .ulist,
+    .olist .olist {
+      @apply 800:ml-2 ml-[2rem];
+    }
+
+    .exampleblock ul,
+    .exampleblock ol {
+      @apply list-inside;
+    }
+
+    ul p,
+    ol p {
+      @apply inline;
+    }
+
+    p {
+      @apply text-default;
+    }
+
+    .lead p {
+      @apply text-raise;
+    }
+
+    .arabic {
+      list-style-type: decimal;
+    }
+
+    .loweralpha {
+      list-style-type: lower-alpha;
+    }
+
+    .lowerroman {
+      list-style-type: lower-roman;
+    }
+
+    .upperalpha {
+      list-style-type: upper-alpha;
+    }
+
+    .upperroman {
+      list-style-type: upper-roman;
+    }
+
+    ol p {
+      @apply text-default normal-case;
+    }
+
+    p code,
+    h1 code,
+    h2 code,
+    h3 code,
+    h4 code,
+    h5 code,
+    .title code {
+      @apply text-default text-[0.825em];
+      @apply bg-raise border-secondary mr-[1px] ml-[1px] rounded-md border px-[4px] py-[1px] align-[1px];
+    }
+
+    p a code {
+      @apply text-accent-secondary;
+    }
+
+    table p code {
+      @apply break-normal;
+    }
+
+    .admonitionblock p code {
+      @apply text-inverse bg-accent border-none;
+    }
+
+    pre {
+      @apply border-secondary 800:px-[1.75rem] 800:py-[1.5rem] rounded-lg border px-[1.25rem] py-[1rem];
+      @apply text-mono-code overflow-x-auto !text-[13px];
+    }
+
+    code {
+      font-feature-settings: 'calt' 0;
+    }
+
+    .listingblock .content {
+      @apply relative;
+    }
+
+    .listingblock pre:not(.highlight) {
+      @apply text-default;
+    }
+
+    .listingblock code[data-lang]:before {
+      @apply text-mono-xs text-secondary absolute top-2 right-2 block;
+      content: attr(data-lang);
+    }
+
+    pre .conum[data-value] {
+      @apply text-mono-xs text-secondary bg-raise relative -top-[0.125rem] inline-block h-[1rem] min-w-[1rem] rounded-full text-center not-italic;
+    }
+
+    pre .conum[data-value]:after {
+      @apply pl-[1px];
+      content: attr(data-value);
+    }
+
+    pre .conum[data-value] + b {
+      @apply hidden;
+    }
+
+    .exampleblock {
+      @apply bg-raise overflow-x-auto rounded-lg px-[1.5rem] py-[1.25rem];
+    }
+
+    .exampleblock p {
+      @apply text-sans-md mb-2;
+    }
+
+    .exampleblock .content,
+    .exampleblock .paragraph:last-of-type p {
+      @apply m-0;
+    }
+
+    .exampleblock > .content {
+      @apply my-[1rem];
+    }
+
+    .admonitionblock {
+      @apply text-success bg-accent border-success-tertiary rounded-lg border;
+      @apply my-[1.5rem] flex px-3 py-3;
+    }
+
+    .admonition-content p {
+      @apply text-[currentColor];
+    }
+
+    .admonitionblock a {
+      text-decoration-color: color-mix(in srgb, currentColor 60%, transparent);
+    }
+
+    .admonitionblock strong {
+      @apply text-success;
+    }
+
+    .admonitionblock.caution strong,
+    .admonitionblock.important strong {
+      @apply text-notice;
+    }
+
+    .admonitionblock.caution .quoteblock {
+      @apply border-notice-secondary;
+    }
+
+    .admonitionblock.warning .quoteblock {
+      @apply border-destructive-secondary;
+    }
+
+    .admonitionblock.warning strong {
+      @apply text-destructive;
+    }
+
+    .admonitionblock.tip strong {
+      color: var(--color-purple-800);
+    }
+
+    .admonitionblock,
+    .admonitionblock blockquote {
+      @apply text-success;
+    }
+
+    .admonitionblock.tip,
+    .admonitionblock.tip blockquote {
+      background-color: var(--color-purple-200);
+      color: var(--color-purple-800);
+      border-color: var(--color-purple-400);
+    }
+
+    .admonitionblock.caution,
+    .admonitionblock.important,
+    .admonitionblock.caution blockquote,
+    .admonitionblock.important blockquote {
+      @apply text-notice bg-notice border-notice-tertiary;
+    }
+
+    .admonitionblock.warning,
+    .admonitionblock.warning blockquote {
+      @apply text-destructive bg-destructive-secondary border-destructive-tertiary;
+    }
+
+    .admonitionblock.caution,
+    .admonitionblock.important {
+      @apply text-notice;
+    }
+
+    .admonitionblock.warning {
+      @apply text-destructive;
+    }
+
+    .admonitionblock.tip {
+      color: var(--color-purple-800);
+    }
+
+    .admonitionblock.caution p code,
+    .admonitionblock.important p code {
+      @apply bg-notice;
+    }
+
+    .admonitionblock.warning p code {
+      @apply bg-error;
+    }
+
+    .admonitionblock.tip p code {
+      @apply bg-purple-800;
+    }
+
+    .admonitionblock a {
+      @apply underline;
+    }
+
+    .admonitionblock a {
+      @apply text-success;
+    }
+
+    .admonitionblock.caution a,
+    .admonitionblock.important a {
+      @apply text-notice;
+    }
+
+    .admonitionblock.warning a {
+      @apply text-destructive;
+    }
+
+    .admonitionblock.tip a {
+      @apply text-purple-800;
+    }
+
+    .admonition-icon svg {
+      @apply mt-0.5 mr-2 h-3 w-3;
+    }
+
+    .admonition-content {
+      @apply text-sans-md 800:mr-[1.25rem];
+    }
+
+    .admonition-content p {
+      @apply text-sans-md mb-0;
+    }
+
+    .imageblock,
+    .table-wrapper {
+      @apply my-6;
+    }
+
+    .imageblock.inlineimage {
+      @apply my-3;
+    }
+
+    table.tableblock table.tableblock {
+      @apply my-2;
+    }
+
+    table.tableblock .imageblock {
+      @apply my-0;
+    }
+
+    .imageblock .title {
+      @apply text-mono-xs text-secondary mt-3 max-w-full text-center not-italic;
+    }
+
+    img.wide {
+      max-width: none;
+      width: calc(100% / 8 * 10);
+      margin-left: calc(100% / 8 * -1);
+    }
+
+    sup.footnote {
+      @apply text-mono-xs text-secondary;
+    }
+
+    sup.footnote a {
+      padding-top: calc(var(--header-height) + 20px);
+      margin-top: calc(var(--header-height) * -1 - 20px);
+    }
+
+    .imageblock,
+    .literalblock,
+    .listingblock,
+    .stemblock,
+    .videoblock,
+    .exampleblock {
+      @apply my-[2rem];
+    }
+
+    .title {
+      @apply text-sans-lg text-secondary mb-2 max-w-[40rem] text-left italic;
+    }
+
+    summary.title {
+      @apply text-raise not-italic;
+    }
+
+    .conum {
+      @apply inline-block;
+    }
+
+    .table-wrapper {
+      @apply relative overflow-x-auto;
+    }
+
+    .table-wrapper caption {
+      @apply sticky left-0 text-left;
+    }
+
+    .table-wrapper caption > a {
+      @apply no-underline;
+    }
+
+    table {
+      @apply border-secondary w-full border-separate overflow-hidden rounded-lg border p-0;
+      border-spacing: 0;
+    }
+
+    .valign-middle {
+      vertical-align: middle;
+    }
+
+    .halign-center {
+      text-align: center;
+    }
+
+    table p {
+      @apply text-sans-md;
+    }
+
+    table td,
+    table th {
+      @apply border-secondary border-r border-b px-[0.5rem] py-[0.5rem] align-top;
+    }
+
+    table tr th:last-child {
+      @apply border-r-0;
+    }
+
+    /*
+    specificity to handle nested tables
+    todo: check if it's needed in any of the other table styles
+  */
+    tbody > tr:last-child > td,
+    tbody > tr:last-child > th {
+      @apply border-b-0;
+    }
+
+    tbody tr td:last-child {
+      @apply border-r-0;
+    }
+
+    table th {
+      @apply text-mono-xs text-secondary bg-raise text-left;
+    }
+
+    table th p {
+      @apply text-mono-xs;
+    }
+
+    table td {
+      @apply py-[0.5rem];
+    }
+
+    table pre {
+      @apply border-0 p-0;
+    }
+
+    table p {
+      @apply m-0 p-0;
+    }
+
+    .colist table {
+      @apply my-[1.5rem];
+    }
+
+    .colist table td {
+      @apply text-sans-md;
+    }
+
+    .colist table tr td:first-of-type {
+      @apply text-tertiary w-[1%] whitespace-nowrap;
+    }
+
+    .colist table b {
+      @apply text-mono-sm;
+    }
+
+    div.bibliography ~ h2 {
+      @apply 800:mt-16 mt-12;
+    }
+
+    .bibliography ul,
+    .bibliography ol {
+      @apply space-y-2;
+    }
+
+    mark {
+      @apply text-notice bg-notice rounded-md px-[2px];
+    }
+
+    .steminline svg {
+      @apply inline;
+    }
+
+    hr {
+      @apply border-default my-3;
+    }
+
+    .sidebarblock {
+      @apply bg-raise my-8 rounded-lg p-4 px-6 py-5;
+    }
+
+    .halign-left {
+      text-align: left;
+    }
+
+    .halign-right {
+      text-align: right;
+    }
+
+    .halign-center {
+      text-align: center;
+    }
+
+    .valign-top {
+      vertical-align: top;
+    }
+
+    .valign-bottom {
+      vertical-align: bottom;
+    }
+
+    .valign-middle {
+      vertical-align: middle;
+    }
+
+    .paragraph.lead p {
+      @apply text-sans-xl;
+    }
+
+    a:not(:is(h1, h2, h3, h4, h5, h6) a) {
+      text-decoration-color: color-mix(in srgb, currentColor 60%, transparent);
+      @apply text-accent-tertiary underline;
+    }
+  }
+
+  #footnotes p a {
+    @apply accent-link;
+  }
+
+  #footnotes p code {
+    @apply inline-code;
+  }
+
+  .toc .active code {
+    @apply border-accent-tertiary;
+  }
+
+  .toc code {
+    @apply border-secondary mr-[1px] ml-[1px] rounded-md border px-[3px] align-[1px];
+  }
+
+  @media screen and (min-width: 720px) {
+    .animated-accordion[data-state='open'].hydrated {
+      animation: accordionSlideDown 300ms cubic-bezier(0.87, 0, 0.13, 1);
+    }
+    .animated-accordion[data-state='closed'].hydrated {
+      animation: accordionSlideUp 300ms cubic-bezier(0.87, 0, 0.13, 1);
+    }
+  }
+
+  @media screen and (min-width: 720px) {
+    .animated-accordion {
+      overflow: hidden;
+    }
+  }
+
+  @media screen and (prefers-reduced-motion) {
+    .animated-accordion[data-state='open'] {
+      animation-name: none;
+    }
+    .animated-accordion[data-state='closed'] {
+      animation-name: none;
+    }
+  }
+
+  @keyframes accordionSlideDown {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-accordion-content-height);
+    }
+  }
+
+  @keyframes accordionSlideUp {
+    from {
+      height: var(--radix-accordion-content-height);
+    }
+    to {
+      height: 0;
+    }
+  }
+
+  @media print {
+    html {
+      font-size: 14px !important;
+    }
+
+    a {
+      color: inherit !important;
+      text-decoration: underline;
+    }
+
+    a.bare,
+    a[href^='#'],
+    a[href^='mailto:'] {
+      text-decoration: none;
+    }
+
+    tr,
+    img,
+    object,
+    svg {
+      break-inside: avoid;
+    }
+
+    thead {
+      display: table-header-group;
+    }
+
+    pre {
+      hyphens: none;
+      white-space: pre-wrap;
+    }
+
+    h1 {
+      font-size: 2.5rem !important;
+      line-height: 1 !important;
+    }
+
+    @page {
+      margin-top: 2cm;
+      margin-bottom: 2cm;
+    }
+
+    :root,
+    .yellow-theme,
+    .purple-theme,
+    .green-theme,
+    .blue-theme,
+    .red-theme {
+      --surface-default: white;
+      --surface-default-p3: var(--surface-default);
+      --content-default: black;
+      --content-default-p3: var(--content-default);
+      --content-secondary: rgb(0, 0, 0, 0.8);
+      --content-secondary-p3: var(--content-secondary);
+      --content-tertiary: var(--content-secondary);
+      --content-tertiary-p3: var(--content-secondary);
+      --content-raise: var(--content-default);
+      --content-raise-p3: var(--content-default);
+      --surface-raise: rgb(0, 0, 0, 0.1);
+      --surface-raise-p3: var(--surface-raise);
+      --surface-inverse: var(--surface-raise);
+      --surface-inverse-p3: var(--surface-raise);
+      --stroke-default: var(--content-secondary);
+      --stroke-default-p3: var(--content-secondary);
+    }
+
+    p a {
+      text-decoration-color: black !important;
+    }
+
+    p {
+      color: black !important;
+    }
+
+    .imageblock img {
+      border: 0;
+    }
+
+    .admonitionblock {
+      color: var(--content-raise) !important;
+      background-color: var(--surface-raise) !important;
+    }
+
+    .asciidoc-body {
+      h1[data-sectnum]::before,
+      h2[data-sectnum]::before,
+      h3[data-sectnum]::before,
+      h4[data-sectnum]::before,
+      h5[data-sectnum]::before {
+        @apply !hidden;
+      }
+
+      h1,
+      h2,
+      h3,
+      h4,
+      h5 {
+        @apply ml-0 pl-0;
+      }
+
+      .paragraph {
+        max-width: 80vw;
+      }
+    }
   }
 }

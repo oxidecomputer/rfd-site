@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { buttonStyle } from '@oxide/design-system'
+import { buttonStyle } from '@oxide/design-system/ui'
 import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useCallback, useState } from 'react'
 import { Link, useFetcher } from 'react-router'

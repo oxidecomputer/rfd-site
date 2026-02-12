@@ -6,16 +6,16 @@
  * Copyright Oxide Computer Company
  */
 
-@import './lib/fonts.css' layer(base);
-@import '@oxide/design-system/styles/main.css';
-@import '@oxide/design-system/styles/yellow.css';
-@import '@oxide/design-system/styles/purple.css';
-@import '@oxide/design-system/styles/green.css';
-@import '@oxide/design-system/styles/blue.css';
-@import '@oxide/design-system/styles/tailwind.css';
-@import '@oxide/design-system/components/asciidoc.css';
+@layer base, components, utilities;
+@import 'tailwindcss';
 
-@import '@oxide/design-system/components/asciidoc.css';
+@import './lib/fonts.css' layer(base);
+@import '@oxide/design-system/styles/preflight.css' layer(base);
+
+@import '@oxide/design-system/styles/tailwind.css';
+@import '@oxide/design-system/styles/main.css';
+
+/*@import '@oxide/design-system/components/asciidoc.css';*/
 @import '@oxide/design-system/components/button.css';
 @import '@oxide/design-system/components/spinner.css';
 
@@ -24,8 +24,8 @@
 @import './lib/github-markdown.css';
 @import './lib/loading-bar.css';
 
-@import 'tailwindcss';
-@source '../../node_modules/@oxide/design-system/dist/components';
+@source '../../node_modules/@oxide/design-system/dist';
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
 
 @layer utilities {
   :root {
@@ -43,7 +43,7 @@
   }
 }
 
-.light-mode {
+/*.light-mode {
   filter: invert(1) hue-rotate(180deg);
 }
 
@@ -51,7 +51,7 @@
 .light-mode picture,
 .light-mode video {
   filter: invert(1) hue-rotate(180deg);
-}
+}*/
 
 html,
 body {
@@ -75,10 +75,6 @@ body {
     /* leading override is gross, fix later */
     @apply text-sans-sm text-raise leading-[1.33]!;
   }
-}
-
-.overlay-shadow {
-  box-shadow: 0px 8px 50px 0px rgba(0, 0, 0, 0.5);
 }
 
 .backdrop {

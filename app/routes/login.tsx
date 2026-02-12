@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { Button } from '@oxide/design-system'
+import { Button } from '@oxide/design-system/ui'
 import { useState } from 'react'
 import {
   data,
@@ -89,7 +89,7 @@ export default function Login() {
 
         <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
       </div>
-      <div className="overlay-shadow bg-raise border-secondary 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg border p-6 text-center transition-all">
+      <div className="shadow-modal bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all">
         {!showEmailForm && (
           <>
             <h1 className="text-sans-2xl text-accent mb-8">Sign in</h1>
@@ -127,7 +127,7 @@ export default function Login() {
               <input
                 placeholder="Email address"
                 name="email"
-                className="mousetrap placeholder:text-tertiary overlay-shadow text-sans-md bg-raise border-secondary focus:ring-accent-secondary h-full w-full rounded border p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
+                className="mousetrap placeholder:text-tertiary shadow-border text-sans-md bg-raise focus:ring-accent-secondary h-full w-full rounded p-3 focus:ring-2 focus:outline-offset-0 focus:outline-none"
               />
               {actionData?.errorMessage && (
                 <div className="text-destructive">{actionData?.errorMessage}</div>

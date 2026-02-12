@@ -17,7 +17,7 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
-import { Badge } from '@oxide/design-system/components'
+import { Badge } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -365,8 +365,10 @@ export const CommentThreadBlock = ({
   return (
     <div
       className={cn(
-        'border-secondary overflow-hidden rounded-lg border',
-        isOverlay ? 'overlay-shadow bg-raise w-[560px]' : 'bg-default w-full',
+        'overflow-hidden rounded-lg',
+        isOverlay
+          ? 'shadow-menu bg-raise w-[560px]'
+          : 'border-secondary bg-default w-full border',
       )}
     >
       {/* Meta */}
@@ -556,7 +558,7 @@ const CodeLine = ({
         <div
           className={cn(
             'flex w-16 shrink-0 justify-end py-1 pr-2 pl-4',
-            change === 'add' && 'bg-accent-secondary-hover',
+            change === 'add' && 'bg-accent-hover',
             change === 'remove' && 'bg-destructive-secondary-hover',
           )}
         >
@@ -566,7 +568,7 @@ const CodeLine = ({
       <div
         className={cn(
           'flex grow py-1 pr-6 pl-2 whitespace-pre-wrap',
-          change === 'add' && 'bg-accent-secondary',
+          change === 'add' && 'bg-accent',
           change === 'remove' && 'bg-destructive-secondary',
         )}
       >
