@@ -36,35 +36,35 @@ import {
 export type RfdItem = {
   number: number
   formattedNumber: string
-  title?: string
-  state?: string
-  link?: string
-  discussion?: string
-  authors?: Author[]
-  labels?: string[]
-  content?: DocumentBlock
-  toc?: DocumentSection[]
-  sha?: string
-  commit?: string
-  committedAt?: Date
-  latestMajorChangeAt?: Date
+  title: string | null
+  state: string | null
+  link: string | null
+  discussion: string | null
+  authors: Author[]
+  labels: string[]
+  content: DocumentBlock | null
+  toc: DocumentSection[]
+  sha: string | null
+  commit: string | null
+  committedAt: Date | null
+  latestMajorChangeAt: Date | null
   visibility: 'private' | 'public'
 }
 
 export type RfdListItem = {
   number: number
   formattedNumber: string
-  link?: string | null
-  discussion?: string | null
-  title?: string
-  state?: string
-  authors?: Author[]
-  formattedAuthors?: string
-  labels?: string[]
-  sha?: string
-  commit?: string
-  committedAt?: Date
-  latestMajorChangeAt?: Date
+  link: string | null
+  discussion: string | null
+  title: string | null
+  state: string | null
+  authors: Author[]
+  formattedAuthors: string | null
+  labels: string[]
+  sha: string | null
+  commit: string | null
+  committedAt: Date | null
+  latestMajorChangeAt: Date | null
   visibility: 'private' | 'public'
 }
 
@@ -207,10 +207,10 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
   return {
     number: rfd.rfdNumber,
     formattedNumber: rfd.rfdNumber.toString().padStart(4, '0'),
-    title: rfd.title,
-    state: rfd.state,
-    link: rfd.link,
-    discussion: rfd.discussion,
+    title: rfd.title || null,
+    state: rfd.state || null,
+    link: rfd.link || null,
+    discussion: rfd.discussion || null,
     authors: rfd.authors ? generateAuthors(rfd.authors) : [],
     labels: rfd.labels
       ? rfd.labels
@@ -218,12 +218,12 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
           .map((l) => l.trim())
           .filter((l) => !!l)
       : [],
-    content: content,
-    toc: content?.sections,
-    sha: rfd.sha,
-    commit: rfd.commit,
-    committedAt: rfd.committedAt,
-    latestMajorChangeAt: rfd.latestMajorChangeAt,
+    content: content || null,
+    toc: content?.sections || [],
+    sha: rfd.sha || null,
+    commit: rfd.commit || null,
+    committedAt: rfd.committedAt || null,
+    latestMajorChangeAt: rfd.latestMajorChangeAt || null,
     visibility: rfd.visibility,
   }
 }
@@ -233,10 +233,10 @@ function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
   return {
     number: rfd.rfdNumber,
     formattedNumber: rfd.rfdNumber.toString().padStart(4, '0'),
-    title: rfd.title,
-    state: rfd.state,
-    link: rfd.link,
-    discussion: rfd.discussion,
+    title: rfd.title || null,
+    state: rfd.state || null,
+    link: rfd.link || null,
+    discussion: rfd.discussion || null,
     authors,
     formattedAuthors: rfd.authors || '',
     labels: rfd.labels
@@ -245,10 +245,10 @@ function apiRfdMetaToListItem(rfd: RfdWithoutContent): RfdListItem {
           .map((l) => l.trim())
           .filter((l) => !!l)
       : [],
-    sha: rfd.sha,
-    commit: rfd.commit,
-    committedAt: rfd.committedAt,
-    latestMajorChangeAt: rfd.latestMajorChangeAt,
+    sha: rfd.sha || null,
+    commit: rfd.commit || null,
+    committedAt: rfd.committedAt || null,
+    latestMajorChangeAt: rfd.latestMajorChangeAt || null,
     visibility: rfd.visibility,
   }
 }
@@ -272,13 +272,20 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
     formattedNumber: rfd.number.toString().padStart(4, '0'),
     title: rfd.title,
     state: rfd.state,
-    content: content,
-    toc: content?.sections,
+    content: content || null,
+    toc: content?.sections || [],
     committedAt: rfd.committedAt,
     visibility: rfd.visibility,
 
     // Local RFDs don't differentiate between major and minor changes.
     latestMajorChangeAt: rfd.committedAt,
+
+    link: null,
+    discussion: null,
+    authors: [],
+    labels: [],
+    sha: null,
+    commit: null,
   }
 }
 
@@ -293,6 +300,14 @@ function localRfdToListItem(rfd: LocalRfd): RfdListItem {
 
     // Local RFDs don't differentiate between major and minor changes.
     latestMajorChangeAt: rfd.committedAt,
+
+    link: null,
+    discussion: null,
+    authors: [],
+    formattedAuthors: null,
+    labels: [],
+    sha: null,
+    commit: null,
   }
 }
 

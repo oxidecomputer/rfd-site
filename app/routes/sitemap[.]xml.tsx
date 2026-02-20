@@ -25,9 +25,14 @@ export async function loader() {
   const rfdUrls = R.pipe(
     rfds,
     R.sortBy((rfd) => rfd.formattedNumber),
+    // Drop any drops that have no commit date. This means all we have is a reserved number.
+    R.filter((rfd) => !!rfd.committedAt),
     // Here we explicitly want committedAt instead of latestMajorChangeAt, since we want the sitemap
     // to update for any change, not just major ones.
-    R.map((rfd) => url(`/rfd/${rfd.formattedNumber}`, rfd.committedAt)),
+    R.map((rfd) => {
+      // @ts-ignore - We check for committedAt in the previous pipe step
+      return url(`/rfd/${rfd.formattedNumber}`, rfd.committedAt)
+    }),
     R.join('\n'),
   )
 
