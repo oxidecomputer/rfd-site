@@ -111,7 +111,7 @@ const JobRow = ({
             {job.sha.substring(0, 8)}
           </Badge>
         </td>
-        <td>{job.startedAt ? formatTime(job.startedAt) : '--'}</td>
+        <td>{job.startedAt ? formatTime(job.startedAt) : '—'}</td>
       </tr>
       {isExpanded && (
         <tr key={`details-${job.id}`}>

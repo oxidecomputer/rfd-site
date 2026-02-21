@@ -30,8 +30,8 @@ export async function loader() {
     // Here we explicitly want committedAt instead of latestMajorChangeAt, since we want the sitemap
     // to update for any change, not just major ones.
     R.map((rfd) => {
-      // @ts-expect-error - We check for committedAt in the previous pipe step
-      return url(`/rfd/${rfd.formattedNumber}`, rfd.committedAt)
+      // We check for committedAt in the previous pipe step
+      return url(`/rfd/${rfd.formattedNumber}`, rfd.committedAt!)
     }),
     R.join('\n'),
   )
