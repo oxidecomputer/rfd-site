@@ -48,6 +48,7 @@ import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
+import { canonicalRfdUrl, formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
@@ -77,13 +78,19 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
+  // Redirect to canonical URL if the slug is not in the canonical format (zero-padded)
+  const canonicalSlug = formatRfdNum(num)
+  if (slug !== canonicalSlug) {
+    throw redirect(`/rfd/${canonicalSlug}`)
+  }
+
   const user = await authenticate(request)
 
   const rfd = await fetchRfd(num, user)
 
   // If someone goes to a private RFD but they're not logged in, they will
   // want to log in and see it.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${num}`)
+  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${canonicalSlug}`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.
@@ -114,7 +121,10 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data && data.rfd) {
-    return [{ title: `${data.rfd.number} - ${data.rfd.title} / RFD / Oxide` }]
+    return [
+      { title: `${data.rfd.number} - ${data.rfd.title} / RFD / Oxide` },
+      { tagName: 'link', rel: 'canonical', href: canonicalRfdUrl(data.rfd.number) },
+    ]
   } else {
     return [{ title: 'Page not found / Oxide' }]
   }

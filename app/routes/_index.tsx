@@ -22,6 +22,7 @@ import {
   type LoaderFunctionArgs,
 } from 'react-router'
 
+import { canonicalUrl } from '~/utils/canonicalUrl'
 import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import { SortArrowBottom, SortArrowTop } from '~/components/CustomIcons'
@@ -36,6 +37,10 @@ import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
 import { fuzz } from '~/utils/fuzz'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
+
+export const links = () => [
+  { rel: 'canonical', href: canonicalUrl('/') },
+]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')
