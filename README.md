@@ -2,13 +2,15 @@
 
 ## Table of Contents
 
-- [Introduction](#rfd-site)
-- [Technology](#the-technology)
+- [Introduction](#introduction)
+- [Technology](#technology)
+- [Deploying](#deploying)
 - [Contributing](#contributing)
-  - [Setup](#setup)
 - [Running](#running)
+  - [Setup](#setup)
   - [Running Locally](#running-locally)
   - [Write RFDs Locally](#write-rfds-locally)
+  - [Configuration](#Configuration)
 - [License](#license)
 
 ## Introduction
@@ -58,10 +60,6 @@ tool for Oxide, so we can't guarantee that PRs will be integrated.
 
 ### Setup
 
-`npm` v7 or higher is recommended due to
-[`lockfileVersion: 2`](https://docs.npmjs.com/cli/v8/configuring-npm/package-lock-json#lockfileversion)
-in `package-lock.json`.
-
 ```sh
 npm install
 ```
@@ -80,7 +78,7 @@ vars. See below on how to set up local RFD preview.
 
 To preview an RFD you're working on in the site, use the `LOCAL_RFD_REPO` env var to tell
 the site to pull content from your local clone of the `rfd` repo instead of the API. No
-other env vars (such as the ones that let you talk to CIO) are required. For example:
+other env vars are required. For example:
 
 ```sh
 LOCAL_RFD_REPO=~/oxide/rfd npm run dev
@@ -101,7 +99,6 @@ combined branch that contains both.
 When running in a non-local mode, the following settings must be specified:
 
 - `SESSION_SECRET` - Key that will be used to signed cookies
-
 - `RFD_API` - Backend RFD API to communicate with (i.e. https://api.server.com)
 - `RFD_API_CLIENT_ID` - OAuth client id create via the RFD API
 - `RFD_API_CLIENT_SECRET` - OAuth client secret create via the RFD API
@@ -109,11 +106,9 @@ When running in a non-local mode, the following settings must be specified:
   `https://{rfd_site_hostname}/auth/google/callback`
 - `RFD_API_GITHUB_CALLBACK_URL` - Should be of the form of
   `https://{rfd_site_hostname}/auth/github/callback`
-
 - `STORAGE_URL` - Url of bucket for static assets
 - `STORAGE_KEY_NAME` - Name of the key defined in `STORAGE_KEY`
 - `STORAGE_KEY` - Key for generating signed static asset urls
-
 - `GITHUB_APP_ID` - App id for fetching GitHub PR discussions
 - `GITHUB_INSTALLATION_ID` - Installation id of GitHub App
 - `GITHUB_PRIVATE_KEY` - Private key of the GitHub app for discussion fetching
