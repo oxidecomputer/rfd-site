@@ -23,6 +23,7 @@
 @import './lib/highlight.css';
 @import './lib/github-markdown.css';
 @import './lib/loading-bar.css';
+@import './overrides.css';
 
 @import 'tailwindcss';
 @source '../../node_modules/@oxide/design-system/dist/components';

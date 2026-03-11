@@ -30,15 +30,19 @@ import { Link, useNavigate } from 'react-router'
 import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
 import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
+import { useRootLoaderData } from '~/root'
 import type { RfdItem } from '~/services/rfd.server'
 
 const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
+  const { config } = useRootLoaderData()
   const searchClient = useRef<InstantMeiliSearchInstance>(null)
 
   useEffect(() => {
-    const { searchClient: client } = instantMeiliSearch(
-      'https://search.rfd.shared.oxide.computer',
-    )
+    if (!config.features.search || !config.search) {
+      return
+    }
+
+    const { searchClient: client } = instantMeiliSearch(config.search.url)
 
     // Overriding search function to implement our custom search backend. We provide a search route
     // that proxies out to the RFD API search endpoint. This route accepts slightly different
@@ -91,7 +95,11 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         })
       },
     }
-  }, [])
+  }, [config.features.search, config.search])
+
+  if (!config.features.search || !config.search) {
+    return null
+  }
 
   if (searchClient.current) {
     return (

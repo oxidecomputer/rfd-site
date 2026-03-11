@@ -27,6 +27,7 @@ import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
 import { authenticate, logout } from './services/auth.server'
+import { getSiteConfig } from './services/config.server'
 import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
@@ -36,13 +37,27 @@ import {
   provideNewRfdNumber,
 } from './services/rfd.server'
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'RFD / Oxide' }]
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data?.config) {
+    return [{ title: 'RFD' }]
+  }
+
+  const orgName = data.config.organization.name
+  const description = data.config.site.description
+  const metaTags: ReturnType<MetaFunction> = [{ title: `RFD / ${orgName}` }]
+  if (description) {
+    metaTags.push({ name: 'description', content: description } as {
+      name: string
+      content: string
+    })
+  }
+  return metaTags
 }
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const config = await getSiteConfig()
   const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
@@ -57,6 +72,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     return {
       // Any data added to the ENV key of this loader will be injected into the
       // global window object (window.ENV)
+      config,
+      features: config.features, // Make features available separately for client-side checks
       theme,
       inlineComments,
       user,
@@ -74,6 +91,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   // Convince remix that a return type will always be provided
   return {
+    config,
+    features: config.features,
     theme,
     inlineComments,
     user,
@@ -110,7 +129,15 @@ export function ErrorBoundary() {
 }
 const queryClient = new QueryClient()
 
-const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => (
+const Layout = ({
+  children,
+  theme,
+  headScript,
+}: {
+  children: React.ReactNode
+  theme?: string
+  headScript?: string
+}) => (
   <html lang="en" className={theme}>
     <head>
       <meta charSet="utf-8" />
@@ -120,11 +147,10 @@ const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string
       <link rel="icon" href="/favicon.svg" />
       <link rel="icon" type="image/png" href="/favicon.png" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      {/* Use plausible analytics only on Vercel */}
-      {process.env.NODE_ENV === 'production' && (
-        <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
-      )}
       <meta name="color-scheme" content="dark" />
+      {process.env.NODE_ENV === 'production' && headScript && (
+        <script dangerouslySetInnerHTML={{ __html: headScript }} />
+      )}
     </head>
     <body className="mb-32">
       {children}
@@ -135,10 +161,10 @@ const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string
 )
 
 export default function App() {
-  const { theme, localMode } = useLoaderData<typeof loader>()
+  const { theme, localMode, config } = useLoaderData<typeof loader>()
 
   return (
-    <Layout theme={theme}>
+    <Layout theme={theme} headScript={config.headScript}>
       <LoadingBar />
       <QueryClientProvider client={queryClient}>
         <Outlet />

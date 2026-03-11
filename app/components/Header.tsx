@@ -27,7 +27,7 @@ export type SmallRfdItems = {
 }
 
 export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
-  const { user, rfds, localMode, inlineComments } = useRootLoaderData()
+  const { user, rfds, localMode, inlineComments, features } = useRootLoaderData()
 
   const fetcher = useFetcher()
 
@@ -49,9 +49,10 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
 
   // memoized to avoid render churn in useKey
   const toggleSearchMenu = useCallback(() => {
+    if (!features.search) return false
     setOpen(!open)
     return false // Returning false prevents default behaviour in Firefox
-  }, [open])
+  }, [open, features.search])
 
   useKey('mod+k', toggleSearchMenu, { global: true })
 
@@ -72,14 +73,18 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
         </div>
 
         <div className="flex space-x-2">
-          <button
-            className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
-            onClick={toggleSearchMenu}
-            aria-label="Search"
-          >
-            <Icon name="search" size={16} />
-          </button>
-          <Search open={open} onClose={() => setOpen(false)} />
+          {features.search && (
+            <>
+              <button
+                className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
+                onClick={toggleSearchMenu}
+                aria-label="Search"
+              >
+                <Icon name="search" size={16} />
+              </button>
+              <Search open={open} onClose={() => setOpen(false)} />
+            </>
+          )}
           <NewRfdButton />
 
           {user ? (

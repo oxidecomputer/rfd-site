@@ -1,8 +1,22 @@
-fly.toml
-/node_modules
+# Dependencies (reinstalled in Docker)
+node_modules
+
+# Build artifacts (regenerated in Docker)
+.cache
+/build
+/.react-router
+
+# Environment files (provided at runtime)
+.env
+
+# Version control (not needed in image)
+.git
+.github
+
+# Testing (not needed in production)
+test
+test-results
+
+# System files
 *.log
 .DS_Store
-.env
-/.cache
-/public/build
-/build

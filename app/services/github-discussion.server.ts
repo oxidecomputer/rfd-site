@@ -13,6 +13,7 @@ import { Octokit } from 'octokit'
 import { any } from '~/utils/permission'
 
 import { getUserPermissions, type User } from './auth.server'
+import { getSiteConfig } from './config.server'
 
 function getOctokitClient() {
   if (process.env.GITHUB_API_KEY) {
@@ -72,6 +73,22 @@ export async function fetchDiscussion(
   prComments: ListIssueCommentsType
   pullNumber: number
 } | null> {
+  const config = await getSiteConfig()
+
+  if (!config.features.discussions) {
+    console.error('GitHub discussions feature is disabled')
+    return null
+  }
+
+  // Parse owner/repo from URL
+  const repoUrl = config.repository.url
+  const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
+  if (!match) {
+    throw new Error('Invalid repository URL - must be a GitHub URL')
+  }
+
+  const [, owner, repo] = match
+
   const octokit = getOctokitClient()
 
   if (!octokit) return null
@@ -80,8 +97,8 @@ export async function fetchDiscussion(
   if (!any(userPermissions, [{ GetDiscussion: rfd }, 'GetDiscussionsAll'])) return null
 
   const reviews: ListReviewsResponseType = await octokit.rest.pulls.listReviews({
-    owner: 'oxidecomputer',
-    repo: 'rfd',
+    owner,
+    repo,
     pull_number: pullNumber,
     per_page: 100,
   })
@@ -97,8 +114,8 @@ export async function fetchDiscussion(
   let comments: ListReviewsCommentsType = []
   await octokit
     .paginate(octokit.rest.pulls.listReviewComments, {
-      owner: 'oxidecomputer',
-      repo: 'rfd',
+      owner,
+      repo,
       pull_number: pullNumber,
       per_page: 100,
     })
@@ -111,8 +128,8 @@ export async function fetchDiscussion(
     })
 
   const prComments = await octokit.paginate(octokit.rest.issues.listComments, {
-    owner: 'oxidecomputer',
-    repo: 'rfd',
+    owner,
+    repo,
     issue_number: pullNumber,
     per_page: 100,
   })
