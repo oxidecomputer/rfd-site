@@ -10,19 +10,30 @@ import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate, useNavigation } from 'react-router'
 
 import { useRootLoaderData } from '~/root'
 import type { RfdListItem } from '~/services/rfd.server'
 
 dayjs.extend(relativeTime)
 
-const regexes = [
-  /#rfd[-_]?([0-9]{1,4})/,
+const rfdLinkRegexes = [
+  /#rfd[-_]?([0-9]{1,4})/i,
   /^https:\/\/rfd\.shared\.oxide\.computer\/rfd\/(\d+)/,
   /^https:\/\/([0-9]+)\.rfd\.oxide\.computer/,
   /(oxide).*rfd\/(\d+)/,
 ]
+
+export function extractRfdNumber(href: string): number | null {
+  for (const regex of rfdLinkRegexes) {
+    const match = href.match(regex)?.at(-1)
+    if (match) {
+      const num = parseInt(match, 10)
+      if (!Number.isNaN(num)) return num
+    }
+  }
+  return null
+}
 
 // Gets offset top for nested elements
 // e.g. anchors inside tables
@@ -33,7 +44,6 @@ export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   let y = el.offsetTop
 
   while ((el = el.offsetParent as HTMLElement)) {
-    // We want to stop when we reach the parent to the <RfdPreview /> element
     if (el.nodeName === 'MAIN') {
       break
     }
@@ -44,175 +54,207 @@ export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   return { left: x, top: y }
 }
 
-const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
-  const [rfdPreview, setRfdPreview] = useState<RfdListItem | null>(null)
-  const [rfdAnchor, setRfdAnchor] = useState<HTMLAnchorElement | null>(null)
-  const [rfdPreviewPos, setRfdPreviewPos] = useState<{ left: number; top: number }>({
-    left: 0,
-    top: 0,
-  })
+interface RfdPreviewState {
+  rfd: RfdListItem
+  position: { left: number; top: number }
+  anchor: HTMLAnchorElement
+}
+
+interface RfdPreviewProps {
+  currentRfd: number
+  nodeRef: React.RefObject<HTMLElement | null>
+}
+
+const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
+  const navigate = useNavigate()
+  const navigation = useNavigation()
+  const isNavigating = navigation.state !== 'idle'
   const { rfds } = useRootLoaderData()
-
+  const [preview, setPreview] = useState<RfdPreviewState | null>(null)
   const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const previewRef = useRef<HTMLDivElement>(null)
 
-  const showRfdHover = useCallback(
-    (e: MouseEvent, href: string) => {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
-      }
+  const clearHoverTimeout = useCallback(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current)
+      timeoutRef.current = null
+    }
+  }, [])
 
-      const showRfdPreview = () => {
-        const el = e.target as HTMLAnchorElement // making a little assumption here
-        let hrefMatch: string | null = null
+  useEffect(() => {
+    setPreview(null)
+  }, [currentRfd])
 
-        for (const regex of regexes) {
-          const match = href.match(regex)?.at(-1)
+  // Based on https://github.com/remix-run/react-router-website/blob/main/app/ui/delegate-markdown-links.ts
+  // Converts regular AsciiDoc a tags and makes them React Routery
+  useEffect(() => {
+    const node = nodeRef.current
+    if (!node) return
 
-          if (match) {
-            hrefMatch = match
-            break
-          }
+    const handleClick = (event: MouseEvent) => {
+      if (!(event.target instanceof HTMLElement)) return
+
+      const a = event.target.closest('a')
+
+      if (
+        a && // is anchor or has anchor parent
+        a.hasAttribute('href') && // has an href
+        a.host === window.location.host && // is internal
+        event.button === 0 && // left click
+        (!a.target || a.target === '_self') && // Let browser handle "target=_blank" etc.
+        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) // not modified
+      ) {
+        const rfdNum = extractRfdNumber(a.getAttribute('href') || '')
+
+        if (rfdNum !== null) {
+          event.preventDefault()
+          clearHoverTimeout()
+          setPreview(null)
+          const formattedNumber = rfdNum.toString().padStart(4, '0')
+          navigate(`/rfd/${formattedNumber}`)
+          return
         }
 
-        const rfdNum = hrefMatch ? parseInt(hrefMatch, 10) : null
-        if (!rfdNum || Number.isNaN(rfdNum) || rfdNum === currentRfd) return // sort of validate that assumption
-
-        const matchedRfd = rfds.find((rfd) => rfd.number === rfdNum)
-        if (!matchedRfd) return
-
-        const offset = calcOffset(el)
-
-        setRfdPreview(matchedRfd)
-        setRfdPreviewPos({ left: offset.left, top: offset.top })
-        setRfdAnchor(el)
-      }
-
-      // Adds a delay of 125ms before opening the preview
-      // Avoids opening accidentally as a user scans through the text
-      timeoutRef.current = setTimeout(showRfdPreview, 125)
-    },
-    [rfds, currentRfd],
-  )
-
-  const floatingEl = useRef<HTMLDivElement>(null)
-
-  type Point = [number, number]
-  type Polygon = Point[]
-
-  const handleHover = useCallback(
-    (event: MouseEvent) => {
-      if (!rfdAnchor || !floatingEl || !floatingEl.current) {
-        return
-      }
-
-      // 1┌────────────┐2
-      //  └────────────┘\
-      //  |              \
-      //  ┌───────────────┐3
-      //  │               │
-      // 5└───────────────┘4
-      //
-      // Returns a set of points for each corner of a polygon
-      // that the cursor can safely be within without closing
-      // the floating preview. Plus a buffer of 10px to avoid
-      // it being too sensitive
-      const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Array<Point> => {
-        const buffer = 10
-        const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
-        const p2: Point = [
-          anchorRect.left + anchorRect.width + buffer,
-          anchorRect.top + anchorRect.height - buffer,
-        ]
-        const p3: Point = [
-          floatingRect.left + floatingRect.width + buffer,
-          floatingRect.top - buffer,
-        ]
-        const p4: Point = [
-          floatingRect.left + floatingRect.width + buffer,
-          floatingRect.top + floatingRect.height + buffer,
-        ]
-        const p5: Point = [
-          floatingRect.left - buffer,
-          floatingRect.top + floatingRect.height + buffer,
-        ]
-        return [p1, p2, p3, p4, p5]
-      }
-
-      const isPointInPolygon = (point: Point, polygon: Polygon) => {
-        const [x, y] = point
-        let isInside = false
-        const length = polygon.length
-        for (let i = 0, j = length - 1; i < length; j = i++) {
-          const [xi, yi] = polygon[i] || [0, 0]
-          const [xj, yj] = polygon[j] || [0, 0]
-          const intersect =
-            // prettier-ignore
-            (yi >= y) !== (yj >= y) && x <= ((xj - xi) * (y - yi)) / (yj - yi) + xi
-          if (intersect) {
-            isInside = !isInside
-          }
+        if (a.host === window.location.host) {
+          event.preventDefault()
+          const { pathname, search, hash } = a
+          navigate({ pathname, search, hash })
         }
-        return isInside
       }
+    }
+
+    const handleMouseOver = (event: MouseEvent) => {
+      if (isNavigating) return
+      if (!(event.target instanceof HTMLElement)) return
+
+      const anchor = event.target.closest('a')
+      if (!anchor) return
+
+      const rfdNum = extractRfdNumber(anchor.getAttribute('href') || '')
+
+      if (rfdNum === null || rfdNum === currentRfd) return
+
+      const matchedRfd = rfds.find((rfd) => rfd.number === rfdNum)
+      if (!matchedRfd) return
+
+      if (timeoutRef.current) return
+
+      timeoutRef.current = setTimeout(() => {
+        const offset = calcOffset(anchor)
+        setPreview({
+          rfd: matchedRfd,
+          position: offset,
+          anchor,
+        })
+        timeoutRef.current = null
+      }, 125)
+    }
+
+    const handleMouseOut = (event: MouseEvent) => {
+      if (!(event.target instanceof HTMLElement)) return
+
+      const anchor = event.target.closest('a')
+      if (anchor) {
+        clearHoverTimeout()
+      }
+    }
+
+    node.addEventListener('click', handleClick)
+    node.addEventListener('mouseover', handleMouseOver)
+    node.addEventListener('mouseout', handleMouseOut)
+
+    return () => {
+      node.removeEventListener('click', handleClick)
+      node.removeEventListener('mouseover', handleMouseOver)
+      node.removeEventListener('mouseout', handleMouseOut)
+      clearHoverTimeout()
+    }
+  }, [navigate, nodeRef, currentRfd, rfds, clearHoverTimeout, isNavigating])
+
+  useEffect(() => {
+    if (!preview) return
+
+    type Point = [number, number]
+    type Polygon = Point[]
+
+    // 1┌────────────┐2
+    //  └────────────┘\
+    //  |              \
+    //  ┌───────────────┐3
+    //  │               │
+    // 5└───────────────┘4
+    //
+    // Returns a set of points for each corner of a polygon
+    // that the cursor can safely be within without closing
+    // the floating preview. Plus a buffer of 10px to avoid
+    // it being too sensitive
+    const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Polygon => {
+      const buffer = 10
+      const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
+      const p2: Point = [
+        anchorRect.left + anchorRect.width + buffer,
+        anchorRect.top + anchorRect.height - buffer,
+      ]
+      const p3: Point = [
+        floatingRect.left + floatingRect.width + buffer,
+        floatingRect.top - buffer,
+      ]
+      const p4: Point = [
+        floatingRect.left + floatingRect.width + buffer,
+        floatingRect.top + floatingRect.height + buffer,
+      ]
+      const p5: Point = [
+        floatingRect.left - buffer,
+        floatingRect.top + floatingRect.height + buffer,
+      ]
+      return [p1, p2, p3, p4, p5]
+    }
+
+    const isPointInPolygon = (point: Point, polygon: Polygon) => {
+      const [x, y] = point
+      let isInside = false
+      const length = polygon.length
+      for (let i = 0, j = length - 1; i < length; j = i++) {
+        const [xi, yi] = polygon[i] || [0, 0]
+        const [xj, yj] = polygon[j] || [0, 0]
+        const intersect =
+          yi >= y !== yj >= y && x <= ((xj - xi) * (y - yi)) / (yj - yi) + xi
+        if (intersect) {
+          isInside = !isInside
+        }
+      }
+      return isInside
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!previewRef.current) return
 
       const cursor: Point = [event.clientX, event.clientY]
-      const floatingRect = floatingEl.current.getBoundingClientRect()
-      const anchorRect = rfdAnchor.getBoundingClientRect()
+      const floatingRect = previewRef.current.getBoundingClientRect()
+      const anchorRect = preview.anchor.getBoundingClientRect()
 
-      const polygon: Polygon = getPolygon(anchorRect, floatingRect)
-
+      const polygon = getPolygon(anchorRect, floatingRect)
       const isInside = isPointInPolygon(cursor, polygon)
 
       if (!isInside) {
-        setRfdPreview(null)
-        window.removeEventListener('mousemove', handleHover)
-      }
-    },
-    [rfdAnchor],
-  )
-
-  useEffect(() => {
-    if (!rfdPreview) {
-      return
-    }
-
-    window.addEventListener('mousemove', handleHover)
-    return () => window.removeEventListener('mousemove', handleHover)
-  }, [rfdPreview, handleHover])
-
-  useEffect(() => {
-    const links = document.querySelectorAll<HTMLAnchorElement>('.asciidoc-body#content a')
-
-    function handleClearTimeout() {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+        setPreview(null)
       }
     }
 
-    const removes: (() => void)[] = []
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [preview])
 
-    links.forEach((el) => {
-      const showHover = (e: MouseEvent) => showRfdHover(e, el.href)
-      el.addEventListener('mouseover', showHover)
-      el.addEventListener('mouseout', handleClearTimeout)
-      removes.push(() => {
-        el.removeEventListener('mouseover', showHover)
-        el.removeEventListener('mouseout', handleClearTimeout)
-      })
-    })
+  if (!preview) return null
 
-    return () => removes.forEach((remove) => remove())
-  }, [showRfdHover])
+  const { title, number, state, latestMajorChangeAt, formattedNumber } = preview.rfd
+  const authors = preview.rfd.authors || []
 
-  if (!rfdPreview) return null
-
-  const { title, number, state, latestMajorChangeAt, formattedNumber } = rfdPreview
-  const authors = rfdPreview.authors || []
   return (
     <div
-      ref={floatingEl}
-      className="overlay-shadow bg-raise border-secondary absolute z-10 mt-8 flex w-[24rem] rounded-lg border p-3"
-      style={{ top: rfdPreviewPos.top, left: rfdPreviewPos.left }}
+      ref={previewRef}
+      className="overlay-shadow bg-raise border-secondary absolute z-10 flex w-[24rem] rounded-lg border p-3"
+      style={{ top: preview.position.top + 28, left: preview.position.left }}
     >
       <Link
         prefetch="intent"
@@ -257,37 +299,6 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
       </div>
     </div>
   )
-}
-
-export type Author = {
-  name: string
-  email: string
-}
-
-export const generateAuthors = (authors: string): Author[] => {
-  // Officially asciidoc uses the semicolon for multiple authors
-  // we are using commas in most the documents I have seen
-  // chose to parse both rather than update the RFDs since that would
-  // be tedious work for little gain. This does means that a user cannot
-  // mix both methods. But what kind of person would do such a thing.
-  let splitChar = ','
-
-  if (authors.includes(';')) {
-    splitChar = ';'
-  }
-
-  const array = authors.split(splitChar).map((author) => {
-    const regex = /<(.+)>/
-    const matches = author.match(regex)
-    const name = author.replace(regex, '').trim()
-    const email = matches ? matches[1] : ''
-
-    return { name, email }
-  })
-
-  // Remove extra items
-  // Fixes empty item when a single author has a ; or , at the end
-  return array.filter((author) => author.name !== '')
 }
 
 export default RfdPreview

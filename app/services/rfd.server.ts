@@ -7,7 +7,7 @@
  */
 
 import { handleDocument } from '@oxide/design-system/components'
-import type { DocumentBlock, DocumentSection } from '@oxide/react-asciidoc'
+import { type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import type {
   AccessGroup_for_RfdPermission,
   Job,
