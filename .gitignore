@@ -19,8 +19,4 @@ test-results/
 
 /app/components/icons
 
-// chromatic
-build-archive.log
-test-results/
-
 .react-router/

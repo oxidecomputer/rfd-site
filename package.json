@@ -11,7 +11,6 @@
     "fmt": "prettier --write --ignore-path ./.gitignore  .",
     "fmt:check": "prettier --check --ignore-path ./.gitignore . ",
     "e2ec": "npx playwright test --project=chrome",
-    "chromatic": "chromatic --playwright --exit-zero-on-changes",
     "lint": "eslint ."
   },
   "dependencies": {
@@ -60,7 +59,6 @@
     "zustand": "^5.0.11"
   },
   "devDependencies": {
-    "@chromatic-com/playwright": "^0.12.7",
     "@csstools/postcss-global-data": "^3.1.0",
     "@eslint/compat": "^1.4.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
@@ -79,7 +77,6 @@
     "@types/react-dom": "^19.2.3",
     "@types/react-instantsearch-dom": "^6.12.9",
     "autoprefixer": "^10.4.21",
-    "chromatic": "^13.2.0",
     "cssnano": "^7.1.1",
     "eslint": "^9.36.0",
     "eslint-plugin-jsx-a11y": "^6.10.2",
