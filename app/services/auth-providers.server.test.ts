@@ -9,7 +9,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  ALL_PROVIDERS,
   getApiUrlMissingVars,
   getMissingEnvVars,
   getRequiredEnvVars,
@@ -28,19 +27,19 @@ describe('parseAuthProviders', () => {
     }
   })
 
-  it('returns all providers when AUTH_PROVIDERS is not set', () => {
+  it('returns no providers when AUTH_PROVIDERS is not set', () => {
     delete process.env.AUTH_PROVIDERS
-    expect(parseAuthProviders()).toEqual(ALL_PROVIDERS)
+    expect(parseAuthProviders()).toEqual([])
   })
 
-  it('returns all providers when AUTH_PROVIDERS is empty', () => {
+  it('returns no providers when AUTH_PROVIDERS is empty', () => {
     process.env.AUTH_PROVIDERS = ''
-    expect(parseAuthProviders()).toEqual(ALL_PROVIDERS)
+    expect(parseAuthProviders()).toEqual([])
   })
 
-  it('returns all providers when AUTH_PROVIDERS is whitespace', () => {
+  it('returns no providers when AUTH_PROVIDERS is whitespace', () => {
     process.env.AUTH_PROVIDERS = '   '
-    expect(parseAuthProviders()).toEqual(ALL_PROVIDERS)
+    expect(parseAuthProviders()).toEqual([])
   })
 
   it('parses a single provider', () => {

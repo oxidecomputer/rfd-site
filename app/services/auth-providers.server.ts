@@ -33,9 +33,8 @@ export function getApiUrlMissingVars(): string[] {
 export function parseAuthProviders(): AuthProvider[] {
   const envValue = process.env.AUTH_PROVIDERS
 
-  // Backwards compatibility: if not set, enable all providers
   if (!envValue || envValue.trim() === '') {
-    return [...ALL_PROVIDERS]
+    return []
   }
 
   const requestedProviders = envValue

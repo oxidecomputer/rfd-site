@@ -130,9 +130,9 @@ other. Existing deployments using only `RFD_API` will continue to work unchanged
 - `RFD_API_MLINK_SECRET` - Client secret for magic link (email) authentication
 
 - `AUTH_PROVIDERS` - Comma-delimited list of enabled authentication providers. Valid values
-  are `github`, `google`, and `email`. If not set, all providers are enabled by default.
-  Providers with missing required environment variables are automatically disabled.
-  Examples:
+  are `github`, `google`, and `email`. If not set, no providers are enabled and login will
+  be unavailable. Each listed provider must have its required environment variables set or
+  the app will fail to start. Examples:
   - `AUTH_PROVIDERS=github,google` - Enable only GitHub and Google OAuth
   - `AUTH_PROVIDERS=email` - Enable only email (magic link) authentication
 

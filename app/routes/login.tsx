@@ -120,7 +120,6 @@ export default function Login() {
       <>
         <LoginBackdrop gradientFrom="#161B1D" />
         <div className={`overlay-shadow border-secondary border ${cardClasses}`}>
-          <h1 className="text-sans-2xl text-accent mb-4">Authentication Unavailable</h1>
           <p className="text-secondary">
             No authentication providers are configured. Please contact an administrator.
           </p>
