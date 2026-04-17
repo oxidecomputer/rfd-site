@@ -102,7 +102,7 @@ export function LinkItem({ className, children, to, disabled, internal }: LinkIt
       disabled={disabled}
       render={
         ext ? (
-          <a
+          <a // eslint-disable-line jsx-a11y/anchor-has-content
             href={to}
             target="_blank"
             rel="noreferrer"
