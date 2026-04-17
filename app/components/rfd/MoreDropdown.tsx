@@ -6,14 +6,13 @@
  * Copyright Oxide Computer Company
  */
 import { useDialogStore } from '@ariakit/react'
-import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { useState } from 'react'
 import { useLoaderData } from 'react-router'
 
 import { useRootLoaderData } from '~/root'
 import type { loader } from '~/routes/rfd.$slug'
 
-import { DropdownItem, DropdownLink, DropdownMenu } from '../Dropdown'
+import * as DropdownMenu from '../Dropdown'
 import Icon from '../Icon'
 import RfdJobsMonitor from './RfdJobsMonitor'
 
@@ -25,37 +24,41 @@ const MoreDropdown = () => {
 
   return (
     <>
-      <Dropdown.Root modal={false}>
-        <Dropdown.Trigger className="border-default hover:bg-hover rounded border p-2 align-[3px]">
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger className="border-default hover:bg-hover rounded border p-2 align-[3px]">
           <Icon name="more" size={12} className="text-default" />
-        </Dropdown.Trigger>
+        </DropdownMenu.Trigger>
 
-        <DropdownMenu>
-          <DropdownItem onSelect={jobsDialogStore.toggle}>Processing jobs</DropdownItem>
+        <DropdownMenu.Content>
+          <DropdownMenu.Item onSelect={jobsDialogStore.toggle}>
+            Processing jobs
+          </DropdownMenu.Item>
 
           {features.discussions && (
-            <DropdownLink to={rfd.discussion || ''} disabled={!rfd.discussion}>
+            <DropdownMenu.LinkItem to={rfd.discussion || ''} disabled={!rfd.discussion}>
               GitHub discussion
-            </DropdownLink>
+            </DropdownMenu.LinkItem>
           )}
 
-          <DropdownLink to={rfd.link || ''} disabled={!rfd.link}>
+          <DropdownMenu.LinkItem to={rfd.link || ''} disabled={!rfd.link}>
             GitHub source
-          </DropdownLink>
+          </DropdownMenu.LinkItem>
 
           {rfd.link && (
-            <DropdownLink
+            <DropdownMenu.LinkItem
               to={`${rfd.link.replace('/tree/', '/blob/')}/README.adoc?plain=1`}
             >
               Raw AsciiDoc
-            </DropdownLink>
+            </DropdownMenu.LinkItem>
           )}
 
           {features.pdf && (
-            <DropdownLink to={`/rfd/${rfd.number}/pdf`}>View PDF</DropdownLink>
+            <DropdownMenu.LinkItem to={`/rfd/${rfd.number}/pdf`} internal>
+              View PDF
+            </DropdownMenu.LinkItem>
           )}
-        </DropdownMenu>
-      </Dropdown.Root>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
 
       {dialogOpen && (
         <RfdJobsMonitor rfdNumber={rfd.number} dialogStore={jobsDialogStore} />

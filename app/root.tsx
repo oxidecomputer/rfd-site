@@ -28,7 +28,7 @@ import styles from '~/styles/index.css?url'
 import LoadingBar from './components/LoadingBar'
 import { authenticate, logout } from './services/auth.server'
 import { getSiteConfig } from './services/config.server'
-import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
+import { inlineCommentsCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
   fetchRfds,
@@ -36,6 +36,7 @@ import {
   getLabels,
   provideNewRfdNumber,
 } from './services/rfd.server'
+import { useApplyTheme } from './stores/theme'
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (!data?.config) {
@@ -58,7 +59,6 @@ export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const config = await getSiteConfig()
-  const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
@@ -70,11 +70,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const labels = rfds ? getLabels(rfds) : []
 
     return {
-      // Any data added to the ENV key of this loader will be injected into the
-      // global window object (window.ENV)
       config,
-      features: config.features, // Make features available separately for client-side checks
-      theme,
+      features: config.features,
       inlineComments,
       user,
       rfds,
@@ -93,7 +90,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return {
     config,
     features: config.features,
-    theme,
     inlineComments,
     user,
     rfds: [],
@@ -129,31 +125,33 @@ export function ErrorBoundary() {
 }
 const queryClient = new QueryClient()
 
+// Set theme before first paint to prevent flash of wrong color scheme.
+// Mirrors logic in app/stores/theme.ts — must stay in sync.
+const themeInitScript = `(function(){try{var p=localStorage.getItem('theme-preference');if(p!=='dark'&&p!=='light'&&p!=='system')p='dark';var r=p==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):p;document.documentElement.dataset.theme=r;}catch(_){document.documentElement.dataset.theme='dark';}})();`
+
 const Layout = ({
   children,
-  theme,
   headScript,
 }: {
   children: React.ReactNode
-  theme?: string
   headScript?: string
 }) => (
-  <html lang="en" className={theme}>
+  <html lang="en" suppressHydrationWarning>
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width,initial-scale=1" />
+      <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       <Meta />
       <Links />
       <link rel="icon" href="/favicon.svg" />
       <link rel="icon" type="image/png" href="/favicon.png" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
-      <meta name="color-scheme" content="dark" />
       {process.env.NODE_ENV === 'production' && headScript && (
         <script dangerouslySetInnerHTML={{ __html: headScript }} />
       )}
     </head>
     <body className="mb-32">
-      {children}
+      <div className="root">{children}</div>
       <ScrollRestoration />
       <Scripts />
     </body>
@@ -161,15 +159,16 @@ const Layout = ({
 )
 
 export default function App() {
-  const { theme, localMode, config } = useLoaderData<typeof loader>()
+  useApplyTheme()
+  const { localMode, config } = useLoaderData<typeof loader>()
 
   return (
-    <Layout theme={theme} headScript={config.headScript}>
+    <Layout headScript={config.headScript}>
       <LoadingBar />
       <QueryClientProvider client={queryClient}>
         <Outlet />
         {localMode && (
-          <div className="overlay-shadow text-sans-sm text-notice bg-notice-secondary fixed bottom-6 left-6 z-10 rounded p-2">
+          <div className="shadow-border-small text-sans-sm text-notice bg-notice fixed bottom-6 left-6 z-10 rounded p-2">
             Local authoring mode
           </div>
         )}

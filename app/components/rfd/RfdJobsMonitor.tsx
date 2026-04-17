@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 import { type useDialogStore } from '@ariakit/react'
-import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/components'
+import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/ui'
 import { type Job } from '@oxide/rfd.ts/client'
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
@@ -111,7 +111,7 @@ const JobRow = ({
             {job.sha.substring(0, 8)}
           </Badge>
         </td>
-        <td>{formatTime(job.startedAt)}</td>
+        <td>{job.startedAt ? formatTime(job.startedAt) : '—'}</td>
       </tr>
       {isExpanded && (
         <tr key={`details-${job.id}`}>

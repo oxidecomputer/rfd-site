@@ -211,7 +211,7 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   return (
     <div
       ref={floatingEl}
-      className="overlay-shadow bg-raise border-secondary absolute z-10 mt-8 flex w-[24rem] rounded-lg border p-3"
+      className="shadow-tooltip bg-raise absolute z-10 mt-8 flex w-[24rem] rounded-lg p-3"
       style={{ top: rfdPreviewPos.top, left: rfdPreviewPos.left }}
     >
       <Link

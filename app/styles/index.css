@@ -6,27 +6,35 @@
  * Copyright Oxide Computer Company
  */
 
-@import './lib/fonts.css' layer(base);
-@import '@oxide/design-system/styles/main.css';
-@import '@oxide/design-system/styles/yellow.css';
-@import '@oxide/design-system/styles/purple.css';
-@import '@oxide/design-system/styles/green.css';
-@import '@oxide/design-system/styles/blue.css';
+@layer base, components, utilities;
+@import 'tailwindcss';
+
 @import '@oxide/design-system/styles/tailwind.css';
-@import '@oxide/design-system/components/asciidoc.css';
+@import '@oxide/design-system/styles/preflight.css' layer(base);
+@import '@oxide/design-system/styles/main.css';
+@import '@oxide/design-system/styles/dark.css';
+@import '@oxide/design-system/styles/light.css';
+@import '@oxide/design-system/styles/purple.css';
+@import '@oxide/design-system/styles/yellow.css';
+@import '@oxide/design-system/styles/red.css';
+@import '@oxide/design-system/styles/blue.css';
+@import '@oxide/design-system/styles/green.css';
+
+@source '../../node_modules/@oxide/design-system/dist/components';
+@custom-variant light (&:where([data-theme=light], [data-theme=light] *));
+
+@import './lib/fonts.css' layer(base);
 
 @import '@oxide/design-system/components/asciidoc.css';
 @import '@oxide/design-system/components/button.css';
 @import '@oxide/design-system/components/spinner.css';
 
-@import './lib/asciidoc.css';
 @import './lib/highlight.css';
 @import './lib/github-markdown.css';
 @import './lib/loading-bar.css';
+@import './lib/menu.css';
+@import './lib/selection.css';
 @import './overrides.css';
-
-@import 'tailwindcss';
-@source '../../node_modules/@oxide/design-system/dist/components';
 
 @layer utilities {
   :root {
@@ -44,7 +52,11 @@
   }
 }
 
-.light-mode {
+.root {
+  isolation: isolate;
+}
+
+/*.light-mode {
   filter: invert(1) hue-rotate(180deg);
 }
 
@@ -52,7 +64,7 @@
 .light-mode picture,
 .light-mode video {
   filter: invert(1) hue-rotate(180deg);
-}
+}*/
 
 html,
 body {
@@ -76,10 +88,6 @@ body {
     /* leading override is gross, fix later */
     @apply text-sans-sm text-raise leading-[1.33]!;
   }
-}
-
-.overlay-shadow {
-  box-shadow: 0px 8px 50px 0px rgba(0, 0, 0, 0.5);
 }
 
 .backdrop {

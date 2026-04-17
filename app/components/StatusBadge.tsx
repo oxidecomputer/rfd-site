@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { Badge, type BadgeColor } from '@oxide/design-system'
+import { Badge, type BadgeColor } from '@oxide/design-system/ui'
 
 const StatusBadge = ({ label }: { label: string }) => {
   let color: BadgeColor | undefined

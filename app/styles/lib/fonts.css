@@ -26,17 +26,6 @@
   font-style: normal;
 }
 
-/* Suisse International */
-/* Source: https://www.swisstypefaces.com/fonts/suisse/ */
-@font-face {
-  font-family: 'SuisseIntl';
-  src:
-    url('/fonts/SuisseIntl-Light-WebS.woff2') format('woff2'),
-    url('/fonts/SuisseIntl-Light-WebS.woff') format('woff');
-  font-weight: 300;
-  font-style: normal;
-}
-
 @font-face {
   font-family: 'SuisseIntl';
   src:
