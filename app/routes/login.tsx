@@ -66,6 +66,38 @@ export async function action({ request }: ActionFunctionArgs) {
   }
 }
 
+function LoginBackdrop({ gradientFrom }: { gradientFrom: string }) {
+  return (
+    <div
+      className="fixed h-screen w-screen opacity-80"
+      style={{
+        background: `radial-gradient(200% 100% at 50% 100%, ${gradientFrom} 0%, var(--surface-default) 100%)`,
+      }}
+    >
+      <div className="border-b-secondary flex h-(--header-height) w-full items-center justify-between border-b px-3">
+        <div className="space-y-1">
+          <div className="bg-secondary h-3 w-16 rounded" />
+          <div className="bg-secondary h-3 w-24 rounded" />
+        </div>
+
+        <div className="bg-secondary h-6 w-24 rounded" />
+      </div>
+
+      <div className="border-b-secondary mt-20 w-full border-b pb-16">
+        <div className="mx-auto w-2/3 max-w-[1080px]">
+          <div className="bg-secondary h-10 w-full rounded" />
+          <div className="bg-secondary mt-4 h-10 w-2/3 rounded" />
+        </div>
+      </div>
+
+      <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
+    </div>
+  )
+}
+
+const cardClasses =
+  'bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all'
+
 export default function Login() {
   const loaderData = useLoaderData<typeof loader>()
   const actionData = useActionData<typeof action>()
@@ -86,32 +118,8 @@ export default function Login() {
   if (enabledProviders.length === 0) {
     return (
       <>
-        <div
-          className="fixed h-screen w-screen opacity-80"
-          style={{
-            background:
-              'radial-gradient(200% 100% at 50% 100%, #161B1D 0%, var(--surface-default) 100%)',
-          }}
-        >
-          <div className="border-b-secondary flex h-(--header-height) w-full items-center justify-between border-b px-3">
-            <div className="space-y-1">
-              <div className="bg-secondary h-3 w-16 rounded" />
-              <div className="bg-secondary h-3 w-24 rounded" />
-            </div>
-
-            <div className="bg-secondary h-6 w-24 rounded" />
-          </div>
-
-          <div className="border-b-secondary mt-20 w-full border-b pb-16">
-            <div className="mx-auto w-2/3 max-w-[1080px]">
-              <div className="bg-secondary h-10 w-full rounded" />
-              <div className="bg-secondary mt-4 h-10 w-2/3 rounded" />
-            </div>
-          </div>
-
-          <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
-        </div>
-        <div className="overlay-shadow bg-raise border-secondary 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg border p-6 text-center transition-all">
+        <LoginBackdrop gradientFrom="#161B1D" />
+        <div className={`overlay-shadow border-secondary border ${cardClasses}`}>
           <h1 className="text-sans-2xl text-accent mb-4">Authentication Unavailable</h1>
           <p className="text-secondary">
             No authentication providers are configured. Please contact an administrator.
@@ -123,32 +131,8 @@ export default function Login() {
 
   return (
     <>
-      <div
-        className="fixed h-screen w-screen opacity-80"
-        style={{
-          background:
-            'radial-gradient(200% 100% at 50% 100%, var(--surface-secondary) 0%, var(--surface-default) 100%)',
-        }}
-      >
-        <div className="border-b-secondary flex h-(--header-height) w-full items-center justify-between border-b px-3">
-          <div className="space-y-1">
-            <div className="bg-secondary h-3 w-16 rounded" />
-            <div className="bg-secondary h-3 w-24 rounded" />
-          </div>
-
-          <div className="bg-secondary h-6 w-24 rounded" />
-        </div>
-
-        <div className="border-b-secondary mt-20 w-full border-b pb-16">
-          <div className="mx-auto w-2/3 max-w-[1080px]">
-            <div className="bg-secondary h-10 w-full rounded" />
-            <div className="bg-secondary mt-4 h-10 w-2/3 rounded" />
-          </div>
-        </div>
-
-        <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
-      </div>
-      <div className="shadow-modal bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all">
+      <LoginBackdrop gradientFrom="var(--surface-secondary)" />
+      <div className={`shadow-modal ${cardClasses}`}>
         {!showEmailForm && (
           <>
             <h1 className="text-sans-2xl light:text-default text-accent mb-8">Sign in</h1>
