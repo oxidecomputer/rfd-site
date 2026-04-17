@@ -13,10 +13,37 @@ let cachedConfig: SiteConfig | null = null
 /**
  * Get the site configuration.
  *
- * Throws if site.config.ts is not found - configuration is required.
+ * Configuration can be loaded from:
+ * 1. External .ts file via SITE_CONFIG_PATH env var (for container deployments)
+ * 2. Bundled site.config.ts (default, for development and Node.js)
+ *
+ * Throws if no configuration is found.
  */
 export async function getSiteConfig(): Promise<SiteConfig> {
   if (cachedConfig) return cachedConfig
+
+  const configPath = process.env.SITE_CONFIG_PATH
+  if (configPath) {
+    let module: { default?: SiteConfig }
+    try {
+      const fileUrl = configPath.startsWith('file://') ? configPath : `file://${configPath}`
+      // @ts-expect-error - Dynamic import with runtime-resolved path
+      module = await import(fileUrl)
+    } catch (error) {
+      throw new Error(
+        `Failed to load config from SITE_CONFIG_PATH (${configPath}): ${error}`,
+      )
+    }
+
+    const config = module.default ?? null
+    if (!config) {
+      throw new Error(`${configPath} must export a default config object`)
+    }
+
+    validateSiteConfig(config)
+    cachedConfig = config
+    return cachedConfig
+  }
 
   let module: { default?: SiteConfig }
   try {
@@ -25,8 +52,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   } catch (error) {
     if (isModuleNotFoundError(error)) {
       throw new Error(
-        'site.config.ts is required but not found. ' +
-          'Copy the existing site.config.ts and customize for your organization.',
+        'No site config found. Either set SITE_CONFIG_PATH env var to a .ts config file, ' +
+          'or ensure site.config.ts is bundled with the application.',
       )
     }
     throw error

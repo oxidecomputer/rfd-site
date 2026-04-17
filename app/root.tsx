@@ -61,6 +61,9 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const config = await getSiteConfig()
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
+  const githubRepoUrl = config.discussions
+    ? `https://${config.discussions.host || 'github.com'}/${config.discussions.owner}/${config.discussions.repo}`
+    : null
 
   const user = await authenticate(request)
   try {
@@ -79,6 +82,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       labels,
       localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
+      githubRepoUrl,
     }
   } catch {
     // The only error that should be caught here is the unauthenticated error.
@@ -97,6 +101,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     labels: [],
     localMode: isLocalMode(),
     newRfdNumber: undefined,
+    githubRepoUrl,
   }
 }
 

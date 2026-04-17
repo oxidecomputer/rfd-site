@@ -20,6 +20,40 @@ Note: Infrastructure configuration is stored in this repository until a point in
 we have RFD infrastructure that is separate from `cio`. At that point, this infrastructure
 should be owned by the RFD service.
 
+## Storage Provider Configuration
+
+The application supports two storage backends for serving static assets: GCS (Google Cloud
+Storage) and S3 (AWS S3 or S3-compatible services).
+
+### Common Environment Variables
+
+| Variable           | Description                                                                |
+| ------------------ | -------------------------------------------------------------------------- |
+| `STORAGE_PROVIDER` | Storage backend to use: `gcs` (default) or `s3`                            |
+| `STORAGE_URL_TTL`  | Pre-signed URL expiration time in seconds (optional, defaults to 24 hours) |
+
+### GCS Configuration
+
+| Variable           | Description                    |
+| ------------------ | ------------------------------ |
+| `STORAGE_URL`      | Base URL of the GCS CDN bucket |
+| `STORAGE_KEY_NAME` | Name of the signing key        |
+| `STORAGE_KEY`      | Base64-encoded signing key     |
+
+### S3 Configuration
+
+| Variable                | Description                                                  |
+| ----------------------- | ------------------------------------------------------------ |
+| `S3_BUCKET`             | S3 bucket name                                               |
+| `AWS_REGION`            | AWS region (standard AWS SDK variable)                       |
+| `AWS_ACCESS_KEY_ID`     | AWS access key (standard AWS SDK variable, or use IAM roles) |
+| `AWS_SECRET_ACCESS_KEY` | AWS secret key (standard AWS SDK variable, or use IAM roles) |
+| `AWS_ENDPOINT_URL`      | Custom endpoint for S3-compatible services (optional)        |
+
+The S3 integration uses the AWS SDK default credential chain, so credentials can be provided
+via environment variables, IAM instance roles, ECS task roles, or other standard AWS
+methods.
+
 ### GCP Infrastructure
 
 Image storage and serving is handled by
