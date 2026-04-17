@@ -66,6 +66,7 @@ test.describe('Filtering', () => {
     expect(await rfdLinks.count()).toBeGreaterThan(10)
 
     await page.getByPlaceholder('Filter by').fill('standard units')
+    await page.waitForTimeout(250)
 
     // but after you filter there are fewer
     expect(await rfdLinks.count()).toEqual(1)
@@ -80,6 +81,7 @@ test.describe('Filtering', () => {
     expect(await rfdLinks.count()).toBeGreaterThan(10)
 
     await page.getByPlaceholder('Filter by').fill('david.crespo')
+    await page.waitForTimeout(250)
 
     // but after you filter there are fewer
     expect(await rfdLinks.count()).toEqual(2)
