@@ -9,7 +9,10 @@
 import type { Config } from '@react-router/dev/config'
 import { vercelPreset } from '@vercel/react-router/vite'
 
+// Only use Vercel preset when deploying to Vercel
+const isVercel = process.env.VERCEL === '1'
+
 export default {
-  presets: [vercelPreset()],
+  presets: isVercel ? [vercelPreset()] : [],
   ssr: true,
 } satisfies Config

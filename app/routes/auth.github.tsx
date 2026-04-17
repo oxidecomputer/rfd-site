@@ -8,10 +8,13 @@
 
 import { redirect, type ActionFunctionArgs } from 'react-router'
 
-import { auth } from '~/services/auth.server'
+import { auth, isProviderEnabled } from '~/services/auth.server'
 
 export const loader = () => redirect('/login')
 
 export const action = ({ request }: ActionFunctionArgs) => {
+  if (!isProviderEnabled('github')) {
+    throw redirect('/login')
+  }
   return auth.authenticate('rfd-github', request)
 }

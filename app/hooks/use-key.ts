@@ -26,7 +26,7 @@ type Callback = Parameters<typeof Mousetrap.bind>[1]
  * Dan Abramov's post:
  * https://overreacted.io/making-setinterval-declarative-with-react-hooks/
  */
-export const useKey = (key: Key, fn: Callback, { global = false } = {}) => {
+export const useKey = (key: Key, fn: Callback, { global = false, enabled = true } = {}) => {
   const fnRef = useRef<Callback>(fn)
 
   useEffect(() => {
@@ -34,6 +34,7 @@ export const useKey = (key: Key, fn: Callback, { global = false } = {}) => {
   }, [fn])
 
   useEffect(() => {
+    if (!enabled) return
     const bind = global ? Mousetrap.bindGlobal : Mousetrap.bind
     bind(key, (e, combo) => fnRef.current(e, combo))
     return () => {
@@ -41,5 +42,5 @@ export const useKey = (key: Key, fn: Callback, { global = false } = {}) => {
     }
     // JSON.stringify lets us avoid having to memoize the keys at the call site.
     /* eslint-disable-next-line react-hooks/exhaustive-deps */
-  }, [JSON.stringify(key), global])
+  }, [JSON.stringify(key), global, enabled])
 }

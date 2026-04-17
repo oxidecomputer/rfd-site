@@ -8,10 +8,13 @@
 
 import { redirect, type ActionFunction, type LoaderFunction } from 'react-router'
 
-import { auth } from '~/services/auth.server'
+import { auth, isProviderEnabled } from '~/services/auth.server'
 
 export const loader: LoaderFunction = () => redirect('/login')
 
 export const action: ActionFunction = ({ request }) => {
+  if (!isProviderEnabled('google')) {
+    throw redirect('/login')
+  }
   return auth.authenticate('rfd-google', request)
 }

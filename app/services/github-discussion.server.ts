@@ -13,11 +13,16 @@ import { Octokit } from 'octokit'
 import { any } from '~/utils/permission'
 
 import { getUserPermissions, type User } from './auth.server'
+import { getSiteConfig } from './config.server'
 
-function getOctokitClient() {
+function getOctokitClient(host?: string) {
+  // GitHub Enterprise Server exposes its API at https://HOSTNAME/api/v3
+  const baseUrl = host ? `https://${host}/api/v3` : undefined
+
   if (process.env.GITHUB_API_KEY) {
     return new Octokit({
       auth: process.env.GITHUB_API_KEY,
+      ...(baseUrl && { baseUrl }),
     })
   } else if (
     process.env.GITHUB_APP_ID &&
@@ -31,6 +36,7 @@ function getOctokitClient() {
         privateKey: process.env.GITHUB_PRIVATE_KEY,
         installationId: process.env.GITHUB_INSTALLATION_ID,
       },
+      ...(baseUrl && { baseUrl }),
     })
   } else {
     return null
@@ -72,7 +78,16 @@ export async function fetchDiscussion(
   prComments: ListIssueCommentsType
   pullNumber: number
 } | null> {
-  const octokit = getOctokitClient()
+  const config = await getSiteConfig()
+
+  if (!config.features.discussions || !config.discussions) {
+    console.error('GitHub discussions feature is disabled')
+    return null
+  }
+
+  const { owner, repo, host } = config.discussions
+
+  const octokit = getOctokitClient(host)
 
   if (!octokit) return null
   if (!user) return null
@@ -80,8 +95,8 @@ export async function fetchDiscussion(
   if (!any(userPermissions, [{ GetDiscussion: rfd }, 'GetDiscussionsAll'])) return null
 
   const reviews: ListReviewsResponseType = await octokit.rest.pulls.listReviews({
-    owner: 'oxidecomputer',
-    repo: 'rfd',
+    owner,
+    repo,
     pull_number: pullNumber,
     per_page: 100,
   })
@@ -97,8 +112,8 @@ export async function fetchDiscussion(
   let comments: ListReviewsCommentsType = []
   await octokit
     .paginate(octokit.rest.pulls.listReviewComments, {
-      owner: 'oxidecomputer',
-      repo: 'rfd',
+      owner,
+      repo,
       pull_number: pullNumber,
       per_page: 100,
     })
@@ -111,8 +126,8 @@ export async function fetchDiscussion(
     })
 
   const prComments = await octokit.paginate(octokit.rest.issues.listComments, {
-    owner: 'oxidecomputer',
-    repo: 'rfd',
+    owner,
+    repo,
     issue_number: pullNumber,
     per_page: 100,
   })

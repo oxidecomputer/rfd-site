@@ -27,6 +27,7 @@ import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
 import { authenticate, logout } from './services/auth.server'
+import { getSiteConfig } from './services/config.server'
 import { inlineCommentsCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
@@ -37,15 +38,27 @@ import {
 } from './services/rfd.server'
 import { useApplyTheme } from './stores/theme'
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'RFD / Oxide' }]
+export const meta: MetaFunction<typeof loader> = ({ data }) => {
+  if (!data?.config) {
+    return [{ title: 'RFD' }]
+  }
+
+  const orgName = data.config.organization.name
+  const description = data.config.site.description
+  return description
+    ? [{ title: `RFD / ${orgName}` }, { name: 'description', content: description }]
+    : [{ title: `RFD / ${orgName}` }]
 }
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
+  const config = await getSiteConfig()
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
+  const githubRepoUrl = config.discussions
+    ? `https://${config.discussions.host || 'github.com'}/${config.discussions.owner}/${config.discussions.repo}`
+    : null
 
   const user = await authenticate(request)
   try {
@@ -55,6 +68,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const labels = rfds ? getLabels(rfds) : []
 
     return {
+      config,
+      features: config.features,
       inlineComments,
       user,
       rfds,
@@ -62,6 +77,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
       labels,
       localMode: isLocalMode(),
       newRfdNumber: provideNewRfdNumber([...rfds]),
+      githubRepoUrl,
     }
   } catch {
     // The only error that should be caught here is the unauthenticated error.
@@ -71,6 +87,8 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   // Convince remix that a return type will always be provided
   return {
+    config,
+    features: config.features,
     inlineComments,
     user,
     rfds: [],
@@ -78,6 +96,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     labels: [],
     localMode: isLocalMode(),
     newRfdNumber: undefined,
+    githubRepoUrl,
   }
 }
 
@@ -110,7 +129,13 @@ const queryClient = new QueryClient()
 // Mirrors logic in app/stores/theme.ts — must stay in sync.
 const themeInitScript = `(function(){try{var p=localStorage.getItem('theme-preference');if(p!=='dark'&&p!=='light'&&p!=='system')p='dark';var r=p==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):p;document.documentElement.dataset.theme=r;}catch(_){document.documentElement.dataset.theme='dark';}})();`
 
-const Layout = ({ children }: { children: React.ReactNode }) => (
+const Layout = ({
+  children,
+  headScript,
+}: {
+  children: React.ReactNode
+  headScript?: string
+}) => (
   <html lang="en" suppressHydrationWarning>
     <head>
       <meta charSet="utf-8" />
@@ -122,9 +147,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       <link rel="icon" type="image/png" href="/favicon.png" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
       <meta name="color-scheme" content="dark light" />
-      {/* Use plausible analytics only on Vercel */}
-      {process.env.NODE_ENV === 'production' && (
-        <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
+      {process.env.NODE_ENV === 'production' && headScript && (
+        <script dangerouslySetInnerHTML={{ __html: headScript }} />
       )}
     </head>
     <body className="mb-32">
@@ -137,10 +161,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
 
 export default function App() {
   useApplyTheme()
-  const { localMode } = useLoaderData<typeof loader>()
+  const { localMode, config } = useLoaderData<typeof loader>()
 
   return (
-    <Layout>
+    <Layout headScript={config.headScript}>
       <LoadingBar />
       <QueryClientProvider client={queryClient}>
         <Outlet />

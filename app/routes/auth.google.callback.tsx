@@ -6,10 +6,13 @@
  * Copyright Oxide Computer Company
  */
 
-import type { LoaderFunction } from 'react-router'
+import { redirect, type LoaderFunction } from 'react-router'
 
-import { handleAuthenticationCallback } from '~/services/auth.server'
+import { handleAuthenticationCallback, isProviderEnabled } from '~/services/auth.server'
 
 export const loader: LoaderFunction = async ({ request }) => {
+  if (!isProviderEnabled('google')) {
+    throw redirect('/login')
+  }
   return handleAuthenticationCallback('rfd-google', request)
 }

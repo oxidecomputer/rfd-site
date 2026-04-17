@@ -19,9 +19,31 @@ import { Authenticator } from 'remix-auth'
 
 import { isTruthy } from '~/utils/isTruthy'
 
+import {
+  formatAuthProviderErrors,
+  isProviderEnabled,
+  validateAuthProviders,
+} from './auth-providers.server'
 import { returnToCookie } from './cookies.server'
-import { client, fetchRemoteGroups, handleApiResponse } from './rfd.remote.server'
+import {
+  client,
+  fetchRemoteGroups,
+  getRfdApiFrontendUrl,
+  getRfdApiUrl,
+  handleApiResponse,
+} from './rfd.remote.server'
 import { sessionStorage } from './session.server'
+
+// Validate auth provider configuration at startup (skip in local development mode).
+// Throws so the application entry point can decide how to surface the failure
+// (e.g. log + exit, render an error page) rather than calling process.exit here.
+const isLocalMode = process.env.NODE_ENV === 'development' && !!process.env.LOCAL_RFD_REPO
+if (!isLocalMode) {
+  const result = validateAuthProviders()
+  if (!result.valid) {
+    throw new Error(formatAuthProviderErrors(result.errors))
+  }
+}
 
 export type User = {
   id: string
@@ -86,48 +108,70 @@ const verify: RfdVerifyCallback<User> = async ({ tokens }) => {
   return fetchUser(accessToken)
 }
 
-const googleOAuth = new RfdOAuthStrategy(
-  {
-    host: process.env.RFD_API || '',
-    clientId: process.env.RFD_API_CLIENT_ID || '',
-    clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
-    redirectURI: process.env.RFD_API_GOOGLE_CALLBACK_URL || '',
-    remoteProvider: 'google',
-    scopes: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
-  },
-  verify,
-)
-auth.use(googleOAuth)
+if (isProviderEnabled('google')) {
+  const googleOAuth = new RfdOAuthStrategy(
+    {
+      host: getRfdApiUrl(),
+      authorizationHost: getRfdApiFrontendUrl(),
+      tokenHost: getRfdApiUrl(),
+      clientId: process.env.RFD_API_CLIENT_ID || '',
+      clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
+      redirectURI: process.env.RFD_API_GOOGLE_CALLBACK_URL || '',
+      remoteProvider: 'google',
+      scopes: [
+        'group:info:r',
+        'rfd:content:r',
+        'rfd:discussion:r',
+        'search',
+        'user:info:r',
+      ],
+    },
+    verify,
+  )
+  auth.use(googleOAuth)
+}
 
-const githubOAuth = new RfdOAuthStrategy(
-  {
-    host: process.env.RFD_API || '',
-    clientId: process.env.RFD_API_CLIENT_ID || '',
-    clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
-    redirectURI: process.env.RFD_API_GITHUB_CALLBACK_URL || '',
-    remoteProvider: 'github',
-    scopes: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
-  },
-  verify,
-)
-auth.use(githubOAuth)
+if (isProviderEnabled('github')) {
+  const githubOAuth = new RfdOAuthStrategy(
+    {
+      host: getRfdApiUrl(),
+      authorizationHost: getRfdApiFrontendUrl(),
+      tokenHost: getRfdApiUrl(),
+      clientId: process.env.RFD_API_CLIENT_ID || '',
+      clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
+      redirectURI: process.env.RFD_API_GITHUB_CALLBACK_URL || '',
+      remoteProvider: 'github',
+      scopes: [
+        'group:info:r',
+        'rfd:content:r',
+        'rfd:discussion:r',
+        'search',
+        'user:info:r',
+      ],
+    },
+    verify,
+  )
+  auth.use(githubOAuth)
+}
 
-const magicLink = new RfdMagicLinkStrategy(
-  {
-    storage: sessionStorage,
-    host: process.env.RFD_API || '',
-    clientSecret: process.env.RFD_API_MLINK_SECRET || '',
-    pendingPath: '/login?email=sent',
-    returnPath: '/auth/magic/callback',
-    channel: 'login',
-    linkExpirationTime: 60 * 10, // 10 minutes (in seconds)
-    scope: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
-  },
-  async ({ token }) => {
-    return fetchUser(token)
-  },
-)
-auth.use(magicLink)
+if (isProviderEnabled('email')) {
+  const magicLink = new RfdMagicLinkStrategy(
+    {
+      storage: sessionStorage,
+      host: getRfdApiFrontendUrl(),
+      clientSecret: process.env.RFD_API_MLINK_SECRET || '',
+      pendingPath: '/login?email=sent',
+      returnPath: '/auth/magic/callback',
+      channel: 'login',
+      linkExpirationTime: 60 * 10, // 10 minutes (in seconds)
+      scope: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
+    },
+    async ({ token }) => {
+      return fetchUser(token)
+    },
+  )
+  auth.use(magicLink)
+}
 
 export async function getUserFromSession(request: Request): Promise<User | null> {
   const session = await sessionStorage.getSession(request.headers.get('Cookie'))
@@ -172,6 +216,7 @@ async function handleAuthenticationCallback(provider: string, request: Request) 
 }
 
 export { auth, handleAuthenticationCallback }
+export { getEnabledProviders, isProviderEnabled } from './auth-providers.server'
 
 const RFD_PATH = /^\/rfd\/[0-9]{1,4}\??.*$/
 

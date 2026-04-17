@@ -22,6 +22,7 @@ import { useMemo } from 'react'
 
 import Icon from '~/components/Icon'
 import { useDiscussionQuery } from '~/hooks/use-discussion-query'
+import { useRootLoaderData } from '~/root'
 import type {
   IssueCommentType,
   ListIssueCommentsType,
@@ -225,6 +226,7 @@ const DialogContent = ({
   discussions: Discussions
   pullNumber: number
 }) => {
+  const { githubRepoUrl } = useRootLoaderData()
   return (
     <Dialog
       store={dialogStore}
@@ -242,11 +244,7 @@ const DialogContent = ({
             </DialogDismiss>
           </div>
         </div>
-        <a
-          href={`https://github.com/oxidecomputer/rfd/pull/${pullNumber}`}
-          target="_blank"
-          rel="noreferrer"
-        >
+        <a href={`${githubRepoUrl}/pull/${pullNumber}`} target="_blank" rel="noreferrer">
           <div className="text-sans-2xl text-secondary">#{pullNumber}</div>
         </a>
       </DialogHeading>
@@ -262,6 +260,7 @@ const DiscussionReviewGroup = ({
   discussions: Discussions
   pullNumber: number
 }) => {
+  const { githubRepoUrl } = useRootLoaderData()
   const reviewCount = Object.keys(discussions).length
 
   return (
@@ -306,7 +305,7 @@ const DiscussionReviewGroup = ({
                 This discussion has no reviews or comments
               </p>
               <a
-                href={`https://github.com/oxidecomputer/rfd/pull/${pullNumber}`}
+                href={`${githubRepoUrl}/pull/${pullNumber}`}
                 className="text-mono-xs text-secondary border-default hover:bg-secondary mt-6 inline-block rounded border px-2 py-1"
                 target="_blank"
                 rel="noreferrer"

@@ -167,3 +167,5 @@ table.inline-table {
     }
   }
 }
+
+@import './overrides.css';

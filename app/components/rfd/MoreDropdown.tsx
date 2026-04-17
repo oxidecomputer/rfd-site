@@ -9,6 +9,7 @@ import { useDialogStore } from '@ariakit/react'
 import { useState } from 'react'
 import { useLoaderData } from 'react-router'
 
+import { useRootLoaderData } from '~/root'
 import type { loader } from '~/routes/rfd.$slug'
 
 import * as DropdownMenu from '../Dropdown'
@@ -17,6 +18,7 @@ import RfdJobsMonitor from './RfdJobsMonitor'
 
 const MoreDropdown = () => {
   const { rfd } = useLoaderData<typeof loader>()
+  const { features } = useRootLoaderData()
   const [dialogOpen, setDialogOpen] = useState(false)
   const jobsDialogStore = useDialogStore({ open: dialogOpen, setOpen: setDialogOpen })
 
@@ -32,9 +34,11 @@ const MoreDropdown = () => {
             Processing jobs
           </DropdownMenu.Item>
 
-          <DropdownMenu.LinkItem to={rfd.discussion || ''} disabled={!rfd.discussion}>
-            GitHub discussion
-          </DropdownMenu.LinkItem>
+          {features.discussions && (
+            <DropdownMenu.LinkItem to={rfd.discussion || ''} disabled={!rfd.discussion}>
+              GitHub discussion
+            </DropdownMenu.LinkItem>
+          )}
 
           <DropdownMenu.LinkItem to={rfd.link || ''} disabled={!rfd.link}>
             GitHub source
@@ -48,9 +52,11 @@ const MoreDropdown = () => {
             </DropdownMenu.LinkItem>
           )}
 
-          <DropdownMenu.LinkItem to={`/rfd/${rfd.number}/pdf`} internal>
-            View PDF
-          </DropdownMenu.LinkItem>
+          {features.pdf && (
+            <DropdownMenu.LinkItem to={`/rfd/${rfd.number}/pdf`} internal>
+              View PDF
+            </DropdownMenu.LinkItem>
+          )}
         </DropdownMenu.Content>
       </DropdownMenu.Root>
 
