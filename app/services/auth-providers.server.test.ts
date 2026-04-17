@@ -9,7 +9,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 
 import {
-  _resetForTesting,
   ALL_PROVIDERS,
   getApiUrlMissingVars,
   getMissingEnvVars,
@@ -301,7 +300,6 @@ describe('validateAuthProviders', () => {
       envVarsToRestore[varName] = process.env[varName]
       delete process.env[varName]
     }
-    _resetForTesting()
   })
 
   afterEach(() => {
@@ -313,7 +311,6 @@ describe('validateAuthProviders', () => {
         process.env[varName] = value
       }
     }
-    _resetForTesting()
   })
 
   it('returns valid with providers when all env vars are set', () => {

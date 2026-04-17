@@ -6,9 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
+import { createHmac } from 'crypto'
 import { GetObjectCommand, S3Client } from '@aws-sdk/client-s3'
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
-import { createHmac } from 'crypto'
 
 export type StorageProvider = 'gcs' | 's3'
 
@@ -52,6 +52,14 @@ export async function getExpiringUrl(path: string, ttlInSeconds: number): Promis
   }
 }
 
+// Lazily-instantiated singleton: S3Client does its own connection pooling and
+// credential caching, so we want to share one instance across requests.
+let s3Client: S3Client | null = null
+function getS3Client(): S3Client {
+  if (!s3Client) s3Client = new S3Client({})
+  return s3Client
+}
+
 /**
  * Generate a pre-signed URL for S3.
  * Uses the default AWS credential chain and standard AWS environment variables
@@ -60,21 +68,22 @@ export async function getExpiringUrl(path: string, ttlInSeconds: number): Promis
  * Required environment variables:
  * - S3_BUCKET: The S3 bucket name
  */
-export async function getS3ExpiringUrl(path: string, ttlInSeconds: number): Promise<string> {
+export async function getS3ExpiringUrl(
+  path: string,
+  ttlInSeconds: number,
+): Promise<string> {
   const bucket = process.env.S3_BUCKET
 
   if (!bucket) {
     throw new Error('Unable to generate S3 URLs without S3_BUCKET configured')
   }
 
-  const client = new S3Client({})
-
   const command = new GetObjectCommand({
     Bucket: bucket,
     Key: path,
   })
 
-  return getSignedUrl(client, command, { expiresIn: ttlInSeconds })
+  return getSignedUrl(getS3Client(), command, { expiresIn: ttlInSeconds })
 }
 
 /**

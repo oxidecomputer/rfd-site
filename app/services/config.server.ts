@@ -6,27 +6,46 @@
  * Copyright Oxide Computer Company
  */
 
+import { extname, resolve } from 'node:path'
+import { pathToFileURL } from 'node:url'
+
 import type { SiteConfig } from '../types/site-config'
 
 let cachedConfig: SiteConfig | null = null
+
+// Extensions Node.js can load directly via dynamic import without a TS loader.
+// `.ts` is intentionally excluded — the production runtime is plain Node, so
+// pointing SITE_CONFIG_PATH at a .ts file would fail at startup.
+const RUNTIME_LOADABLE_EXTENSIONS = ['.mjs', '.cjs', '.js', '.json']
 
 /**
  * Get the site configuration.
  *
  * Configuration can be loaded from:
- * 1. External .ts file via SITE_CONFIG_PATH env var (for container deployments)
- * 2. Bundled site.config.ts (default, for development and Node.js)
+ * 1. External file via SITE_CONFIG_PATH env var (for container deployments).
+ *    Must be one of: .mjs, .cjs, .js, .json — i.e. directly loadable by Node
+ *    without a TypeScript loader. .ts is not supported at runtime.
+ * 2. Bundled site.config.ts (default, resolved by the bundler at build time).
  *
- * Throws if no configuration is found.
+ * Throws if no configuration is found or validation fails.
  */
 export async function getSiteConfig(): Promise<SiteConfig> {
   if (cachedConfig) return cachedConfig
 
   const configPath = process.env.SITE_CONFIG_PATH
   if (configPath) {
+    const ext = extname(configPath).toLowerCase()
+    if (!RUNTIME_LOADABLE_EXTENSIONS.includes(ext)) {
+      throw new Error(
+        `SITE_CONFIG_PATH must point to a file with one of these extensions: ` +
+          `${RUNTIME_LOADABLE_EXTENSIONS.join(', ')} (got "${configPath}"). ` +
+          `TypeScript files are not supported at runtime — transpile to JS first.`,
+      )
+    }
+
     let module: { default?: SiteConfig }
     try {
-      const fileUrl = configPath.startsWith('file://') ? configPath : `file://${configPath}`
+      const fileUrl = pathToFileURL(resolve(configPath)).href
       // @ts-expect-error - Dynamic import with runtime-resolved path
       module = await import(fileUrl)
     } catch (error) {
@@ -52,7 +71,8 @@ export async function getSiteConfig(): Promise<SiteConfig> {
   } catch (error) {
     if (isModuleNotFoundError(error)) {
       throw new Error(
-        'No site config found. Either set SITE_CONFIG_PATH env var to a .ts config file, ' +
+        'No site config found. Either set SITE_CONFIG_PATH env var to a ' +
+          `${RUNTIME_LOADABLE_EXTENSIONS.join('/')} config file, ` +
           'or ensure site.config.ts is bundled with the application.',
       )
     }
@@ -78,6 +98,13 @@ function validateSiteConfig(config: SiteConfig): void {
           'is missing required fields `owner` and `repo`.',
       )
     }
+  }
+
+  if (config.features.search && !config.search?.url) {
+    throw new Error(
+      'site.config.ts: features.search is enabled but search.url is not set. ' +
+        'Either disable features.search or provide a search.url.',
+    )
   }
 }
 

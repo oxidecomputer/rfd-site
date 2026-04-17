@@ -23,17 +23,10 @@ export function getApiUrlMissingVars(): string[] {
   const hasBackend = !!process.env.RFD_API_BACKEND_URL
   const hasFrontend = !!process.env.RFD_API_FRONTEND_URL
 
-  switch (true) {
-    case hasLegacy:
-    case hasBackend && hasFrontend:
-      return []
-    case hasBackend && !hasFrontend:
-      return ['RFD_API_FRONTEND_URL (or RFD_API as fallback)']
-    case hasFrontend && !hasBackend:
-      return ['RFD_API_BACKEND_URL (or RFD_API as fallback)']
-    default:
-      return ['RFD_API (or RFD_API_BACKEND_URL + RFD_API_FRONTEND_URL)']
-  }
+  if (hasLegacy || (hasBackend && hasFrontend)) return []
+  if (hasBackend) return ['RFD_API_FRONTEND_URL (or RFD_API as fallback)']
+  if (hasFrontend) return ['RFD_API_BACKEND_URL (or RFD_API as fallback)']
+  return ['RFD_API (or RFD_API_BACKEND_URL + RFD_API_FRONTEND_URL)']
 }
 
 // Exported for testing
@@ -97,6 +90,8 @@ export type ValidationResult =
 /**
  * Validates that all requested providers have their required environment variables set.
  * Returns a ValidationResult indicating success or listing missing variables.
+ *
+ * Pure: reads env vars, no side effects. Safe to call repeatedly.
  */
 export function validateAuthProviders(): ValidationResult {
   const requestedProviders = parseAuthProviders()
@@ -117,47 +112,27 @@ export function validateAuthProviders(): ValidationResult {
 }
 
 /**
- * Validates auth providers and exits the process if any are misconfigured.
- * Call this during app startup to ensure required environment variables are set.
+ * Format a ValidationResult error into a human-readable message suitable for
+ * throwing or logging.
  */
-export function validateAuthProvidersOrExit(): void {
-  const result = validateAuthProviders()
-  if (!result.valid) {
-    console.error('[auth-providers] ERROR: Missing required environment variables')
-    for (const { provider, missing } of result.errors) {
-      console.error(`  Provider "${provider}" requires: ${missing.join(', ')}`)
-    }
-    console.error(
-      '\nEither set the missing environment variables or remove the provider from AUTH_PROVIDERS.',
-    )
-    process.exit(1)
+export function formatAuthProviderErrors(
+  errors: { provider: AuthProvider; missing: string[] }[],
+): string {
+  const lines = ['Missing required auth provider environment variables:']
+  for (const { provider, missing } of errors) {
+    lines.push(`  Provider "${provider}" requires: ${missing.join(', ')}`)
   }
+  lines.push(
+    'Either set the missing environment variables or remove the provider from AUTH_PROVIDERS.',
+  )
+  return lines.join('\n')
 }
 
-// Lazy initialization - providers are computed on first access
-let _enabledProviders: AuthProvider[] | null = null
-
 export function getEnabledProviders(): AuthProvider[] {
-  if (_enabledProviders === null) {
-    // Validate on first access if not already done
-    const result = validateAuthProviders()
-    if (!result.valid) {
-      // In production, this would have been caught by validateAuthProvidersOrExit
-      // For safety, default to empty providers if validation wasn't run
-      console.error('[auth-providers] WARNING: Providers accessed before validation')
-      _enabledProviders = []
-    } else {
-      _enabledProviders = result.providers
-    }
-  }
-  return _enabledProviders
+  const result = validateAuthProviders()
+  return result.valid ? result.providers : []
 }
 
 export function isProviderEnabled(provider: AuthProvider): boolean {
   return getEnabledProviders().includes(provider)
-}
-
-// Reset function for testing
-export function _resetForTesting(): void {
-  _enabledProviders = null
 }

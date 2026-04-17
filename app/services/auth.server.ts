@@ -19,7 +19,11 @@ import { Authenticator } from 'remix-auth'
 
 import { isTruthy } from '~/utils/isTruthy'
 
-import { isProviderEnabled, validateAuthProvidersOrExit } from './auth-providers.server'
+import {
+  formatAuthProviderErrors,
+  isProviderEnabled,
+  validateAuthProviders,
+} from './auth-providers.server'
 import { returnToCookie } from './cookies.server'
 import {
   client,
@@ -30,10 +34,15 @@ import {
 } from './rfd.remote.server'
 import { sessionStorage } from './session.server'
 
-// Validate auth provider configuration at startup (skip in local development mode)
+// Validate auth provider configuration at startup (skip in local development mode).
+// Throws so the application entry point can decide how to surface the failure
+// (e.g. log + exit, render an error page) rather than calling process.exit here.
 const isLocalMode = process.env.NODE_ENV === 'development' && !!process.env.LOCAL_RFD_REPO
 if (!isLocalMode) {
-  validateAuthProvidersOrExit()
+  const result = validateAuthProviders()
+  if (!result.valid) {
+    throw new Error(formatAuthProviderErrors(result.errors))
+  }
 }
 
 export type User = {
@@ -109,7 +118,13 @@ if (isProviderEnabled('google')) {
       clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
       redirectURI: process.env.RFD_API_GOOGLE_CALLBACK_URL || '',
       remoteProvider: 'google',
-      scopes: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
+      scopes: [
+        'group:info:r',
+        'rfd:content:r',
+        'rfd:discussion:r',
+        'search',
+        'user:info:r',
+      ],
     },
     verify,
   )
@@ -126,7 +141,13 @@ if (isProviderEnabled('github')) {
       clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
       redirectURI: process.env.RFD_API_GITHUB_CALLBACK_URL || '',
       remoteProvider: 'github',
-      scopes: ['group:info:r', 'rfd:content:r', 'rfd:discussion:r', 'search', 'user:info:r'],
+      scopes: [
+        'group:info:r',
+        'rfd:content:r',
+        'rfd:discussion:r',
+        'search',
+        'user:info:r',
+      ],
     },
     verify,
   )

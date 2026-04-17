@@ -45,14 +45,9 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
 
   const orgName = data.config.organization.name
   const description = data.config.site.description
-  const metaTags: ReturnType<MetaFunction> = [{ title: `RFD / ${orgName}` }]
-  if (description) {
-    metaTags.push({ name: 'description', content: description } as {
-      name: string
-      content: string
-    })
-  }
-  return metaTags
+  return description
+    ? [{ title: `RFD / ${orgName}` }, { name: 'description', content: description }]
+    : [{ title: `RFD / ${orgName}` }]
 }
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]

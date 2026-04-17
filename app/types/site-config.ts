@@ -41,11 +41,18 @@ export interface SiteConfig {
   publicBanner: {
     enabled: boolean
     text?: string
-    // Custom modal content HTML - renders below the main description
+    // Raw HTML rendered with dangerouslySetInnerHTML below the main description.
+    // SECURITY: this is injected into the page verbatim, so the value must come
+    // from the deployer-controlled site config and never from user input.
+    // Tailwind class names hard-coded here will silently break if the design
+    // system renames them — keep markup minimal.
     learnMoreContent?: string
   } | null
 
-  // Custom head script (for analytics, etc) - injected into a <script> tag
+  // Raw JS injected into a <script dangerouslySetInnerHTML> tag in <head>
+  // (typically used for analytics). Only rendered when NODE_ENV=production.
+  // SECURITY: this runs as page-trusted JavaScript, so the value must come
+  // from the deployer-controlled site config and never from user input.
   headScript?: string
 
   // Feature flags

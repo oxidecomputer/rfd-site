@@ -26,11 +26,7 @@ type Callback = Parameters<typeof Mousetrap.bind>[1]
  * Dan Abramov's post:
  * https://overreacted.io/making-setinterval-declarative-with-react-hooks/
  */
-export const useKey = (
-  key: Key,
-  fn: Callback,
-  { global = false, enabled = true } = {},
-) => {
+export const useKey = (key: Key, fn: Callback, { global = false, enabled = true } = {}) => {
   const fnRef = useRef<Callback>(fn)
 
   useEffect(() => {
