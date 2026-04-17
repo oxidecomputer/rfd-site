@@ -46,7 +46,7 @@ const config: SiteConfig = {
     `,
   },
 
-  headContent: `
+  headScript: `
     var script = document.createElement('script');
     script.defer = true;
     script.setAttribute('data-domain', 'rfd.shared.oxide.computer');
