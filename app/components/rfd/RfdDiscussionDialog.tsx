@@ -13,7 +13,7 @@ import {
   useDialogStore,
   type DialogStore,
 } from '@ariakit/react'
-import { Spinner } from '@oxide/design-system/components'
+import { Spinner } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
@@ -193,8 +193,8 @@ export const CommentCount = ({
         className={cn(
           'flex items-center space-x-2 rounded border p-2 print:hidden',
           error
-            ? 'text-error bg-error-secondary border-error-secondary'
-            : 'text-tertiary border-default',
+            ? 'text-error bg-error border-error-secondary'
+            : 'text-secondary border-default',
           !disabled && 'hover:bg-hover',
         )}
         disabled={disabled}
@@ -228,7 +228,7 @@ const DialogContent = ({
   return (
     <Dialog
       store={dialogStore}
-      className="dialog overlay-shadow bg-raise border-secondary fixed top-0 right-0 bottom-0 z-20 flex w-[670px] flex-col border-l print:hidden"
+      className="dialog shadow-modal bg-raise fixed top-0 right-0 bottom-0 z-20 flex w-[670px] flex-col print:hidden"
       backdrop={<div className="backdrop" />}
     >
       <DialogHeading className="p-8">
@@ -298,7 +298,7 @@ const DiscussionReviewGroup = ({
         ) : (
           <div className="flex h-full items-center justify-center">
             <div className="mb-24 w-full max-w-[220px] text-center">
-              <div className="text-accent bg-accent-secondary inline-block rounded p-2">
+              <div className="text-accent bg-accent inline-block rounded p-2">
                 <Icon name="chat" size={16} />
               </div>
               <h2 className="text-semi-lg mt-4">Nothing to see here</h2>

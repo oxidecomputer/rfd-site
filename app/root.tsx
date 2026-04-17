@@ -27,7 +27,7 @@ import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
 import { authenticate, logout } from './services/auth.server'
-import { inlineCommentsCookie, themeCookie } from './services/cookies.server'
+import { inlineCommentsCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
   fetchRfds,
@@ -35,6 +35,7 @@ import {
   getLabels,
   provideNewRfdNumber,
 } from './services/rfd.server'
+import { useApplyTheme } from './stores/theme'
 
 export const meta: MetaFunction = () => {
   return [{ title: 'RFD / Oxide' }]
@@ -43,7 +44,6 @@ export const meta: MetaFunction = () => {
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const theme = (await themeCookie.parse(request.headers.get('Cookie'))) ?? 'dark-mode'
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
@@ -55,9 +55,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     const labels = rfds ? getLabels(rfds) : []
 
     return {
-      // Any data added to the ENV key of this loader will be injected into the
-      // global window object (window.ENV)
-      theme,
       inlineComments,
       user,
       rfds,
@@ -74,7 +71,6 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
 
   // Convince remix that a return type will always be provided
   return {
-    theme,
     inlineComments,
     user,
     rfds: [],
@@ -110,11 +106,16 @@ export function ErrorBoundary() {
 }
 const queryClient = new QueryClient()
 
-const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string }) => (
-  <html lang="en" className={theme}>
+// Set theme before first paint to prevent flash of wrong color scheme.
+// Mirrors logic in app/stores/theme.ts — must stay in sync.
+const themeInitScript = `(function(){try{var p=localStorage.getItem('theme-preference');if(p!=='dark'&&p!=='light'&&p!=='system')p='dark';var r=p==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):p;document.documentElement.dataset.theme=r;}catch(_){document.documentElement.dataset.theme='dark';}})();`
+
+const Layout = ({ children }: { children: React.ReactNode }) => (
+  <html lang="en" suppressHydrationWarning>
     <head>
       <meta charSet="utf-8" />
       <meta name="viewport" content="width=device-width,initial-scale=1" />
+      <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
       <Meta />
       <Links />
       <link rel="icon" href="/favicon.svg" />
@@ -124,10 +125,9 @@ const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string
       {process.env.NODE_ENV === 'production' && (
         <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
       )}
-      <meta name="color-scheme" content="dark" />
     </head>
     <body className="mb-32">
-      {children}
+      <div className="root">{children}</div>
       <ScrollRestoration />
       <Scripts />
     </body>
@@ -135,15 +135,16 @@ const Layout = ({ children, theme }: { children: React.ReactNode; theme?: string
 )
 
 export default function App() {
-  const { theme, localMode } = useLoaderData<typeof loader>()
+  useApplyTheme()
+  const { localMode } = useLoaderData<typeof loader>()
 
   return (
-    <Layout theme={theme}>
+    <Layout>
       <LoadingBar />
       <QueryClientProvider client={queryClient}>
         <Outlet />
         {localMode && (
-          <div className="overlay-shadow text-sans-sm text-notice bg-notice-secondary fixed bottom-6 left-6 z-10 rounded p-2">
+          <div className="shadow-border-small text-sans-sm text-notice bg-notice fixed bottom-6 left-6 z-10 rounded p-2">
             Local authoring mode
           </div>
         )}

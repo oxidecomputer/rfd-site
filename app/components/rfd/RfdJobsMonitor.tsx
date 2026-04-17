@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 import { type useDialogStore } from '@ariakit/react'
-import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/components'
+import { Badge, Spinner, type BadgeColor } from '@oxide/design-system/ui'
 import { type Job } from '@oxide/rfd.ts/client'
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
