@@ -7,16 +7,10 @@
  */
 
 import { Badge, type BadgeColor } from '@oxide/design-system/ui'
-import * as Dropdown from '@radix-ui/react-dropdown-menu'
 import { type ReactNode } from 'react'
 import { useSearchParams } from 'react-router'
 
-import {
-  DropdownItem,
-  DropdownMenu,
-  DropdownSubMenu,
-  DropdownSubTrigger,
-} from '~/components/Dropdown'
+import * as DropdownMenu from '~/components/Dropdown'
 import Icon from '~/components/Icon'
 import { useRootLoaderData } from '~/root'
 import { classed } from '~/utils/classed'
@@ -69,15 +63,15 @@ const FilterDropdown = () => {
 
   return (
     <div className="text-mono-sm text-default flex h-4 items-center">
-      <Dropdown.Root modal={false}>
-        <Dropdown.Trigger className="-m-2 ml-0 p-2">
+      <DropdownMenu.Root>
+        <DropdownMenu.Trigger className="-m-2 ml-0 p-2">
           <Icon name="filter" size={12} className="shrink-0" />
-        </Dropdown.Trigger>
+        </DropdownMenu.Trigger>
 
-        <DropdownMenu align="start">
-          <Dropdown.Sub>
-            <DropdownSubTrigger>Authors</DropdownSubTrigger>
-            <DropdownSubMenu>
+        <DropdownMenu.Content align="start">
+          <DropdownMenu.Submenu>
+            <DropdownMenu.SubmenuTrigger>Authors</DropdownMenu.SubmenuTrigger>
+            <DropdownMenu.SubContent>
               {authors
                 .filter((a) => a.email)
                 .map((author) => {
@@ -94,11 +88,11 @@ const FilterDropdown = () => {
                     </DropdownFilterItem>
                   )
                 })}
-            </DropdownSubMenu>
-          </Dropdown.Sub>
-          <Dropdown.Sub>
-            <DropdownSubTrigger>Labels</DropdownSubTrigger>
-            <DropdownSubMenu>
+            </DropdownMenu.SubContent>
+          </DropdownMenu.Submenu>
+          <DropdownMenu.Submenu>
+            <DropdownMenu.SubmenuTrigger>Labels</DropdownMenu.SubmenuTrigger>
+            <DropdownMenu.SubContent>
               {labels.map((label) => {
                 const selected = labelParam === label
 
@@ -112,10 +106,10 @@ const FilterDropdown = () => {
                   </DropdownFilterItem>
                 )
               })}
-            </DropdownSubMenu>
-          </Dropdown.Sub>
-        </DropdownMenu>
-      </Dropdown.Root>
+            </DropdownMenu.SubContent>
+          </DropdownMenu.Submenu>
+        </DropdownMenu.Content>
+      </DropdownMenu.Root>
 
       {(authorNameParam || authorEmailParam) && (
         <>
@@ -147,14 +141,17 @@ const DropdownFilterItem = ({
   selected: boolean
   children: ReactNode
 }) => (
-  <DropdownItem onSelect={onSelect} classNames={selected ? 'bg-accent text-accent' : ''}>
+  <DropdownMenu.Item
+    onSelect={onSelect}
+    className={selected ? 'bg-accent text-accent' : ''}
+  >
     {selected && <Outline />}
     <div className="flex items-center justify-between">
       <div className="max-w-[200px] overflow-hidden text-ellipsis whitespace-nowrap">
         {children}
       </div>
     </div>
-  </DropdownItem>
+  </DropdownMenu.Item>
 )
 
 const FilterBadge = ({

@@ -194,7 +194,7 @@ export const CommentCount = ({
           'flex items-center space-x-2 rounded border p-2 print:hidden',
           error
             ? 'text-error bg-error border-error-secondary'
-            : 'text-tertiary border-default',
+            : 'text-secondary border-default',
           !disabled && 'hover:bg-hover',
         )}
         disabled={disabled}

@@ -6,8 +6,17 @@
  * Copyright Oxide Computer Company
  */
 
+import {
+  Contrast16Icon,
+  Monitor12Icon,
+  Moon12Icon,
+  NextArrow12Icon,
+  Profile16Icon,
+  Success12Icon,
+  Sun12Icon,
+} from '@oxide/design-system/icons/react'
 import { buttonStyle } from '@oxide/design-system/ui'
-import * as Dropdown from '@radix-ui/react-dropdown-menu'
+import cn from 'classnames'
 import { useCallback, useState } from 'react'
 import { Link, useFetcher } from 'react-router'
 
@@ -16,8 +25,9 @@ import NewRfdButton from '~/components/NewRfdButton'
 import { useKey } from '~/hooks/use-key'
 import { useRootLoaderData } from '~/root'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
+import { setThemePreference, useThemeStore, type ThemePreference } from '~/stores/theme'
 
-import { DropdownItem, DropdownMenu } from './Dropdown'
+import * as DropdownMenu from './Dropdown'
 import { PublicBanner } from './PublicBanner'
 import Search from './Search'
 import SelectRfdCombobox from './SelectRfdCombobox'
@@ -30,10 +40,6 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
   const { user, rfds, localMode, inlineComments } = useRootLoaderData()
 
   const fetcher = useFetcher()
-
-  const toggleTheme = () => {
-    fetcher.submit({}, { method: 'post', action: '/user/toggle-theme' })
-  }
 
   const toggleInlineComments = () => {
     fetcher.submit({}, { method: 'post', action: '/user/toggle-inline-comments' })
@@ -71,7 +77,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           <SelectRfdCombobox isLoggedIn={!!user} currentRfd={currentRfd} rfds={rfds} />
         </div>
 
-        <div className="flex space-x-2">
+        <div className="flex gap-2">
           <button
             className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
             onClick={toggleSearchMenu}
@@ -81,34 +87,114 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
           </button>
           <Search open={open} onClose={() => setOpen(false)} />
           <NewRfdButton />
+          <ThemeDropdown />
 
           {user ? (
-            <Dropdown.Root modal={false}>
-              <Dropdown.Trigger className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover 600:w-auto 600:px-3 flex h-8 w-8 items-center justify-center rounded border">
-                <Icon name="profile" size={16} className="shrink-0" />
-                <span className="text-sans-sm text-default 600:block ml-2 hidden">
-                  {user.displayName || user.email}
+            <DropdownMenu.Root>
+              <DropdownMenu.Trigger className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-auto items-center justify-center rounded border px-2">
+                <span className="text-tertiary flex items-center gap-1">
+                  <Profile16Icon className="shrink-0" />
+                  <NextArrow12Icon className="shrink-0 rotate-90" />
                 </span>
-              </Dropdown.Trigger>
+              </DropdownMenu.Trigger>
 
-              <DropdownMenu>
-                <DropdownItem onSelect={toggleTheme}>Toggle theme</DropdownItem>
-                <DropdownItem onSelect={toggleInlineComments}>
+              <DropdownMenu.Content>
+                <div className="DropdownMenuItem ox-menu-item flex-col! items-start!">
+                  <div>{user.displayName}</div>
+                  <div className="text-tertiary">{user.email}</div>
+                </div>
+                <DropdownMenu.Item onSelect={toggleInlineComments}>
                   {inlineComments ? 'Hide' : 'Show'} inline comments
-                </DropdownItem>
-                {localMode ? <></> : <DropdownItem onSelect={logout}>Log out</DropdownItem>}
-              </DropdownMenu>
-            </Dropdown.Root>
+                </DropdownMenu.Item>
+                {localMode ? (
+                  <></>
+                ) : (
+                  <DropdownMenu.Item onSelect={logout}>Log out</DropdownMenu.Item>
+                )}
+              </DropdownMenu.Content>
+            </DropdownMenu.Root>
           ) : (
-            <Link
-              to={`/login?returnTo=${returnTo}`}
-              className={buttonStyle({ size: 'sm' })}
-            >
-              Sign in
-            </Link>
+            <>
+              <Link
+                to={`/login?returnTo=${returnTo}`}
+                className={buttonStyle({ size: 'sm' })}
+              >
+                Sign in
+              </Link>
+            </>
           )}
         </div>
       </header>
     </div>
+  )
+}
+
+function ThemeRadioGroup() {
+  const { preference } = useThemeStore()
+  return (
+    <DropdownMenu.RadioGroup
+      value={preference}
+      onValueChange={(v) => setThemePreference(v as ThemePreference)}
+    >
+      <ThemeRadioItem
+        value="light"
+        icon={<Sun12Icon />}
+        label="Light"
+        selected={preference === 'light'}
+      />
+      <ThemeRadioItem
+        value="dark"
+        icon={<Moon12Icon />}
+        label="Dark"
+        selected={preference === 'dark'}
+      />
+      <ThemeRadioItem
+        value="system"
+        icon={<Monitor12Icon />}
+        label="System"
+        selected={preference === 'system'}
+      />
+    </DropdownMenu.RadioGroup>
+  )
+}
+
+function ThemeDropdown() {
+  return (
+    <DropdownMenu.Root>
+      <DropdownMenu.Trigger
+        className="text-tertiary bg-secondary border-secondary elevation-1 hover:bg-hover flex h-8 w-8 items-center justify-center rounded border"
+        aria-label="Change theme"
+      >
+        <Contrast16Icon className="shrink-0" />
+      </DropdownMenu.Trigger>
+      <DropdownMenu.Content>
+        <ThemeRadioGroup />
+      </DropdownMenu.Content>
+    </DropdownMenu.Root>
+  )
+}
+
+function ThemeRadioItem({
+  value,
+  icon,
+  label,
+  selected,
+}: {
+  value: ThemePreference
+  icon: React.ReactNode
+  label: string
+  selected: boolean
+}) {
+  return (
+    <DropdownMenu.RadioItem
+      value={value}
+      className={cn('DropdownMenuItem ox-menu-item', selected && 'is-selected')}
+    >
+      <span className="flex w-full items-center gap-2">
+        <span className="text-quaternary">{icon}</span>
+        <span>{label}</span>
+        {selected && <Success12Icon className="absolute right-3" />}
+      </span>
+    </DropdownMenu.RadioItem>
   )
 }

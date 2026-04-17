@@ -250,11 +250,11 @@ export default function Index() {
       <Header key={pathname + hash} />
       <div className="pt-4">
         <Container>
-          <div className="600:pt-[calc(299/1200*100%)] relative my-12 w-full">
+          <div className="600:pt-[calc(299/1200*100%)] max-600:my-4 relative w-full">
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="light:invert absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none"
+              className="light:invert light:opacity-40 max-600:hidden absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
@@ -266,7 +266,7 @@ export default function Index() {
                 Requests for Discussion
               </h1>
 
-              <div className="800:w-[calc(100%/36*16+4px)] shadow-border relative mt-[22px] h-[40px] w-full rounded">
+              <div className="800:w-[calc(100%/36*16+4px)] relative mt-[22px] h-[40px] w-full rounded">
                 <input
                   value={input}
                   ref={inputEl}

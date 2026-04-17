@@ -350,7 +350,8 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
                 <h3
                   className={cn(
                     'text-mono-xs text-secondary bg-tertiary line-clamp-1 h-6 rounded-t-sm px-3 leading-6!',
-                    sectionIsSelected && '600:text-inverse! 600:bg-accent!',
+                    sectionIsSelected &&
+                      '600:text-inverse! light:600:text-default! 600:bg-accent-inverse!',
                   )}
                 >
                   {hit.hierarchy_lvl0}
