@@ -34,9 +34,7 @@ export async function getSiteConfig(): Promise<SiteConfig> {
 
   const config = source.default
   if (!config) {
-    throw new Error(
-      `${configPath ?? 'site.config.ts'} must export a default config object`,
-    )
+    throw new Error(`${configPath ?? 'site.config.ts'} must export a default config object`)
   }
 
   validateSiteConfig(config)
@@ -62,4 +60,3 @@ function validateSiteConfig(config: SiteConfig): void {
     )
   }
 }
-
