@@ -121,6 +121,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       <link rel="icon" href="/favicon.svg" />
       <link rel="icon" type="image/png" href="/favicon.png" />
       <meta name="viewport" content="width=device-width, initial-scale=1" />
+      <meta name="color-scheme" content="dark light" />
       {/* Use plausible analytics only on Vercel */}
       {process.env.NODE_ENV === 'production' && (
         <script defer data-domain="rfd.shared.oxide.computer" src="/js/viewscript.js" />
