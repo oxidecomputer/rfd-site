@@ -34,7 +34,6 @@
 @import './lib/loading-bar.css';
 @import './lib/menu.css';
 @import './lib/selection.css';
-@import './overrides.css';
 
 @layer utilities {
   :root {
@@ -168,3 +167,5 @@ table.inline-table {
     }
   }
 }
+
+@import './overrides.css';

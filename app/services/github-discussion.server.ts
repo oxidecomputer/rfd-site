@@ -15,10 +15,14 @@ import { any } from '~/utils/permission'
 import { getUserPermissions, type User } from './auth.server'
 import { getSiteConfig } from './config.server'
 
-function getOctokitClient() {
+function getOctokitClient(host?: string) {
+  // GitHub Enterprise Server exposes its API at https://HOSTNAME/api/v3
+  const baseUrl = host ? `https://${host}/api/v3` : undefined
+
   if (process.env.GITHUB_API_KEY) {
     return new Octokit({
       auth: process.env.GITHUB_API_KEY,
+      ...(baseUrl && { baseUrl }),
     })
   } else if (
     process.env.GITHUB_APP_ID &&
@@ -32,6 +36,7 @@ function getOctokitClient() {
         privateKey: process.env.GITHUB_PRIVATE_KEY,
         installationId: process.env.GITHUB_INSTALLATION_ID,
       },
+      ...(baseUrl && { baseUrl }),
     })
   } else {
     return null
@@ -75,21 +80,14 @@ export async function fetchDiscussion(
 } | null> {
   const config = await getSiteConfig()
 
-  if (!config.features.discussions) {
+  if (!config.features.discussions || !config.discussions) {
     console.error('GitHub discussions feature is disabled')
     return null
   }
 
-  // Parse owner/repo from URL
-  const repoUrl = config.repository.url
-  const match = repoUrl.match(/github\.com\/([^/]+)\/([^/]+)/)
-  if (!match) {
-    throw new Error('Invalid repository URL - must be a GitHub URL')
-  }
+  const { owner, repo, host } = config.discussions
 
-  const [, owner, repo] = match
-
-  const octokit = getOctokitClient()
+  const octokit = getOctokitClient(host)
 
   if (!octokit) return null
   if (!user) return null

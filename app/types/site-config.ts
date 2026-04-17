@@ -23,6 +23,15 @@ export interface SiteConfig {
     url: string
   }
 
+  // GitHub API coordinates for the discussions feature.
+  // Required when features.discussions is true. `host` is the GitHub Enterprise
+  // hostname (e.g. 'github.example.com'); omit for github.com.
+  discussions: {
+    owner: string
+    repo: string
+    host?: string
+  } | null
+
   // Search configuration
   search: {
     url: string

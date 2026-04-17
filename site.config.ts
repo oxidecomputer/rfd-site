@@ -22,6 +22,11 @@ const config: SiteConfig = {
     url: 'https://github.com/oxidecomputer/rfd',
   },
 
+  discussions: {
+    owner: 'oxidecomputer',
+    repo: 'rfd',
+  },
+
   search: {
     url: 'https://search.rfd.shared.oxide.computer',
   },

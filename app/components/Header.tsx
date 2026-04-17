@@ -55,12 +55,11 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
 
   // memoized to avoid render churn in useKey
   const toggleSearchMenu = useCallback(() => {
-    if (!features.search) return false
     setOpen(!open)
     return false // Returning false prevents default behaviour in Firefox
-  }, [open, features.search])
+  }, [open])
 
-  useKey('mod+k', toggleSearchMenu, { global: true })
+  useKey('mod+k', toggleSearchMenu, { global: true, enabled: features.search })
 
   return (
     <div className="sticky top-0 z-20">
