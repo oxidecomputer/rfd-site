@@ -19,12 +19,10 @@ import {
 } from 'react-router'
 
 import { auth, getUserFromSession } from '~/services/auth.server'
-import { canonicalUrl } from '~/utils/canonicalUrl'
 import { returnToCookie } from '~/services/cookies.server'
+import { canonicalUrl } from '~/utils/canonicalUrl'
 
-export const links = () => [
-  { rel: 'canonical', href: canonicalUrl('/login') },
-]
+export const links = () => [{ rel: 'canonical', href: canonicalUrl('/login') }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)
