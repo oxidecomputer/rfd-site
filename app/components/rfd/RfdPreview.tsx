@@ -254,7 +254,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
     <div
       ref={previewRef}
       className="shadow-tooltip bg-raise absolute z-10 mt-8 flex w-[24rem] rounded-lg p-3"
-      style={{ top: preview.position.top + 28, left: preview.position.left }}
+      style={{ top: preview.position.top, left: preview.position.left }}
     >
       <Link
         prefetch="intent"
