@@ -7,25 +7,28 @@
  */
 
 import mermaid from 'mermaid'
-import { memo, useId, useState } from 'react'
+import { memo, useEffect, useId, useRef, useState } from 'react'
 
-mermaid.initialize({
-  startOnLoad: false,
-  theme: 'dark',
-  fontFamily: 'SuisseIntl, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif',
-})
+import { useResolvedTheme } from '~/stores/theme'
 
 const Mermaid = memo(function Mermaid({ content }: { content: string }) {
   const [showSource, setShowSource] = useState(false)
   const id = `mermaid-diagram-${useId().replace(/:/g, '_')}`
+  const theme = useResolvedTheme()
+  const ref = useRef<HTMLElement>(null)
 
-  const mermaidRef = (node: HTMLElement | null) => {
-    if (node) {
-      mermaid.render(id, content).then(({ svg }) => {
-        node.innerHTML = svg
-      })
-    }
-  }
+  useEffect(() => {
+    if (!ref.current || showSource) return
+    mermaid.initialize({
+      startOnLoad: false,
+      theme: theme === 'light' ? 'default' : 'dark',
+      fontFamily:
+        'SuisseIntl, -apple-system, BlinkMacSystemFont, Helvetica, Arial, sans-serif',
+    })
+    mermaid.render(id, content).then(({ svg }) => {
+      if (ref.current) ref.current.innerHTML = svg
+    })
+  }, [content, theme, id, showSource])
 
   return (
     <>
@@ -36,7 +39,7 @@ const Mermaid = memo(function Mermaid({ content }: { content: string }) {
         {showSource ? 'Hide' : 'Show'} Source <span className="text-quaternary">|</span>{' '}
         Mermaid
       </button>
-      {!showSource ? <code ref={mermaidRef} className="w-full" /> : <code>{content}</code>}
+      {!showSource ? <code ref={ref} className="w-full" /> : <code>{content}</code>}
     </>
   )
 })
