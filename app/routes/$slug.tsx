@@ -14,8 +14,8 @@ import { parseRfdNum } from '~/utils/parseRfdNum'
 export async function loader({ params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (num) {
-    // Always redirect to canonical URL format (zero-padded)
-    return redirect(`/rfd/${formatRfdNum(num)}`)
+    // 301 so caches/search engines treat the padded form as the stable URL.
+    return redirect(`/rfd/${formatRfdNum(num)}`, 301)
   } else {
     throw new Response('Not Found', { status: 404 })
   }

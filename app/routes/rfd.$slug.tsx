@@ -76,10 +76,10 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
-  // Redirect to canonical URL if the slug is not in the canonical format (zero-padded)
+  // 301 so caches/search engines treat the padded form as the stable URL.
   const canonicalSlug = formatRfdNum(num)
   if (slug !== canonicalSlug) {
-    throw redirect(`/rfd/${canonicalSlug}`)
+    throw redirect(`/rfd/${canonicalSlug}`, 301)
   }
 
   const user = await authenticate(request)

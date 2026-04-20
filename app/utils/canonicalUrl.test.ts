@@ -31,6 +31,9 @@ test.each([
   ['/', `${SITE_URL}/`],
   ['/login', `${SITE_URL}/login`],
   ['/rfd/0053', `${SITE_URL}/rfd/0053`],
+  ['/login?returnTo=/foo', `${SITE_URL}/login`],
+  ['/rfd/0053#section', `${SITE_URL}/rfd/0053`],
+  ['/rfd/0053?x=1#section', `${SITE_URL}/rfd/0053`],
 ])('canonicalUrl(%s) -> %s', (input: string, result: string) => {
   expect(canonicalUrl(input)).toEqual(result)
 })

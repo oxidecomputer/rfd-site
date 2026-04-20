@@ -20,6 +20,13 @@ export const canonicalRfdUrl = (num: number): string =>
   `${SITE_URL}/rfd/${formatRfdNum(num)}`
 
 /**
- * Generate a canonical URL for a given path (strips query params)
+ * Generate a canonical URL for a given path. Any query string or hash fragment
+ * on the input is discarded so callers can safely pass `request.url`-derived
+ * paths without leaking non-canonical variants.
  */
-export const canonicalUrl = (path: string): string => `${SITE_URL}${path}`
+export const canonicalUrl = (path: string): string => {
+  const url = new URL(path, SITE_URL)
+  url.search = ''
+  url.hash = ''
+  return url.toString()
+}
