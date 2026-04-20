@@ -253,7 +253,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
   return (
     <div
       ref={previewRef}
-      className="overlay-shadow bg-raise border-secondary absolute z-10 flex w-[24rem] rounded-lg border p-3"
+      className="shadow-tooltip bg-raise absolute z-10 mt-8 flex w-[24rem] rounded-lg p-3"
       style={{ top: preview.position.top + 28, left: preview.position.left }}
     >
       <Link
