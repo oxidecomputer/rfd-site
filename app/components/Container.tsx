@@ -22,7 +22,7 @@ const Container = ({
   <div className={cn('600:px-10 w-full px-5', wrapperClassName)}>
     <div
       className={cn(
-        'm-auto max-w-1200',
+        'm-auto max-w-300',
         className,
         isGrid ? '600:gap-6 grid grid-cols-12 gap-4' : '',
       )}

@@ -257,7 +257,7 @@ export default function Rfd() {
             <AccessWarning groups={groups} />
           </div>
         </Container>
-        <div className="border-secondary border-b print:m-auto print:max-w-1200 print:rounded-lg print:border">
+        <div className="border-secondary border-b print:m-auto print:max-w-300 print:rounded-lg print:border">
           {state && (
             <PropertyRow
               label="State"
