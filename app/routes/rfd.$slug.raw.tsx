@@ -12,6 +12,7 @@ import { redirect, type LoaderFunctionArgs } from 'react-router'
 import { authenticate } from '~/services/auth.server'
 import { fetchLocalRfd, isLocalMode, LocalRfd } from '~/services/rfd.local.server'
 import { fetchRemoteRfd } from '~/services/rfd.remote.server'
+import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
 import { resp404 } from './rfd.$slug'
@@ -34,7 +35,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   // If someone goes to a private RFD but they're not logged in, they will
   // want to log in and see it.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${num}`)
+  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.

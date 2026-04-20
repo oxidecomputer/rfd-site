@@ -172,7 +172,7 @@ test.describe('Search', () => {
     await testScenarioResult.click()
 
     // Verify we navigated to the correct RFD and section
-    await expect(page).toHaveURL(/\/rfd\/363#_test_the_ignition_target/)
+    await expect(page).toHaveURL(/\/rfd\/0363#_test_the_ignition_target/)
     await expect(
       page.getByRole('heading', {
         name: 'Minibar',
@@ -214,7 +214,7 @@ test.describe('Search', () => {
     await architecturesResult.click()
 
     // Verify we navigated to RFD 223 and the correct section
-    await expect(page).toHaveURL(/\/rfd\/223#_browser_only/)
+    await expect(page).toHaveURL(/\/rfd\/0223#_browser_only/)
     await expect(
       page.getByRole('heading', { name: 'Web Console Architecture', level: 1 }),
     ).toBeVisible()

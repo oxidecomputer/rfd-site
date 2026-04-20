@@ -20,6 +20,9 @@ import {
 
 import { auth, getUserFromSession } from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
+import { canonicalUrl } from '~/utils/canonicalUrl'
+
+export const links = () => [{ rel: 'canonical', href: canonicalUrl('/login') }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)

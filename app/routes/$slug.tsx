@@ -8,11 +8,14 @@
 
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 
+import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
 export async function loader({ params: { slug } }: LoaderFunctionArgs) {
-  if (parseRfdNum(slug)) {
-    return redirect(`/rfd/${slug}`)
+  const num = parseRfdNum(slug)
+  if (num) {
+    // 301 so caches/search engines treat the padded form as the stable URL.
+    return redirect(`/rfd/${formatRfdNum(num)}`, 301)
   } else {
     throw new Response('Not Found', { status: 404 })
   }

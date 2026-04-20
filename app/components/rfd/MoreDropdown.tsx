@@ -48,7 +48,7 @@ const MoreDropdown = () => {
             </DropdownMenu.LinkItem>
           )}
 
-          <DropdownMenu.LinkItem to={`/rfd/${rfd.number}/pdf`} internal>
+          <DropdownMenu.LinkItem to={`/rfd/${rfd.formattedNumber}/pdf`} internal>
             View PDF
           </DropdownMenu.LinkItem>
         </DropdownMenu.Content>
