@@ -6,123 +6,143 @@
  * Copyright Oxide Computer Company
  */
 
-import * as Dropdown from '@radix-ui/react-dropdown-menu'
+import { Menu } from '@base-ui/react/menu'
 import cn from 'classnames'
 import type { ReactNode } from 'react'
+import { Link } from 'react-router'
 
 import Icon from '~/components/Icon'
 
-export const dropdownOuterStyles =
-  'menu-item relative text-sans-md text-default border-b border-secondary cursor-pointer'
+// Re-export Root with modal={false} default to prevent scroll locking
+export function Root({ children, ...props }: React.ComponentProps<typeof Menu.Root>) {
+  return (
+    <Menu.Root modal={false} {...props}>
+      {children}
+    </Menu.Root>
+  )
+}
 
-export const dropdownInnerStyles = `focus:outline-0 focus:bg-hover px-3 py-2 pr-6`
+export const Trigger = Menu.Trigger
 
-export const DropdownItem = ({
-  children,
-  classNames,
-  onSelect,
-}: {
+type ContentProps = {
+  className?: string
+  children: ReactNode
+  align?: 'end' | 'start' | 'center'
+  gap?: number
+}
+
+export function Content({ className, children, align = 'end', gap = 8 }: ContentProps) {
+  return (
+    <Menu.Portal>
+      <Menu.Positioner side="bottom" align={align} sideOffset={gap}>
+        <Menu.Popup
+          className={cn('dropdown-menu-content shadow-menu outline-hidden', className)}
+        >
+          {children}
+        </Menu.Popup>
+      </Menu.Positioner>
+    </Menu.Portal>
+  )
+}
+
+type SubContentProps = {
+  className?: string
+  children: ReactNode
+}
+
+export function SubContent({ className, children }: SubContentProps) {
+  return (
+    <Menu.Portal>
+      <Menu.Positioner sideOffset={1}>
+        <Menu.Popup
+          className={cn('dropdown-menu-content shadow-menu outline-hidden', className)}
+        >
+          {children}
+        </Menu.Popup>
+      </Menu.Positioner>
+    </Menu.Portal>
+  )
+}
+
+type ItemProps = {
   children: ReactNode | string
-  classNames?: string
+  className?: string
   onSelect?: () => void
-}) => (
-  <Dropdown.Item
-    onSelect={onSelect}
-    className={cn(
-      dropdownOuterStyles,
-      classNames,
-      dropdownInnerStyles,
-      !onSelect && 'cursor-default',
-    )}
-    disabled={!onSelect}
-  >
-    {children}
-  </Dropdown.Item>
-)
+  disabled?: boolean
+}
 
-export const DropdownSubTrigger = ({
-  children,
-  classNames,
-}: {
-  children: JSX.Element | string
-  classNames?: string
-}) => (
-  <Dropdown.SubTrigger className={cn(dropdownOuterStyles, classNames, dropdownInnerStyles)}>
-    {children}
-    <Icon
-      name="carat-down"
-      size={12}
-      className="text-tertiary absolute top-1/2 right-3 -translate-y-1/2 -rotate-90"
-    />
-  </Dropdown.SubTrigger>
-)
+export function Item({ children, className, onSelect, disabled }: ItemProps) {
+  return (
+    <Menu.Item
+      disabled={disabled ?? !onSelect}
+      onClick={onSelect}
+      className={cn(
+        'DropdownMenuItem ox-menu-item',
+        className,
+        !onSelect && 'cursor-default',
+      )}
+    >
+      {children}
+    </Menu.Item>
+  )
+}
 
-export const DropdownLink = ({
-  children,
-  classNames,
-  internal = false,
-  to,
-  disabled = false,
-}: {
-  children: React.ReactNode
-  classNames?: string
-  internal?: boolean
+type LinkItemProps = {
+  className?: string
+  children: ReactNode
   to: string
   disabled?: boolean
-}) => (
-  <a
-    {...(internal ? {} : { target: '_blank', rel: 'noreferrer' })}
-    href={to}
-    className={cn(
-      'block',
-      dropdownOuterStyles,
-      classNames,
-      disabled && 'pointer-events-none',
-    )}
-  >
-    <Dropdown.Item className={cn(dropdownInnerStyles, disabled && 'opacity-40')}>
-      {children}
-    </Dropdown.Item>
-  </a>
-)
+  internal?: boolean
+}
 
-export const DropdownMenu = ({
-  children,
-  classNames,
-  align = 'end',
-}: {
-  children: React.ReactNode
-  classNames?: string
-  align?: 'end' | 'start' | 'center' | undefined
-}) => (
-  <Dropdown.Portal>
-    <Dropdown.Content
-      className={cn(
-        'menu overlay-shadow bg-raise border-secondary z-30 mt-2 min-w-48 rounded border [&>*:last-child]:border-b-0',
-        classNames,
-      )}
-      align={align}
+export function LinkItem({ className, children, to, disabled, internal }: LinkItemProps) {
+  const ext = !internal && /^https?:/.test(to)
+  return (
+    <Menu.Item
+      disabled={disabled}
+      render={
+        ext ? (
+          <a // eslint-disable-line jsx-a11y/anchor-has-content
+            href={to}
+            target="_blank"
+            rel="noreferrer"
+            className={cn('DropdownMenuItem ox-menu-item', className)}
+          />
+        ) : (
+          <Link to={to} className={cn('DropdownMenuItem ox-menu-item', className)} />
+        )
+      }
     >
       {children}
-    </Dropdown.Content>
-  </Dropdown.Portal>
-)
+    </Menu.Item>
+  )
+}
 
-export const DropdownSubMenu = ({
+export const Submenu = Menu.SubmenuRoot
+
+export function SubmenuTrigger({
   children,
-  classNames,
+  className,
 }: {
-  children: JSX.Element[]
-  classNames?: string
-}) => (
-  <Dropdown.Portal>
-    <Dropdown.SubContent
-      className={cn(
-        'menu overlay-shadow bg-raise border-secondary z-10 ml-2 max-h-[30vh] min-w-48 overflow-y-auto rounded border [&>*:last-child]:border-b-0',
-        classNames,
-      )}
-    >
+  children: ReactNode
+  className?: string
+}) {
+  return (
+    <Menu.SubmenuTrigger className={cn('DropdownMenuItem ox-menu-item', className)}>
       {children}
-    </Dropdown.SubContent>
-  </Dropdown.Portal>
-)
+      <Icon name="carat-right" size={12} className="text-tertiary absolute right-3" />
+    </Menu.SubmenuTrigger>
+  )
+}
+
+export const RadioGroup = Menu.RadioGroup
+export const RadioItem = Menu.RadioItem
+export const Separator = Menu.Separator
+
+// ---- Legacy-named exports for existing consumers ----
+
+export const DropdownItem = Item
+export const DropdownMenu = Content
+export const DropdownSubTrigger = SubmenuTrigger
+export const DropdownSubMenu = SubContent
+export const DropdownLink = LinkItem

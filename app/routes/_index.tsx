@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { Badge } from '@oxide/design-system'
+import { Badge } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
@@ -34,8 +34,11 @@ import { useRootLoaderData } from '~/root'
 import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
+import { canonicalUrl } from '~/utils/canonicalUrl'
 import { fuzz } from '~/utils/fuzz'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
+
+export const links = () => [{ rel: 'canonical', href: canonicalUrl('/') }]
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')
@@ -250,11 +253,11 @@ export default function Index() {
       <Header key={pathname + hash} />
       <div className="pt-4">
         <Container>
-          <div className="600:pt-[calc(299/1200*100%)] relative my-12 w-full">
+          <div className="600:pt-[calc(299/1200*100%)] max-600:my-4 relative w-full">
             <img
               alt=""
               src="/svgs/header-grid.svg"
-              className="absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none filter-none!"
+              className="light:invert light:opacity-40 max-600:hidden absolute top-0 -left-[2.7777777778%] z-0 h-auto w-[calc(100%+5.5555555556%)] max-w-none"
               style={{
                 maskImage: 'url(/img/header-grid-mask.png)',
                 WebkitMaskImage: 'url(/img/header-grid-mask.png)',
@@ -266,7 +269,7 @@ export default function Index() {
                 Requests for Discussion
               </h1>
 
-              <div className="800:w-[calc(100%/36*16+4px)] overlay-shadow relative mt-[22px] h-[40px] w-full rounded">
+              <div className="800:w-[calc(100%/36*16+4px)] relative mt-[22px] h-[40px] w-full rounded">
                 <input
                   value={input}
                   ref={inputEl}

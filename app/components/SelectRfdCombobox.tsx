@@ -49,13 +49,13 @@ const SelectRfdCombobox = ({
             isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
           )}
         >
-          {currentRfd ? currentRfd.title : 'Select a RFD'}
+          {currentRfd ? currentRfd.title : 'Select an RFD'}
         </div>
       </div>
       <button
         onClick={toggleCombobox}
         className="text-tertiary border-secondary hover:bg-hover 600:ml-6 ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border"
-        aria-label="Select a RFD"
+        aria-label="Select an RFD"
       >
         <Icon name="select-arrows" size={6} className="shrink-0" height={14} />
       </button>
@@ -163,7 +163,7 @@ const ComboboxWrapper = ({
         aria-controls="TODO"
         aria-expanded
       >
-        <div className="overlay bg-raise border-secondary focus-within:ring-accent-secondary flex rounded border shadow focus-within:ring-2">
+        <div className="overlay bg-raise shadow-border focus-within:ring-accent-secondary flex rounded focus-within:ring-2">
           <input
             ref={inputRef}
             value={input}
@@ -183,7 +183,7 @@ const ComboboxWrapper = ({
             className="placeholder:text-tertiary text-sans-lg text-raise bg-raise 600:h-auto 600:py-3 600:text-sans-md h-12 w-full appearance-none rounded border-none px-3 focus:outline-offset-0 focus:outline-none"
           />
           <button
-            className="hover:bg-raise-hover text-mono-sm text-secondary border-l-secondary 600:hidden block border-l px-4"
+            className="hover:bg-hover text-mono-sm text-secondary border-l-secondary 600:hidden block border-l px-4"
             onClick={handleDismiss}
           >
             <Icon name="close" size={12} className="text-tertiary" />
@@ -191,7 +191,7 @@ const ComboboxWrapper = ({
         </div>
         <div
           ref={divRef}
-          className="overlay-shadow bg-raise border-secondary mt-3 max-h-[60vh] overflow-y-auto rounded border"
+          className="shadow-menu bg-raise mt-3 max-h-[60vh] overflow-y-auto rounded"
         >
           <ul ref={ulRef} className={cn('min-w-48 [&>*:last-child_.menu-item]:border-b-0')}>
             {matchedItems.length > 0 ? (
@@ -262,8 +262,8 @@ const ComboboxItem = ({
         className={cn(
           'menu-item text-sans-sm border-secondary relative cursor-pointer border-b px-3 py-2 pr-6',
           selected
-            ? 'text-accent bg-accent-secondary hover:bg-accent-secondary-hover'
-            : 'hover:bg-raise-hover text-default',
+            ? 'text-accent bg-accent hover:bg-accent-hover'
+            : 'hover:bg-hover text-default',
         )}
       >
         {selected && <Outline />}

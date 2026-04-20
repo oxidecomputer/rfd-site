@@ -9,9 +9,8 @@ import {
   DesktopOutline,
   SmallScreenOutline,
   useActiveSectionTracking,
-  useDelegatedReactRouterLinks,
   useIntersectionObserver,
-} from '@oxide/design-system/components'
+} from '@oxide/design-system/asciidoc'
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import cn from 'classnames'
 import dayjs from 'dayjs'
@@ -28,7 +27,6 @@ import {
   redirect,
   useLoaderData,
   useLocation,
-  useNavigate,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from 'react-router'
@@ -48,6 +46,7 @@ import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
+import { canonicalRfdUrl, formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
@@ -77,13 +76,19 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
+  // 301 so caches/search engines treat the padded form as the stable URL.
+  const canonicalSlug = formatRfdNum(num)
+  if (slug !== canonicalSlug) {
+    throw redirect(`/rfd/${canonicalSlug}`, 301)
+  }
+
   const user = await authenticate(request)
 
   const rfd = await fetchRfd(num, user)
 
   // If someone goes to a private RFD but they're not logged in, they will
   // want to log in and see it.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${num}`)
+  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${canonicalSlug}`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.
@@ -114,7 +119,10 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data && data.rfd) {
-    return [{ title: `${data.rfd.number} - ${data.rfd.title} / RFD / Oxide` }]
+    return [
+      { title: `${data.rfd.number} - ${data.rfd.title} / RFD / Oxide` },
+      { tagName: 'link', rel: 'canonical', href: canonicalRfdUrl(data.rfd.number) },
+    ]
   } else {
     return [{ title: 'Page not found / Oxide' }]
   }
@@ -212,9 +220,7 @@ export default function Rfd() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  const navigate = useNavigate()
   const containerRef = useRef<HTMLDivElement>(null)
-  useDelegatedReactRouterLinks(navigate, containerRef, title || '')
 
   return (
     <div ref={containerRef}>
@@ -224,7 +230,7 @@ export default function Rfd() {
         {inlineComments && user && pullNumber && (
           <RfdInlineComments pullNumber={pullNumber} />
         )}
-        <RfdPreview currentRfd={number} />
+        <RfdPreview currentRfd={number} nodeRef={containerRef} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
             <div className="800:col-start-2 1200:col-start-3 flex print:hidden">

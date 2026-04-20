@@ -6,29 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { expect, takeSnapshot, test } from '@chromatic-com/playwright'
-import { Page } from '@playwright/test'
-
-// Test helper functions
-async function limitContentHeight(page: Page) {
-  await page.evaluate(() => {
-    const content = document.querySelector('main')
-    if (content) {
-      content.style.maxHeight = '5000px'
-      content.style.overflow = 'hidden'
-    }
-  })
-}
-
-async function hideTimestamps(page: Page) {
-  await page.addStyleTag({
-    content: `
-      [data-testid*="timestamp"] {
-        visibility: hidden !important;
-      }
-    `,
-  })
-}
+import { expect, Page, test } from '@playwright/test'
 
 async function expectRfdPage(page: Page, title: string, author: string) {
   await expect(page.getByRole('heading', { name: title, level: 1 })).toBeVisible()
@@ -68,7 +46,7 @@ test.describe('Navigation and Basic Functionality', () => {
 
     await expect(page.getByRole('banner').getByPlaceholder('Search')).toBeHidden()
 
-    await page.getByRole('button', { name: 'Select a RFD' }).click()
+    await page.getByRole('button', { name: 'Select an RFD' }).click()
     await page.getByRole('banner').getByPlaceholder('Search').fill('Mission')
     await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
 
@@ -79,9 +57,8 @@ test.describe('Navigation and Basic Functionality', () => {
 })
 
 test.describe('Filtering', () => {
-  test('Filter by title', async ({ page }, testInfo) => {
+  test('Filter by title', async ({ page }) => {
     await page.goto('/')
-    await hideTimestamps(page)
 
     const rfdLinks = page.getByRole('link', { name: /^RFD/ })
 
@@ -89,16 +66,14 @@ test.describe('Filtering', () => {
     expect(await rfdLinks.count()).toBeGreaterThan(10)
 
     await page.getByPlaceholder('Filter by').fill('standard units')
-
-    await takeSnapshot(page, testInfo)
+    await page.waitForTimeout(250)
 
     // but after you filter there are fewer
     expect(await rfdLinks.count()).toEqual(1)
   })
 
-  test('Filter by author', async ({ page }, testInfo) => {
+  test('Filter by author', async ({ page }) => {
     await page.goto('/')
-    await hideTimestamps(page)
 
     const rfdLinks = page.getByRole('link', { name: /^RFD/ })
 
@@ -106,11 +81,10 @@ test.describe('Filtering', () => {
     expect(await rfdLinks.count()).toBeGreaterThan(10)
 
     await page.getByPlaceholder('Filter by').fill('david.crespo')
+    await page.waitForTimeout(250)
 
     // but after you filter there are fewer
     expect(await rfdLinks.count()).toEqual(2)
-
-    await takeSnapshot(page, testInfo)
   })
 })
 
@@ -139,26 +113,20 @@ test.describe('Direct RFD Access', () => {
   ]
 
   for (const { rfd, title, author } of rfdTestCases) {
-    test(`Direct link to public RFD ${rfd}`, async ({ page }, testInfo) => {
+    test(`Direct link to public RFD ${rfd}`, async ({ page }) => {
       await page.goto(`/rfd/${rfd}`)
-      await hideTimestamps(page)
-
       await expectRfdPage(page, title, author)
-      await limitContentHeight(page)
-      await takeSnapshot(page, testInfo)
     })
   }
 })
 
 test.describe('Authentication', () => {
-  test('Sign in button functionality', async ({ page }, testInfo) => {
+  test('Sign in button functionality', async ({ page }) => {
     await page.goto('/')
 
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeHidden()
     await page.getByRole('link', { name: 'Sign in' }).click()
     await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
-
-    await takeSnapshot(page, testInfo)
   })
 
   test('Login redirect on nonexistent or private RFD', async ({ page }) => {
@@ -169,9 +137,7 @@ test.describe('Authentication', () => {
 })
 
 test.describe('Search', () => {
-  test.use({ cropToViewport: true })
-
-  test('Search functionality and navigation', async ({ page }, testInfo) => {
+  test('Search functionality and navigation', async ({ page }) => {
     const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
     const searchButton = page.getByRole('button', { name: 'Search' })
 
@@ -202,13 +168,11 @@ test.describe('Search', () => {
       .first()
     await expect(testScenarioResult).toBeVisible()
 
-    await takeSnapshot(page, testInfo)
-
     // Click on the search result
     await testScenarioResult.click()
 
     // Verify we navigated to the correct RFD and section
-    await expect(page).toHaveURL(/\/rfd\/363#_test_the_ignition_target/)
+    await expect(page).toHaveURL(/\/rfd\/0363#_test_the_ignition_target/)
     await expect(
       page.getByRole('heading', {
         name: 'Minibar',
@@ -220,7 +184,7 @@ test.describe('Search', () => {
     await expect(page.getByRole('link', { name: 'Test the Ignition Target' })).toBeVisible()
   })
 
-  test('Search result navigation to different RFD', async ({ page }, testInfo) => {
+  test('Search result navigation to different RFD', async ({ page }) => {
     const searchButton = page.getByRole('button', { name: 'Search' })
 
     await page.goto('/')
@@ -230,8 +194,6 @@ test.describe('Search', () => {
 
     await searchButton.click()
     await expect(searchDialog).toBeVisible()
-
-    await takeSnapshot(page, testInfo)
 
     // Type search query
     await page.keyboard.insertText('web console')
@@ -252,7 +214,7 @@ test.describe('Search', () => {
     await architecturesResult.click()
 
     // Verify we navigated to RFD 223 and the correct section
-    await expect(page).toHaveURL(/\/rfd\/223#_browser_only/)
+    await expect(page).toHaveURL(/\/rfd\/0223#_browser_only/)
     await expect(
       page.getByRole('heading', { name: 'Web Console Architecture', level: 1 }),
     ).toBeVisible()

@@ -31,6 +31,7 @@ import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
 import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
 import type { RfdItem } from '~/services/rfd.server'
+import { formatRfdNum } from '~/utils/canonicalUrl'
 
 const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
   const searchClient = useRef<InstantMeiliSearchInstance>(null)
@@ -99,7 +100,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         <Dialog
           open={open}
           onClose={onClose}
-          className="overlay-shadow bg-raise border-secondary 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px] fixed top-4 left-1/2 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg border p-0"
+          className="shadow-modal bg-raise 600:top-[calc(10%+var(--header-height))] 600:w-[calc(100%-5rem)] 1000:w-[820px] fixed top-4 left-1/2 z-20 w-[calc(100%-2.5rem)] -translate-x-1/2 rounded-lg p-0"
           aria-label="Search"
           backdrop={<div className="backdrop" />}
         >
@@ -170,7 +171,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
         if (e.key === 'Enter') {
           const selectedItem = flattenedHits[selectedIdx]
           if (!selectedItem) return
-          navigate(`/rfd/${selectedItem.rfd_number}#${selectedItem.anchor}`)
+          navigate(`/rfd/${formatRfdNum(selectedItem.rfd_number)}#${selectedItem.anchor}`)
           // needed despite key={pathname + hash} logic in case we navigate
           // to the page we're already on
           dismissSearch()
@@ -199,7 +200,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
         <SearchBox />
 
         <button
-          className="hover:bg-raise-hover text-mono-sm text-secondary border-l-secondary block h-full border-l px-4"
+          className="hover:bg-hover text-mono-sm text-secondary border-l-secondary block h-full border-l px-4"
           onClick={dismissSearch}
         >
           <span className="600:block hidden">Dismiss</span>
@@ -212,7 +213,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
           <div className="600:h-128 flex h-[60vh] overflow-hidden">
             {noMatches ? (
               <div className="600:py-0 flex h-full w-full flex-col items-center justify-center py-12">
-                <div className="bg-accent-secondary mb-4 rounded p-1">
+                <div className="bg-accent mb-4 rounded p-1">
                   <Icon name="search" size={16} className="text-accent" />
                 </div>
                 <div className="text-secondary">
@@ -350,7 +351,8 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
                 <h3
                   className={cn(
                     'text-mono-xs text-secondary bg-tertiary line-clamp-1 h-6 rounded-t-sm px-3 leading-6!',
-                    sectionIsSelected && '600:text-inverse! 600:bg-accent!',
+                    sectionIsSelected &&
+                      '600:text-inverse! light:600:text-default! 600:bg-accent-inverse!',
                   )}
                 >
                   {hit.hierarchy_lvl0}
@@ -377,13 +379,12 @@ const HitItem = ({ hit, isSelected }: { hit: RFDHit; isSelected: boolean }) => {
           )}
         />
       )}
-      <Link to={`/rfd/${hit.rfd_number}#${hit.anchor}`} className="block" prefetch="intent">
-        <li
-          className={cn(
-            'px-4 py-4',
-            isSelected ? '600:rounded-md 600:bg-accent-secondary' : '',
-          )}
-        >
+      <Link
+        to={`/rfd/${formatRfdNum(hit.rfd_number)}#${hit.anchor}`}
+        className="block"
+        prefetch="intent"
+      >
+        <li className={cn('px-4 py-4', isSelected ? '600:rounded-md 600:bg-accent' : '')}>
           <DialogDismiss className="text-sans-sm text-left">
             <div>
               <Highlight
@@ -466,7 +467,7 @@ const RFDPreview = ({ number }: { number: number }) => {
                     item.level === 1 && (
                       <div className="border-b-default w-full border-b py-2" key={item.id}>
                         <Link
-                          to={`/rfd/${rfd.number}#${item.id}`}
+                          to={`/rfd/${rfd.formattedNumber}#${item.id}`}
                           className="block"
                           prefetch="intent"
                         >
