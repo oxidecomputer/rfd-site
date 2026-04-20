@@ -134,16 +134,6 @@ input[type='checkbox']:focus:not(:focus-visible) {
   @apply ring-0 outline-0;
 }
 
-.link-with-underline {
-  @apply text-default hover:text-raise;
-  text-decoration: underline;
-  text-decoration-color: var(--content-quinary);
-
-  &:hover {
-    text-decoration-color: var(--content-tertiary);
-  }
-}
-
 table.inline-table {
   @apply border-separate border-spacing-0;
   thead {
