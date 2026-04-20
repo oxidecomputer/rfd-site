@@ -20,6 +20,7 @@ import {
   type LinksFunction,
   type LoaderFunctionArgs,
   type MetaFunction,
+  type ShouldRevalidateFunctionArgs,
 } from 'react-router'
 
 // import { auth, isAuthenticated } from '~/services/authn.server'
@@ -79,6 +80,20 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
     localMode: isLocalMode(),
     newRfdNumber: undefined,
   }
+}
+
+export function shouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  // Skip revalidation when only search params change on the same path
+  // (e.g. filter changes). Form submissions still revalidate.
+  if (!formMethod && currentUrl.pathname === nextUrl.pathname) {
+    return false
+  }
+  return defaultShouldRevalidate
 }
 
 export function useRootLoaderData() {

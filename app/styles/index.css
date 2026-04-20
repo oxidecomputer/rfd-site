@@ -79,7 +79,7 @@ body {
   -webkit-text-stroke: 0;
   font-size: 16px;
 
-  @apply bg-default;
+  @apply bg-default h-full;
 }
 
 @layer base {

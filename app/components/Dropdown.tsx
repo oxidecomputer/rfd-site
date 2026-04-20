@@ -8,7 +8,7 @@
 
 import { Menu } from '@base-ui/react/menu'
 import cn from 'classnames'
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Link } from 'react-router'
 
 import Icon from '~/components/Icon'
@@ -29,19 +29,33 @@ type ContentProps = {
   children: ReactNode
   align?: 'end' | 'start' | 'center'
   gap?: number
+  portal?: boolean
 }
 
-export function Content({ className, children, align = 'end', gap = 8 }: ContentProps) {
+export function Content({
+  className,
+  children,
+  align = 'end',
+  gap = 8,
+  portal = true,
+}: ContentProps) {
+  // When `portal` is false, render the popup into an inline container sibling
+  // so it stays in the scroll context of its trigger instead of portalling to
+  // document.body (which causes Floating UI scroll catch-up in sticky headers).
+  const [inlineContainer, setInlineContainer] = useState<HTMLSpanElement | null>(null)
   return (
-    <Menu.Portal>
-      <Menu.Positioner side="bottom" align={align} sideOffset={gap}>
-        <Menu.Popup
-          className={cn('dropdown-menu-content shadow-menu outline-hidden', className)}
-        >
-          {children}
-        </Menu.Popup>
-      </Menu.Positioner>
-    </Menu.Portal>
+    <>
+      {!portal && <span ref={setInlineContainer} style={{ position: 'absolute' }} />}
+      <Menu.Portal container={portal ? undefined : inlineContainer}>
+        <Menu.Positioner side="bottom" align={align} sideOffset={gap}>
+          <Menu.Popup
+            className={cn('dropdown-menu-content shadow-menu outline-hidden', className)}
+          >
+            {children}
+          </Menu.Popup>
+        </Menu.Positioner>
+      </Menu.Portal>
+    </>
   )
 }
 

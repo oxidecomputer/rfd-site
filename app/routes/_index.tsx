@@ -6,10 +6,10 @@
  * Copyright Oxide Computer Company
  */
 
-import { Badge } from '@oxide/design-system/ui'
+import { Badge, Button } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import {
   Link,
   redirect,
@@ -20,6 +20,7 @@ import {
   useSearchParams,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type ShouldRevalidateFunctionArgs,
 } from 'react-router'
 
 import { ClientOnly } from '~/components/ClientOnly'
@@ -45,6 +46,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return parseSortOrder(await rfdSortCookie.parse(cookieHeader))
 }
 
+export function shouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  if (!formMethod && currentUrl.pathname === nextUrl.pathname) {
+    return false
+  }
+  return defaultShouldRevalidate
+}
+
 // only for setting the sort order cookie
 export const action = async ({ request }: ActionFunctionArgs) => {
   const body = await request.formData()
@@ -58,61 +71,55 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 }
 
 export default function Index() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  // Check for email and name
-  // Helps catch when people use email aliases
-  // Supports both email and name, none or either
-  const authorEmailParam = searchParams.get('authorEmail')
-  const authorNameParam = searchParams.get('authorName')
-  const labelParam = searchParams.get('label')
+  const searchParamsKey = searchParams.toString()
+  const authorEmails = useMemo(() => {
+    const emails = new Set(searchParams.getAll('author'))
+    const legacyEmail = searchParams.get('authorEmail')
+    if (legacyEmail) emails.add(legacyEmail)
+    return Array.from(emails)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsKey])
+  const authorNames = useMemo(() => {
+    const legacyName = searchParams.get('authorName')
+    return legacyName ? [legacyName] : []
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsKey])
+  const labelValues = useMemo(
+    () => searchParams.getAll('label'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParamsKey],
+  )
 
   const allRfds = useRootLoaderData().rfds
   const rfds = useMemo(() => {
-    let rfds = allRfds
-
-    if (!authorEmailParam && !authorNameParam && !labelParam) {
-      return rfds
+    if (authorEmails.length === 0 && authorNames.length === 0 && labelValues.length === 0) {
+      return allRfds
     }
 
-    if (authorEmailParam || authorNameParam) {
-      rfds = rfds.filter((rfd) => {
-        if (!rfd.authors) {
-          return false
-        }
+    let filtered = allRfds
 
-        let isMatch = false
-
-        if (
-          authorEmailParam &&
-          rfd.authors?.some((author) => author.email === authorEmailParam)
-        ) {
-          isMatch = true
-        }
-
-        if (
-          authorNameParam &&
-          rfd.authors?.some((author) => author.name === authorNameParam)
-        ) {
-          isMatch = true
-        }
-
-        return isMatch
+    if (authorEmails.length > 0 || authorNames.length > 0) {
+      filtered = filtered.filter((rfd) => {
+        if (!rfd.authors) return false
+        return rfd.authors.some(
+          (author) =>
+            authorEmails.includes(author.email) || authorNames.includes(author.name),
+        )
       })
     }
 
-    if (labelParam) {
-      rfds = rfds.filter((rfd) => {
-        if (!rfd.labels) {
-          return false
-        }
-
-        return rfd.labels.map((label) => label.trim()).includes(labelParam)
+    if (labelValues.length > 0) {
+      filtered = filtered.filter((rfd) => {
+        if (!rfd.labels) return false
+        const trimmed = rfd.labels.map((l) => l.trim())
+        return labelValues.some((l) => trimmed.includes(l))
       })
     }
 
-    return rfds
-  }, [allRfds, authorEmailParam, authorNameParam, labelParam])
+    return filtered
+  }, [allRfds, authorEmails, authorNames, labelValues])
 
   const authors = useRootLoaderData().authors
   const labels = useRootLoaderData().labels
@@ -228,6 +235,19 @@ export default function Index() {
 
   const navigate = useNavigate()
 
+  const hasFilters =
+    authorEmails.length > 0 || authorNames.length > 0 || labelValues.length > 0
+
+  const clearAllFilters = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('author')
+    next.delete('authorEmail')
+    next.delete('authorName')
+    next.delete('label')
+    setSearchParams(next, { replace: true })
+    setInput('')
+  }
+
   const { state, pathname, hash } = useLocation()
 
   useEffect(() => {
@@ -305,9 +325,9 @@ export default function Index() {
             </div>
           </div>
         </Container>
-        <Container className="mt-4 mb-4 flex justify-between">
+        <Container className="max-600:flex-col 600:items-end mt-4 mb-4 flex justify-between">
           <FilterDropdown />
-          <div className="text-mono-sm text-default flex">
+          <div className="text-mono-xs text-default max-600:mt-3 flex">
             <div className="text-tertiary mr-1 block">Results:</div>
             {matchedItems.length}
           </div>
@@ -347,6 +367,16 @@ export default function Index() {
             <RfdRow key={rfd.formattedNumber} rfd={rfd} />
           ))}
         </ul>
+        {matchedItems.length === 0 && (hasFilters || input) && (
+          <Container>
+            <div className="text-sans-md text-tertiary border-secondary mt-3 flex flex-col items-center gap-3 rounded-lg border px-6 py-12 text-center">
+              <div>No RFDs match your filters</div>
+              <Button onClick={clearAllFilters} variant="ghost" size="sm">
+                Clear filters
+              </Button>
+            </div>
+          </Container>
+        )}
       </div>
     </>
   )
@@ -370,7 +400,7 @@ const SortIcon = ({
   </div>
 )
 
-const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
+const RfdRow = memo(({ rfd }: { rfd: RfdListItem }) => {
   return (
     <Container className="text-sans-md border-secondary 800:h-20 relative rounded-lg border">
       <div className="800:gap-6 800:py-0 grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4">
@@ -422,7 +452,7 @@ const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
       </div>
     </Container>
   )
-}
+})
 
 const Labels = ({ labels }: { labels: string[] }) => (
   <div className="1000:flex order-4 col-span-3 hidden max-h-10">
@@ -449,7 +479,7 @@ const LabelsInner = ({ labels }: { labels: string[] }) => {
     >
       {labels ? (
         labels.map((label) => (
-          <Link key={label} to={`/?label=${label.trim()}`}>
+          <Link key={label} to={`/?label=${encodeURIComponent(label.trim())}`}>
             <Badge color="neutral">{label.trim()}</Badge>
           </Link>
         ))

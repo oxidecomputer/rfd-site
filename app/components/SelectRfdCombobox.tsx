@@ -7,7 +7,15 @@
  */
 
 import cn from 'classnames'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useDeferredValue,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import { Link, useNavigate } from 'react-router'
 
 import Icon from '~/components/Icon'
@@ -35,32 +43,34 @@ const SelectRfdCombobox = ({
 
   useKey('mod+/', toggleCombobox, { global: true })
 
-  const handleDismiss = () => setOpen(false)
+  const handleDismiss = useCallback(() => setOpen(false), [])
 
   return (
     <div className="flex items-center">
-      <div>
-        <div className="text-mono-xs text-tertiary">
-          RFD {currentRfd ? currentRfd.number : ''}
-        </div>
-        <div
-          className={cn(
-            'text-sans-sm text-default 600:max-w-[240px] truncate leading-[14px]!',
-            isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
-          )}
-        >
-          {currentRfd ? currentRfd.title : 'Select an RFD'}
-        </div>
-      </div>
       <button
         onClick={toggleCombobox}
-        className="text-tertiary border-secondary hover:bg-hover 600:ml-6 ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border"
         aria-label="Select an RFD"
+        className="group flex items-center text-left"
       >
-        <Icon name="select-arrows" size={6} className="shrink-0" height={14} />
+        <div>
+          <div className="text-mono-xs text-tertiary">
+            RFD {currentRfd ? currentRfd.number : ''}
+          </div>
+          <div
+            className={cn(
+              'text-sans-sm text-default 600:max-w-[240px] truncate leading-[14px]!',
+              isLoggedIn ? 'max-w-[160px]' : 'max-w-[100px]',
+            )}
+          >
+            {currentRfd ? currentRfd.title : 'Select an RFD'}
+          </div>
+        </div>
+        <div className="text-tertiary border-secondary group-hover:bg-hover 600:ml-6 ml-2 flex h-[32px] w-[18px] items-center justify-center rounded border">
+          <Icon name="select-arrows" size={6} className="shrink-0" height={14} />
+        </div>
       </button>
 
-      <ComboboxWrapper open={open} rfds={open ? rfds : []} onDismiss={handleDismiss} />
+      <ComboboxWrapper open={open} rfds={rfds} onDismiss={handleDismiss} />
     </div>
   )
 }
@@ -77,20 +87,22 @@ const ComboboxWrapper = ({
   const navigate = useNavigate()
 
   const [input, setInput] = useState('')
+  // Defers list filtering so typing stays responsive with 600+ items.
+  const deferredInput = useDeferredValue(input)
 
   const inputRef = (node: HTMLInputElement) => {
     if (node) node.focus()
   }
 
   const matchedItems = useMemo(() => {
-    const parsedInput = parseInt(input)
+    const parsedInput = parseInt(deferredInput)
 
-    if (!input.trim()) {
+    if (!deferredInput.trim()) {
       return rfds
     }
 
     const haystack = rfds.map((rfd) => `${rfd.number} ¦ ${rfd.title || ''}`)
-    const idxs = fuzz.filter(haystack, input)
+    const idxs = fuzz.filter(haystack, deferredInput)
 
     let filteredRfds: RfdListItem[] = []
 
@@ -114,15 +126,17 @@ const ComboboxWrapper = ({
     }
 
     return filteredRfds
-  }, [input, rfds])
+  }, [deferredInput, rfds])
 
   const [selectedIdx, setSelectedIdx] = useState(0)
   const selectedItem: RfdListItem | undefined = matchedItems[selectedIdx]
 
-  const handleDismiss = () => {
+  const handleDismiss = useCallback(() => {
     setInput('')
     onDismiss()
-  }
+  }, [onDismiss])
+
+  const isDirty = deferredInput.length > 0
 
   const divRef = useRef<HTMLDivElement>(null)
   const ulRef = useRef<HTMLUListElement>(null)
@@ -130,16 +144,19 @@ const ComboboxWrapper = ({
   useSteppedScroll(divRef, ulRef, selectedIdx)
 
   return (
-    <div className={cn(open ? 'visible' : 'pointer-events-none invisible', 'z-10')}>
+    <div className={cn('z-10', !open && 'pointer-events-none')} inert={!open || undefined}>
       <button
         className={cn(
-          'bg-default 600:bg-transparent fixed top-0 right-0 bottom-0 left-0',
+          'bg-default 600:bg-transparent fixed top-0 right-0 bottom-0 left-0 transition-opacity duration-200 ease-out',
           open ? 'opacity-80' : 'opacity-0',
         )}
         onClick={() => handleDismiss()}
       />
       <div
-        className="group 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem] absolute top-4 right-4 left-4"
+        className={cn(
+          'group 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem] absolute top-4 right-4 left-4 transition duration-200 ease-out motion-reduce:transition-none',
+          open ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0',
+        )}
         onKeyDown={(e) => {
           const lastIdx = matchedItems.length - 1
           if (e.key === 'Enter') {
@@ -201,8 +218,8 @@ const ComboboxWrapper = ({
                     key={rfd.formattedNumber}
                     rfd={rfd}
                     selected={selectedIdx === index}
-                    isDirty={input.length > 0}
-                    onClick={() => handleDismiss()}
+                    isDirty={isDirty}
+                    onClick={handleDismiss}
                   />
                 )
               })
@@ -218,62 +235,64 @@ const ComboboxWrapper = ({
   )
 }
 
-const ComboboxItem = ({
-  rfd,
-  selected,
-  onClick,
-  isDirty,
-}: {
-  rfd: RfdListItem
-  selected: boolean
-  onClick: () => void
-  isDirty: boolean
-}) => {
-  const [shouldPrefetch, setShouldPrefetch] = useState(false)
+const ComboboxItem = memo(
+  ({
+    rfd,
+    selected,
+    onClick,
+    isDirty,
+  }: {
+    rfd: RfdListItem
+    selected: boolean
+    onClick: () => void
+    isDirty: boolean
+  }) => {
+    const [shouldPrefetch, setShouldPrefetch] = useState(false)
 
-  const timer = useRef<NodeJS.Timeout | null>(null)
+    const timer = useRef<NodeJS.Timeout | null>(null)
 
-  function clear() {
-    if (timer.current) clearTimeout(timer.current)
-    timer.current = null
-  }
-
-  // Programmatically prefetching items in the jump to menu
-  // Only if the user has typed something, with a timeout to
-  // avoid prefetching everything
-  useEffect(() => {
-    if (selected && isDirty) {
-      timer.current = setTimeout(() => setShouldPrefetch(true), 250)
-    } else {
-      clear()
-      setShouldPrefetch(false)
+    function clear() {
+      if (timer.current) clearTimeout(timer.current)
+      timer.current = null
     }
 
-    return clear
-  }, [selected, isDirty])
+    // Programmatically prefetching items in the jump to menu
+    // Only if the user has typed something, with a timeout to
+    // avoid prefetching everything
+    useEffect(() => {
+      if (selected && isDirty) {
+        timer.current = setTimeout(() => setShouldPrefetch(true), 250)
+      } else {
+        clear()
+        setShouldPrefetch(false)
+      }
 
-  return (
-    <Link
-      to={`/rfd/${rfd.formattedNumber}`}
-      onClick={onClick}
-      prefetch={shouldPrefetch ? 'render' : 'intent'}
-    >
-      <li
-        className={cn(
-          'menu-item text-sans-sm border-secondary relative cursor-pointer border-b px-3 py-2 pr-6',
-          selected
-            ? 'text-accent bg-accent hover:bg-accent-hover'
-            : 'hover:bg-hover text-default',
-        )}
+      return clear
+    }, [selected, isDirty])
+
+    return (
+      <Link
+        to={`/rfd/${rfd.formattedNumber}`}
+        onClick={onClick}
+        prefetch={shouldPrefetch ? 'render' : 'none'}
       >
-        {selected && <Outline />}
-        <div>RFD {rfd.number}</div>
-        <div className={cn(selected ? 'text-accent-secondary' : 'text-secondary')}>
-          {rfd.title}
-        </div>
-      </li>
-    </Link>
-  )
-}
+        <li
+          className={cn(
+            'menu-item text-sans-sm border-secondary relative cursor-pointer border-b px-3 py-2 pr-6',
+            selected
+              ? 'text-accent bg-accent hover:bg-accent-hover'
+              : 'hover:bg-hover text-default',
+          )}
+        >
+          {selected && <Outline />}
+          <div>RFD {rfd.number}</div>
+          <div className={cn(selected ? 'text-accent-secondary' : 'text-secondary')}>
+            {rfd.title}
+          </div>
+        </li>
+      </Link>
+    )
+  },
+)
 
 export default SelectRfdCombobox
