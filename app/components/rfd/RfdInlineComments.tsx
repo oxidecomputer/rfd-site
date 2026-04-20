@@ -22,10 +22,7 @@ import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import uniqBy from 'lodash/uniqBy'
-import { marked } from 'marked'
 import { useEffect, useMemo, useState } from 'react'
-import { renderToString } from 'react-dom/server'
-import diff from 'simple-text-diff'
 
 import Container from '~/components/Container'
 import Icon from '~/components/Icon'
@@ -35,6 +32,7 @@ import type {
   ListReviewsCommentsType,
   ReviewCommentsType,
 } from '~/services/github-discussion.server'
+import { parseMarkdownText } from '~/utils/markdown'
 
 import { calcOffset } from './RfdPreview'
 
@@ -292,32 +290,6 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
 
 type Change = 'add' | 'remove' | null
 
-const CodeSuggestion = ({
-  original,
-  suggestion,
-  isOverlay,
-}: {
-  original: string
-  suggestion: string
-  isOverlay: boolean
-}) => {
-  const textDiff = diff.diffPatchBySeparator(original, suggestion, ' ')
-  return (
-    <div
-      className={cn(
-        'text-raise border-secondary overflow-hidden rounded-lg border',
-        isOverlay ? 'bg-default' : 'bg-raise',
-      )}
-    >
-      <div className="text-mono-xs text-tertiary border-b-secondary w-full border-b px-2 py-2">
-        Suggestion
-      </div>
-      <CodeLine change="remove" code={textDiff.before} />
-      <CodeLine change="add" code={textDiff.after} />
-    </div>
-  )
-}
-
 export const CommentThreadBlock = ({
   path,
   line,
@@ -428,29 +400,6 @@ export const CommentThreadBlock = ({
             original = original.slice(1)
           }
 
-          const renderer = {
-            code({ text, lang }: { text: string; lang?: string }) {
-              const langString = (lang || '').match(/\S*/)?.[0] || ''
-              const _code = text.replace(/\n$/, '') + '\n'
-
-              if (langString === 'suggestion') {
-                return renderToString(
-                  <CodeSuggestion
-                    original={original}
-                    suggestion={_code}
-                    isOverlay={isOverlay}
-                  />,
-                )
-              }
-
-              const cls = langString ? `class="lang-${langString}"` : ''
-
-              return `<pre><code ${cls}>${_code}</code></pre>\n`
-            },
-          }
-
-          marked.use({ renderer })
-
           return (
             <div
               key={comment.id}
@@ -484,7 +433,9 @@ export const CommentThreadBlock = ({
                 </div>
                 <div
                   className="github-markdown asciidoc-body text-sans-md text-default mt-2 w-full pr-4 text-left"
-                  dangerouslySetInnerHTML={{ __html: marked.parse(comment.body) }}
+                  dangerouslySetInnerHTML={{
+                    __html: parseMarkdownText(comment.body, isOverlay, original),
+                  }}
                 />
 
                 {comment.reactions && <CommentReactions reactions={comment.reactions} />}
