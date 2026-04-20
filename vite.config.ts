@@ -8,18 +8,20 @@
 
 import { reactRouter } from '@react-router/dev/vite'
 import tailwindcss from '@tailwindcss/vite'
-import { defineConfig } from 'vite'
-import tsconfigPaths from 'vite-tsconfig-paths'
+import { defineConfig, type PluginOption } from 'vite'
 
 import { LocalRfdPlugin } from './vite/local-rfd-plugin'
 
-const plugins = [tailwindcss(), reactRouter(), tsconfigPaths()]
+const plugins: PluginOption[] = [tailwindcss(), reactRouter()]
 
 const localRepo = process.env.LOCAL_RFD_REPO
 if (localRepo) plugins.push(LocalRfdPlugin(localRepo))
 
 export default defineConfig({
   plugins,
+  resolve: {
+    tsconfigPaths: true,
+  },
   server: {
     port: 3000,
   },

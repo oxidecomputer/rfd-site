@@ -6,11 +6,12 @@
  * Copyright Oxide Computer Company
  */
 
-import tsconfigPaths from 'vite-tsconfig-paths'
 import { defaultExclude, defineConfig } from 'vitest/config'
 
 export default defineConfig({
-  plugins: [tsconfigPaths()],
+  resolve: {
+    tsconfigPaths: true,
+  },
   test: {
     exclude: ['test/e2e/**', ...defaultExclude],
   },
