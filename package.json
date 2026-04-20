@@ -28,10 +28,10 @@
     "@oxide/remix-auth-rfd": "^0.1.3",
     "@oxide/rfd.ts": "^0.14.1",
     "@radix-ui/react-accordion": "^1.2.12",
-    "@react-router/fs-routes": "^7.13.2",
-    "@react-router/node": "^7.13.2",
-    "@react-router/serve": "^7.13.2",
-    "@tailwindcss/vite": "^4.1.13",
+    "@react-router/fs-routes": "^7.14.1",
+    "@react-router/node": "^7.14.1",
+    "@react-router/serve": "^7.14.1",
+    "@tailwindcss/vite": "^4.2.2",
     "@tanstack/react-query": "^5.90.2",
     "@vercel/react-router": "^1.2.6",
     "classnames": "^2.5.1",
@@ -49,7 +49,7 @@
     "react": "^19.2.2",
     "react-dom": "^19.2.2",
     "react-instantsearch": "^7.16.3",
-    "react-router": "^7.13.2",
+    "react-router": "^7.14.1",
     "remeda": "^2.32.0",
     "remix-auth": "^4.2.0",
     "remix-auth-oauth2": "^3.4.1",
@@ -63,7 +63,7 @@
     "@eslint/compat": "^1.4.0",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
     "@playwright/test": "^1.55.1",
-    "@react-router/dev": "^7.13.2",
+    "@react-router/dev": "^7.14.1",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@types/d3": "^7.4.3",
     "@types/express": "^5.0.3",
@@ -88,14 +88,17 @@
     "postcss-nesting": "^13.0.2",
     "postcss-value-parser": "^4.2.0",
     "prettier-plugin-tailwindcss": "^0.6.14",
-    "tailwindcss": "^4.1.13",
+    "tailwindcss": "^4.2.2",
     "typescript": "~5.9.2",
     "typescript-eslint": "^8.44.1",
-    "vite": "^7.1.7",
-    "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^3.2.4"
+    "vite": "^8.0.9",
+    "vitest": "^4.1.4"
   },
   "engines": {
     "node": ">=22"
+  },
+  "overrides": {
+    "algoliasearch": "^4.24.0",
+    "algoliasearch-helper": "3.26.0"
   }
 }
