@@ -51,12 +51,10 @@ describe('diffPatchBySeparator', () => {
   })
 
   test('word-level diff with space separator', () => {
-    expect(diffPatchBySeparator('the quick brown fox', 'the slow brown fox', ' ')).toEqual(
-      {
-        before: 'the <del>quick</del> brown fox',
-        after: 'the <ins>slow</ins> brown fox',
-      },
-    )
+    expect(diffPatchBySeparator('the quick brown fox', 'the slow brown fox', ' ')).toEqual({
+      before: 'the <del>quick</del> brown fox',
+      after: 'the <ins>slow</ins> brown fox',
+    })
   })
 
   test('defaults to comma separator', () => {
