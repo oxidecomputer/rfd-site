@@ -34,6 +34,7 @@ import type {
   ListReviewsCommentsType,
   ReviewCommentsType,
 } from '~/services/github-discussion.server'
+import { parseMarkdownText } from '~/utils/markdown'
 import { diffPatchBySeparator } from '~/utils/textDiff'
 
 import { calcOffset } from './RfdPreview'
@@ -484,7 +485,9 @@ export const CommentThreadBlock = ({
                 </div>
                 <div
                   className="github-markdown asciidoc-body text-sans-md text-default mt-2 w-full pr-4 text-left"
-                  dangerouslySetInnerHTML={{ __html: marked.parse(comment.body) }}
+                  dangerouslySetInnerHTML={{
+                    __html: parseMarkdownText(comment.body, marked.parse),
+                  }}
                 />
 
                 {comment.reactions && <CommentReactions reactions={comment.reactions} />}
