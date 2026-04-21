@@ -332,7 +332,7 @@ export default function Index() {
             {matchedItems.length}
           </div>
         </Container>
-        <ul className="space-y-3">
+        <ul className="space-y-3" data-testid="rfd-list">
           <Container
             isGrid
             className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"

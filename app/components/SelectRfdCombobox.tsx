@@ -6,7 +6,9 @@
  * Copyright Oxide Computer Company
  */
 
+import { useVirtualizer } from '@tanstack/react-virtual'
 import cn from 'classnames'
+import { AnimatePresence, motion } from 'motion/react'
 import {
   memo,
   useCallback,
@@ -20,12 +22,13 @@ import { Link, useNavigate } from 'react-router'
 
 import Icon from '~/components/Icon'
 import { useKey } from '~/hooks/use-key'
-import { useSteppedScroll } from '~/hooks/use-stepped-scroll'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
 import { classed } from '~/utils/classed'
 import { fuzz } from '~/utils/fuzz'
 
 const Outline = classed.div`absolute left-0 top-0 z-10 h-full w-full rounded border border-accent pointer-events-none`
+
+const EASE_OUT_QUAD = { duration: 0.15, ease: [0.5, 1, 0.89, 1] } as const
 
 const SelectRfdCombobox = ({
   rfds,
@@ -139,99 +142,123 @@ const ComboboxWrapper = ({
   const isDirty = deferredInput.length > 0
 
   const divRef = useRef<HTMLDivElement>(null)
-  const ulRef = useRef<HTMLUListElement>(null)
 
-  useSteppedScroll(divRef, ulRef, selectedIdx)
+  const rowVirtualizer = useVirtualizer({
+    count: matchedItems.length,
+    getScrollElement: () => divRef.current,
+    estimateSize: () => 50,
+    overscan: 8,
+  })
+
+  useEffect(() => {
+    if (matchedItems.length === 0) return
+    rowVirtualizer.scrollToIndex(selectedIdx, { align: 'auto' })
+  }, [selectedIdx, matchedItems.length, rowVirtualizer])
 
   return (
-    <div className={cn('z-10', !open && 'pointer-events-none')} inert={!open || undefined}>
-      <button
-        className={cn(
-          'bg-default 600:bg-transparent fixed top-0 right-0 bottom-0 left-0 transition-opacity duration-200 ease-out',
-          open ? 'opacity-80' : 'opacity-0',
-        )}
-        onClick={() => handleDismiss()}
-      />
-      <div
-        className={cn(
-          'group 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem] absolute top-4 right-4 left-4 transition duration-200 ease-out motion-reduce:transition-none',
-          open ? 'translate-y-0 opacity-100' : 'translate-y-2 opacity-0',
-        )}
-        onKeyDown={(e) => {
-          const lastIdx = matchedItems.length - 1
-          if (e.key === 'Enter') {
-            if (!selectedItem) return
-            navigate(`/rfd/${selectedItem.formattedNumber}`)
-            handleDismiss()
-          } else if (e.key === 'ArrowDown') {
-            const newIdx = selectedIdx === lastIdx ? 0 : selectedIdx + 1
-            setSelectedIdx(newIdx)
-            e.preventDefault() // Prevent it from moving input cursor
-          } else if (e.key === 'ArrowUp') {
-            const newIdx = selectedIdx === 0 ? lastIdx : selectedIdx - 1
-            setSelectedIdx(newIdx)
-            e.preventDefault()
-          } else if (e.key === 'Escape') {
-            handleDismiss()
-          }
-        }}
-        role="combobox"
-        tabIndex={-1}
-        aria-controls="TODO"
-        aria-expanded
-      >
-        <div className="overlay bg-raise shadow-border focus-within:ring-accent-secondary flex rounded focus-within:ring-2">
-          <input
-            ref={inputRef}
-            value={input}
-            onChange={(e) => {
-              setSelectedIdx(0)
-              setInput(e.target.value)
-            }}
-            onBlur={(e) => {
-              // Dismiss if the users focus moves to the
-              // other input on the homepage
-              if (e.relatedTarget?.nodeName === 'INPUT') {
+    <AnimatePresence>
+      {open && (
+        <div className="z-10">
+          <motion.button
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={EASE_OUT_QUAD}
+            className="bg-default 600:bg-transparent fixed top-0 right-0 bottom-0 left-0 cursor-default!"
+            onClick={() => handleDismiss()}
+          />
+          <motion.div
+            initial={{ opacity: 0, y: 5 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 5 }}
+            transition={EASE_OUT_QUAD}
+            className="group 600:right-auto 600:top-[calc(var(--header-height)+8px)] 600:w-[16rem] absolute top-4 right-4 left-4"
+            onKeyDown={(e) => {
+              const lastIdx = matchedItems.length - 1
+              if (e.key === 'Enter') {
+                if (!selectedItem) return
+                navigate(`/rfd/${selectedItem.formattedNumber}`)
+                handleDismiss()
+              } else if (e.key === 'ArrowDown') {
+                const newIdx = selectedIdx === lastIdx ? 0 : selectedIdx + 1
+                setSelectedIdx(newIdx)
+                e.preventDefault() // Prevent it from moving input cursor
+              } else if (e.key === 'ArrowUp') {
+                const newIdx = selectedIdx === 0 ? lastIdx : selectedIdx - 1
+                setSelectedIdx(newIdx)
+                e.preventDefault()
+              } else if (e.key === 'Escape') {
                 handleDismiss()
               }
             }}
-            placeholder="Search"
-            spellCheck="false"
-            className="placeholder:text-tertiary text-sans-lg text-raise bg-raise 600:h-auto 600:py-3 600:text-sans-md h-12 w-full appearance-none rounded border-none px-3 focus:outline-offset-0 focus:outline-none"
-          />
-          <button
-            className="hover:bg-hover text-mono-sm text-secondary border-l-secondary 600:hidden block border-l px-4"
-            onClick={handleDismiss}
+            role="combobox"
+            tabIndex={-1}
+            aria-controls="TODO"
+            aria-expanded
           >
-            <Icon name="close" size={12} className="text-tertiary" />
-          </button>
+            <div className="overlay bg-raise shadow-border focus-within:ring-accent-secondary flex rounded focus-within:ring-2">
+              <input
+                ref={inputRef}
+                value={input}
+                onChange={(e) => {
+                  setSelectedIdx(0)
+                  setInput(e.target.value)
+                }}
+                onBlur={(e) => {
+                  // Dismiss if the users focus moves to the
+                  // other input on the homepage
+                  if (e.relatedTarget?.nodeName === 'INPUT') {
+                    handleDismiss()
+                  }
+                }}
+                placeholder="Search"
+                spellCheck="false"
+                className="placeholder:text-tertiary text-sans-lg text-raise bg-raise 600:h-auto 600:py-3 600:text-sans-md h-12 w-full appearance-none rounded border-none px-3 focus:outline-offset-0 focus:outline-none"
+              />
+              <button
+                className="hover:bg-hover text-mono-sm text-secondary border-l-secondary 600:hidden block border-l px-4"
+                onClick={handleDismiss}
+              >
+                <Icon name="close" size={12} className="text-tertiary" />
+              </button>
+            </div>
+            <div
+              ref={divRef}
+              className="shadow-menu bg-raise mt-3 max-h-[60vh] overflow-y-auto rounded"
+            >
+              {matchedItems.length > 0 ? (
+                <ul
+                  className="relative min-w-48"
+                  style={{ height: rowVirtualizer.getTotalSize() }}
+                >
+                  {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+                    const rfd = matchedItems[virtualRow.index]
+                    const isLast = virtualRow.index === matchedItems.length - 1
+                    return (
+                      <ComboboxItem
+                        key={rfd.formattedNumber}
+                        ref={rowVirtualizer.measureElement}
+                        dataIndex={virtualRow.index}
+                        offset={virtualRow.start}
+                        rfd={rfd}
+                        selected={selectedIdx === virtualRow.index}
+                        isDirty={isDirty}
+                        onClick={handleDismiss}
+                        isLast={isLast}
+                      />
+                    )
+                  })}
+                </ul>
+              ) : (
+                <div className="text-sans-sm text-default px-3 py-2 text-center">
+                  No matches found
+                </div>
+              )}
+            </div>
+          </motion.div>
         </div>
-        <div
-          ref={divRef}
-          className="shadow-menu bg-raise mt-3 max-h-[60vh] overflow-y-auto rounded"
-        >
-          <ul ref={ulRef} className={cn('min-w-48 [&>*:last-child_.menu-item]:border-b-0')}>
-            {matchedItems.length > 0 ? (
-              matchedItems.map((rfd: RfdListItem, index: number) => {
-                return (
-                  <ComboboxItem
-                    key={rfd.formattedNumber}
-                    rfd={rfd}
-                    selected={selectedIdx === index}
-                    isDirty={isDirty}
-                    onClick={handleDismiss}
-                  />
-                )
-              })
-            ) : (
-              <div className="text-sans-sm text-default px-3 py-2 text-center">
-                No matches found
-              </div>
-            )}
-          </ul>
-        </div>
-      </div>
-    </div>
+      )}
+    </AnimatePresence>
   )
 }
 
@@ -241,11 +268,19 @@ const ComboboxItem = memo(
     selected,
     onClick,
     isDirty,
+    offset,
+    dataIndex,
+    isLast,
+    ref,
   }: {
     rfd: RfdListItem
     selected: boolean
     onClick: () => void
     isDirty: boolean
+    offset: number
+    dataIndex: number
+    isLast: boolean
+    ref: (node: HTMLAnchorElement | null) => void
   }) => {
     const [shouldPrefetch, setShouldPrefetch] = useState(false)
 
@@ -275,10 +310,15 @@ const ComboboxItem = memo(
         to={`/rfd/${rfd.formattedNumber}`}
         onClick={onClick}
         prefetch={shouldPrefetch ? 'render' : 'none'}
+        ref={ref}
+        data-index={dataIndex}
+        className="absolute top-0 left-0 w-full"
+        style={{ transform: `translateY(${offset}px)` }}
       >
         <li
           className={cn(
             'menu-item text-sans-sm border-secondary relative cursor-pointer border-b px-3 py-2 pr-6',
+            isLast && 'border-b-0',
             selected
               ? 'text-accent bg-accent hover:bg-accent-hover'
               : 'hover:bg-hover text-default',

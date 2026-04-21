@@ -23,8 +23,8 @@ test.describe('Navigation and Basic Functionality', () => {
     // we're in public mode so we should see the banner
     await expect(page.getByText('Viewing public RFDs')).toBeVisible()
 
-    // can click an RFD
-    await page.getByRole('link', { name: 'RFD 223' }).click()
+    // can click an RFD — scope to the list to avoid matching the header combobox
+    await page.getByRole('link', { name: /RFD 223/ }).click()
     await expect(
       page.getByRole('heading', { name: 'Web Console Architecture' }),
     ).toBeVisible()
@@ -44,10 +44,11 @@ test.describe('Navigation and Basic Functionality', () => {
       page.getByRole('heading', { name: 'Requests for Discussion' }),
     ).toBeVisible()
 
-    await expect(page.getByRole('banner').getByPlaceholder('Search')).toBeHidden()
-
+    // The combobox input is in the DOM but inert (not interactive) until opened
     await page.getByRole('button', { name: 'Select an RFD' }).click()
     await page.getByRole('banner').getByPlaceholder('Search').fill('Mission')
+    // Wait for useDeferredValue to settle before pressing Enter
+    await page.waitForTimeout(200)
     await page.getByRole('banner').getByPlaceholder('Search').press('Enter')
 
     await expect(
@@ -57,10 +58,11 @@ test.describe('Navigation and Basic Functionality', () => {
 })
 
 test.describe('Filtering', () => {
-  test('Filter by title', async ({ page }) => {
+  test('Filter by title via text input', async ({ page }) => {
     await page.goto('/')
 
-    const rfdLinks = page.getByRole('link', { name: /^RFD/ })
+    const rfdList = page.getByTestId('rfd-list')
+    const rfdLinks = rfdList.getByRole('link', { name: /^RFD/ })
 
     // don't know how many public RFDs there are but there are a bunch
     expect(await rfdLinks.count()).toBeGreaterThan(10)
@@ -72,10 +74,11 @@ test.describe('Filtering', () => {
     expect(await rfdLinks.count()).toEqual(1)
   })
 
-  test('Filter by author', async ({ page }) => {
+  test('Filter by author via text input', async ({ page }) => {
     await page.goto('/')
 
-    const rfdLinks = page.getByRole('link', { name: /^RFD/ })
+    const rfdList = page.getByTestId('rfd-list')
+    const rfdLinks = rfdList.getByRole('link', { name: /^RFD/ })
 
     // don't know how many public RFDs there are but there are a bunch
     expect(await rfdLinks.count()).toBeGreaterThan(10)
@@ -85,6 +88,194 @@ test.describe('Filtering', () => {
 
     // but after you filter there are fewer
     expect(await rfdLinks.count()).toEqual(2)
+  })
+
+  test('Filter by author via chip dropdown', async ({ page }) => {
+    await page.goto('/')
+
+    const rfdList = page.getByTestId('rfd-list')
+    const rfdLinks = rfdList.getByRole('link', { name: /^RFD/ })
+
+    expect(await rfdLinks.count()).toBeGreaterThan(10)
+
+    // Open the Author chip popover
+    await page.getByTestId('filter-author').click()
+    await expect(page.getByPlaceholder('Search authors')).toBeVisible()
+
+    // Search and select David Crespo
+    await page.getByPlaceholder('Search authors').fill('David Crespo')
+    await page.getByRole('option', { name: /David Crespo/ }).click()
+
+    // URL should update with author param
+    await expect(page).toHaveURL(/author=/)
+
+    // Close the popover by pressing Escape
+    await page.keyboard.press('Escape')
+
+    // RFD list filtered to David Crespo's RFDs
+    expect(await rfdLinks.count()).toEqual(2)
+
+    // The chip should show selected author name
+    await expect(page.getByTestId('filter-author')).toContainText('David Crespo')
+  })
+
+  test('Filter by multiple authors via chip dropdown', async ({ page }) => {
+    await page.goto('/')
+
+    // Open Author chip
+    await page.getByTestId('filter-author').click()
+    await expect(page.getByPlaceholder('Search authors')).toBeVisible()
+
+    // Select David Crespo
+    await page.getByPlaceholder('Search authors').fill('David Crespo')
+    await page.getByRole('option', { name: /David Crespo/ }).click()
+
+    // Add a second author — clear search and pick another
+    await page.getByPlaceholder('Search authors').fill('Justin Bennett')
+    await page.getByRole('option', { name: /Justin Bennett/ }).click()
+
+    await page.keyboard.press('Escape')
+
+    // URL should have two author params
+    await expect(page).toHaveURL(/author=/)
+    const url = page.url()
+    expect(url.split('author=').length - 1).toEqual(2)
+
+    // Chip shows both names when exactly 2 are selected
+    await expect(page.getByTestId('filter-author')).toContainText('David Crespo')
+    await expect(page.getByTestId('filter-author')).toContainText('Justin Bennett')
+  })
+
+  test('Clear author filter via X button on chip', async ({ page }) => {
+    await page.goto('/')
+
+    const rfdLinks = page.getByTestId('rfd-list').getByRole('link', { name: /^RFD/ })
+    const totalCount = await rfdLinks.count()
+
+    // Select an author via the chip
+    await page.getByTestId('filter-author').click()
+    await page.getByPlaceholder('Search authors').fill('David Crespo')
+    await page.getByRole('option', { name: /David Crespo/ }).click()
+    await page.waitForTimeout(250)
+    await page.keyboard.press('Escape')
+
+    expect(await rfdLinks.count()).toBeLessThan(totalCount)
+
+    // Click the X on the Author chip to clear
+    await page.getByRole('button', { name: 'Clear Author filter' }).click()
+    await page.waitForTimeout(250)
+
+    // URL should no longer have author param
+    await expect(page).not.toHaveURL(/author=/)
+
+    // All RFDs visible again
+    expect(await rfdLinks.count()).toEqual(totalCount)
+  })
+
+  test('Filter by label via chip dropdown', async ({ page }) => {
+    await page.goto('/')
+
+    const rfdLinks = page.getByTestId('rfd-list').getByRole('link', { name: /^RFD/ })
+    const totalCount = await rfdLinks.count()
+    expect(totalCount).toBeGreaterThan(10)
+
+    // Open Label chip popover
+    await page.getByTestId('filter-label').click()
+    await expect(page.getByPlaceholder('Search labels')).toBeVisible()
+
+    // Search for and select the 'sled' label
+    await page.getByPlaceholder('Search labels').fill('storage')
+    await page.getByRole('option', { name: /^storage/ }).click()
+
+    // URL should update with label param
+    await expect(page).toHaveURL(/label=storage/)
+
+    await page.keyboard.press('Escape')
+
+    // Filtered to fewer RFDs
+    expect(await rfdLinks.count()).toBeLessThan(totalCount)
+    expect(await rfdLinks.count()).toBeGreaterThan(0)
+
+    // Chip reflects selected label
+    await expect(page.getByTestId('filter-label')).toContainText('storage')
+  })
+
+  test('Clear label filter via X button on chip', async ({ page }) => {
+    await page.goto('/?label=storage')
+
+    const rfdList = page.getByTestId('rfd-list')
+    const rfdLinks = rfdList.getByRole('link', { name: /^RFD/ })
+
+    // Should be filtered to storage RFDs
+    expect(await rfdLinks.count()).toBeGreaterThan(0)
+    expect(await rfdLinks.count()).toBeLessThan(30)
+
+    // Click the X on the Label chip
+    await page.getByRole('button', { name: 'Clear Label filter' }).click()
+    await page.waitForTimeout(250)
+
+    await expect(page).not.toHaveURL(/label=/)
+    expect(await rfdLinks.count()).toBeGreaterThan(10)
+  })
+
+  test('Suggested authors appear when typing in filter input', async ({ page }) => {
+    await page.goto('/')
+
+    // Type a partial author name — suggestions should appear
+    await page.getByPlaceholder('Filter by').fill('David Crespo')
+    await page.waitForTimeout(250)
+
+    // Suggested authors banner should appear with a link to filter by that author
+    const suggestedAuthors = page.getByText('Filter RFDs from:').locator('..')
+    await expect(suggestedAuthors).toBeVisible()
+    const authorLink = suggestedAuthors.getByRole('link', { name: 'David Crespo' })
+    await expect(authorLink).toBeVisible()
+
+    // Clicking the suggestion sets the author filter and clears the text input
+    await authorLink.click()
+
+    await expect(page).toHaveURL(/author=/)
+    // Input should be cleared after clicking a suggestion
+    await expect(page.getByPlaceholder('Filter by')).toHaveValue('')
+
+    // RFDs filtered to David Crespo's
+    const rfdLinks = page.getByTestId('rfd-list').getByRole('link', { name: /^RFD/ })
+    expect(await rfdLinks.count()).toEqual(2)
+  })
+
+  test('Suggested labels appear when typing in filter input', async ({ page }) => {
+    await page.goto('/')
+
+    // "storage" matches exactly 1 of the 8 public labels, so suggestions appear
+    await page.getByPlaceholder('Filter by').fill('storage')
+    await page.waitForTimeout(250)
+
+    // Suggested labels banner should appear
+    const suggestedLabels = page.getByText('Filter RFDs labeled:').locator('..')
+    await expect(suggestedLabels).toBeVisible()
+    const labelLink = suggestedLabels.getByRole('link', { name: 'storage' })
+    await expect(labelLink).toBeVisible()
+
+    // Clicking sets label filter
+    await labelLink.click()
+
+    await expect(page).toHaveURL(/label=storage/)
+    await expect(page.getByPlaceholder('Filter by')).toHaveValue('')
+  })
+
+  test('Empty state with Clear filters button', async ({ page }) => {
+    await page.goto('/')
+
+    // Filter to something that returns no results
+    await page.getByPlaceholder('Filter by').fill('xyzzy_no_match_12345')
+    await page.waitForTimeout(250)
+
+    await expect(page.getByText('No RFDs match your filters')).toBeVisible()
+    await expect(page.getByRole('button', { name: 'Clear filters' })).toBeVisible()
+
+    // Clicking Clear filters resets the input
+    await page.getByRole('button', { name: 'Clear filters' }).click()
+    await expect(page.getByText('No RFDs match your filters')).toBeHidden()
   })
 })
 
@@ -138,10 +329,16 @@ test.describe('Authentication', () => {
 
 test.describe('Search', () => {
   test('Search functionality and navigation', async ({ page }) => {
-    const openSearchMenu = () => page.keyboard.press(`ControlOrMeta+k`)
+    // Playwright + Chromium on macOS doesn't reliably fire Meta+<letter> keydown
+    // events, so ControlOrMeta+k (which resolves to Meta+k on Mac) silently fails.
+    // Ctrl+k works because Mousetrap's `mod+k` binding resolves to Ctrl in the
+    // test browser's reported platform.
+    const openSearchMenu = () => page.keyboard.press('Control+k')
     const searchButton = page.getByRole('button', { name: 'Search' })
 
     await page.goto('/')
+    // Wait for the page to be interactive before using keyboard shortcuts
+    await page.waitForLoadState('domcontentloaded')
 
     const searchDialog = page.getByRole('dialog', { name: 'Search' })
     await expect(searchDialog).toBeHidden()

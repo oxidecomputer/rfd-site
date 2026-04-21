@@ -27,9 +27,55 @@ const FilterDropdown = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { rfds, authors, labels } = useRootLoaderData()
 
+  const searchParamsKey = searchParams.toString()
+
+  const selectedAuthors = useMemo(() => {
+    const emails = new Set(searchParams.getAll('author'))
+    const legacyEmail = searchParams.get('authorEmail')
+    if (legacyEmail) emails.add(legacyEmail)
+    return Array.from(emails)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsKey])
+
+  const legacyAuthorName = useMemo(
+    () => searchParams.get('authorName'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParamsKey],
+  )
+
+  const selectedLabels = useMemo(
+    () => searchParams.getAll('label'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParamsKey],
+  )
+
+  // Disjunctive facets: each group's counts reflect the filter set with that
+  // group's own selection removed, so users see how many results adding an
+  // option would yield rather than 0 everywhere once one option is picked.
+  const rfdsForAuthorCounts = useMemo(() => {
+    if (selectedLabels.length === 0) return rfds
+    return rfds.filter((rfd) => {
+      if (!rfd.labels) return false
+      const trimmed = rfd.labels.map((l) => l.trim())
+      return selectedLabels.some((l) => trimmed.includes(l))
+    })
+  }, [rfds, selectedLabels])
+
+  const rfdsForLabelCounts = useMemo(() => {
+    if (selectedAuthors.length === 0 && !legacyAuthorName) return rfds
+    return rfds.filter((rfd) => {
+      if (!rfd.authors) return false
+      return rfd.authors.some(
+        (a) =>
+          selectedAuthors.includes(a.email) ||
+          (legacyAuthorName !== null && a.name === legacyAuthorName),
+      )
+    })
+  }, [rfds, selectedAuthors, legacyAuthorName])
+
   const authorOptions = useMemo<FilterOption[]>(() => {
     const counts = new Map<string, number>()
-    for (const rfd of rfds) {
+    for (const rfd of rfdsForAuthorCounts) {
       for (const author of rfd.authors || []) {
         if (!author.email) continue
         counts.set(author.email, (counts.get(author.email) || 0) + 1)
@@ -43,11 +89,11 @@ const FilterDropdown = () => {
         searchText: `${a.name} ${a.email}`,
         count: counts.get(a.email) || 0,
       }))
-  }, [rfds, authors])
+  }, [rfdsForAuthorCounts, authors])
 
   const labelOptions = useMemo<FilterOption[]>(() => {
     const counts = new Map<string, number>()
-    for (const rfd of rfds) {
+    for (const rfd of rfdsForLabelCounts) {
       for (const label of rfd.labels || []) {
         const trimmed = label.trim()
         counts.set(trimmed, (counts.get(trimmed) || 0) + 1)
@@ -59,18 +105,7 @@ const FilterDropdown = () => {
       searchText: label,
       count: counts.get(label) || 0,
     }))
-  }, [rfds, labels])
-
-  const selectedAuthors = useMemo(
-    () => searchParams.getAll('author'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchParams.toString()],
-  )
-  const selectedLabels = useMemo(
-    () => searchParams.getAll('label'),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [searchParams.toString()],
-  )
+  }, [rfdsForLabelCounts, labels])
 
   const setSelectedAuthors = (values: string[]) => {
     startTransition(() => {
@@ -162,6 +197,7 @@ const FilterChip = ({
       <Ariakit.SelectProvider value={selected} setValue={onChange}>
         <div className={cn('relative', className)}>
           <Ariakit.Select
+            data-testid={`filter-${label.toLowerCase()}`}
             className={cn(
               'text-sans-sm inline-flex h-7 items-center rounded-md px-2 ring ring-current/15 ring-inset',
               hasSelection
