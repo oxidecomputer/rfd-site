@@ -7,9 +7,18 @@
  */
 
 import { Badge, Button } from '@oxide/design-system/ui'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Link,
   redirect,
@@ -270,6 +279,20 @@ export default function Index() {
     focusInput()
   }, [focusInput])
 
+  const listRef = useRef<HTMLDivElement>(null)
+  const [listOffset, setListOffset] = useState(0)
+
+  useLayoutEffect(() => {
+    if (listRef.current) setListOffset(listRef.current.offsetTop)
+  }, [matchedAuthors?.length, matchedLabels?.length, exactMatch?.number])
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: matchedItems.length,
+    estimateSize: () => 92,
+    overscan: 5,
+    scrollMargin: listOffset,
+  })
+
   return (
     <>
       {/* key makes the search dialog close on selection */}
@@ -332,44 +355,58 @@ export default function Index() {
           <FilterDropdown />
           <div className="text-mono-xs text-default max-600:mt-3 flex">
             <div className="text-tertiary mr-1 block">Results:</div>
-            {matchedItems.length}
+            <span data-testid="rfd-count">{matchedItems.length}</span>
           </div>
         </Container>
-        <ul className="space-y-3" data-testid="rfd-list">
-          <Container
-            isGrid
-            className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"
+        <Container
+          isGrid
+          className="text-mono-xs text-secondary bg-raise border-secondary 800:grid mb-3 hidden h-10 items-center rounded-lg border px-3"
+        >
+          <button
+            className="800:col-span-5 group col-span-12 flex cursor-pointer content-start pl-2 select-none"
+            data-testid="sort-number"
+            onClick={() => submitSortOrder('number')}
           >
-            <button
-              className="800:col-span-5 group col-span-12 flex cursor-pointer content-start pl-2 select-none"
-              data-testid="sort-number"
-              onClick={() => submitSortOrder('number')}
-            >
-              <div className="text-mono-xs group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
-                Number <span className="text-quaternary mx-1 inline-block">/</span> Title
-                <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
-              </div>
-            </button>
+            <div className="text-mono-xs group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
+              Number <span className="text-quaternary mx-1 inline-block">/</span> Title
+              <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
+            </div>
+          </button>
 
-            <div className="1000:col-span-2 col-span-3">State</div>
+          <div className="1000:col-span-2 col-span-3">State</div>
 
-            <button
-              className="text-mono-xs 1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
-              onClick={() => submitSortOrder('updated')}
-            >
-              <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
-                Updated
-                <SortIcon isActive={sortAttr === 'updated'} direction={sortDir} />
-              </div>
-            </button>
+          <button
+            className="text-mono-xs 1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
+            onClick={() => submitSortOrder('updated')}
+          >
+            <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
+              Updated
+              <SortIcon isActive={sortAttr === 'updated'} direction={sortDir} />
+            </div>
+          </button>
 
-            <div className="1000:block col-span-2 hidden">Labels</div>
-          </Container>
+          <div className="1000:block col-span-2 hidden">Labels</div>
+        </Container>
 
-          {matchedItems.map((rfd) => (
-            <RfdRow key={rfd.formattedNumber} rfd={rfd} />
-          ))}
-        </ul>
+        <div
+          ref={listRef}
+          className="relative"
+          style={{ height: rowVirtualizer.getTotalSize() }}
+          data-testid="rfd-list"
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const rfd = matchedItems[virtualRow.index]
+            return (
+              <RfdRow
+                key={rfd.formattedNumber}
+                rfd={rfd}
+                ref={rowVirtualizer.measureElement}
+                dataIndex={virtualRow.index}
+                offset={virtualRow.start - rowVirtualizer.options.scrollMargin}
+              />
+            )
+          })}
+        </div>
         {matchedItems.length === 0 && (hasFilters || input) && (
           <Container className="border-secondary mt-3 flex items-center justify-center border p-10">
             <div className="m-4 flex max-w-[18rem] flex-col items-center text-center">
@@ -406,59 +443,78 @@ const SortIcon = ({
   </div>
 )
 
-const RfdRow = memo(({ rfd }: { rfd: RfdListItem }) => {
-  return (
-    <Container className="text-sans-md border-secondary 800:h-20 relative rounded-lg border">
-      <div className="800:gap-6 800:py-0 grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4">
-        <Link
-          to={`/rfd/${rfd.formattedNumber}`}
-          key={rfd.formattedNumber}
-          prefetch="intent"
-          className="text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md group order-2 col-span-12 -m-4 p-4 pr-10"
-        >
-          <div className="800:group-hover:bg-hover -m-2 inline-flex flex-col rounded-lg p-2">
-            <div>RFD {rfd.number}</div>
-            <div className="text-default line-clamp-2">{rfd.title}</div>
+const RfdRow = memo(
+  ({
+    rfd,
+    ref,
+    dataIndex,
+    offset,
+  }: {
+    rfd: RfdListItem
+    ref: (node: HTMLDivElement | null) => void
+    dataIndex: number
+    offset: number
+  }) => {
+    return (
+      <div
+        ref={ref}
+        data-index={dataIndex}
+        className="absolute top-0 left-0 w-full pb-3"
+        style={{ transform: `translateY(${offset}px)` }}
+      >
+        <Container className="text-sans-md border-secondary 800:h-20 relative rounded-lg border">
+          <div className="800:gap-6 800:py-0 grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4">
+            <Link
+              to={`/rfd/${rfd.formattedNumber}`}
+              key={rfd.formattedNumber}
+              prefetch="intent"
+              className="text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md group order-2 col-span-12 -m-4 p-4 pr-10"
+            >
+              <div className="800:group-hover:bg-hover -m-2 inline-flex flex-col rounded-lg p-2">
+                <div>RFD {rfd.number}</div>
+                <div className="text-default line-clamp-2">{rfd.title}</div>
+              </div>
+            </Link>
+
+            <div className="800:order-2 800:col-span-3 1000:col-span-2 order-1 col-span-12 flex flex-col items-start">
+              {rfd.state && <StatusBadge label={rfd.state} />}
+            </div>
+
+            <div
+              className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2"
+              data-testid="timestamp"
+            >
+              <ClientOnly
+                fallback={
+                  <>
+                    <div className="bg-tertiary h-4 w-24 rounded" />
+                    <div className="bg-tertiary 800:block mt-1 hidden h-4 w-12 rounded"></div>
+                  </>
+                }
+              >
+                {() => (
+                  <>
+                    <div className="text-secondary 800:text-default">
+                      {rfd.latestMajorChangeAt &&
+                        dayjs(rfd.latestMajorChangeAt).format('MMM D, YYYY')}
+                    </div>
+                    <div className="text-quaternary 800:hidden">/</div>
+                    <div className="text-secondary 800:text-tertiary">
+                      {rfd.latestMajorChangeAt &&
+                        dayjs(rfd.latestMajorChangeAt).format('h:mm A')}
+                    </div>
+                  </>
+                )}
+              </ClientOnly>
+            </div>
+
+            {rfd.labels && <Labels labels={rfd.labels} />}
           </div>
-        </Link>
-
-        <div className="800:order-2 800:col-span-3 1000:col-span-2 order-1 col-span-12 flex flex-col items-start">
-          {rfd.state && <StatusBadge label={rfd.state} />}
-        </div>
-
-        <div
-          className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2"
-          data-testid="timestamp"
-        >
-          <ClientOnly
-            fallback={
-              <>
-                <div className="bg-tertiary h-4 w-24 rounded" />
-                <div className="bg-tertiary 800:block mt-1 hidden h-4 w-12 rounded"></div>
-              </>
-            }
-          >
-            {() => (
-              <>
-                <div className="text-secondary 800:text-default">
-                  {rfd.latestMajorChangeAt &&
-                    dayjs(rfd.latestMajorChangeAt).format('MMM D, YYYY')}
-                </div>
-                <div className="text-quaternary 800:hidden">/</div>
-                <div className="text-secondary 800:text-tertiary">
-                  {rfd.latestMajorChangeAt &&
-                    dayjs(rfd.latestMajorChangeAt).format('h:mm A')}
-                </div>
-              </>
-            )}
-          </ClientOnly>
-        </div>
-
-        {rfd.labels && <Labels labels={rfd.labels} />}
+        </Container>
       </div>
-    </Container>
-  )
-})
+    )
+  },
+)
 
 const Labels = ({ labels }: { labels: string[] }) => (
   <div className="1000:flex order-4 col-span-3 hidden max-h-10">
