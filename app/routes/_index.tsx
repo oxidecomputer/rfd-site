@@ -297,7 +297,7 @@ export default function Index() {
   return (
     <>
       {/* key makes the search dialog close on selection */}
-      <Header key={pathname + hash} homeInputEl={inputEl} />
+      <Header key={pathname + hash} />
       <div className="pt-4">
         <Container>
           <div className="600:pt-[calc(299/1200*100%)] max-600:my-4 relative w-full">

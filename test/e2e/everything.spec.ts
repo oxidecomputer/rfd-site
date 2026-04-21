@@ -283,7 +283,11 @@ test.describe('Direct RFD Access', () => {
   const rfdTestCases = [
     { rfd: '0068', title: 'Partnership as Shared Values', author: 'Bryan Cantrill' },
     { rfd: '0479', title: 'Dropshot API traits', author: 'Rain Paharia' },
-    { rfd: '0400', title: 'Dealing with cancel safety in async Rust', author: 'Rain Paharia' },
+    {
+      rfd: '0400',
+      title: 'Dealing with cancel safety in async Rust',
+      author: 'Rain Paharia',
+    },
     { rfd: '0463', title: 'The Oximeter Query Language', author: 'Benjamin Naecker' },
   ]
 
@@ -380,6 +384,8 @@ test.describe('Search', () => {
     await expect(
       page.getByRole('heading', { name: 'Web Console Architecture', level: 1 }),
     ).toBeVisible()
-    await expect(page.getByRole('heading', { name: 'Architectures', level: 2 })).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: 'Architectures', level: 2 }),
+    ).toBeVisible()
   })
 })
