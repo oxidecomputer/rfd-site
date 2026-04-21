@@ -97,42 +97,32 @@ const ComboboxWrapper = ({
     if (node) node.focus()
   }
 
-  const matchedItems = useMemo(() => {
-    const parsedInput = parseInt(deferredInput)
+  const matchItems = useCallback(
+    (query: string): RfdListItem[] => {
+      if (!query.trim()) return rfds
 
-    if (!deferredInput.trim()) {
-      return rfds
-    }
+      const parsedInput = parseInt(query)
+      const haystack = rfds.map((rfd) => `${rfd.number} ¦ ${rfd.title || ''}`)
+      const idxs = fuzz.filter(haystack, query)
+      if (!idxs) return []
 
-    const haystack = rfds.map((rfd) => `${rfd.number} ¦ ${rfd.title || ''}`)
-    const idxs = fuzz.filter(haystack, deferredInput)
-
-    let filteredRfds: RfdListItem[] = []
-
-    if (idxs) {
-      // Sort by exact match first, then by normal score
-      filteredRfds = idxs
-        .map((i) => {
-          const rfd = rfds[i]
-          return {
-            ...rfd,
-            _exactMatch: !isNaN(parsedInput) && rfd.number === parsedInput,
-          }
-        })
+      return idxs
+        .map((i) => ({
+          ...rfds[i],
+          _exactMatch: !isNaN(parsedInput) && rfds[i].number === parsedInput,
+        }))
         .sort((a, b) => {
-          // Prioritize exact matches
           if (a._exactMatch && !b._exactMatch) return -1
           if (!a._exactMatch && b._exactMatch) return 1
-          // Fall back to sorting by number
           return a.number - b.number
         })
-    }
+    },
+    [rfds],
+  )
 
-    return filteredRfds
-  }, [deferredInput, rfds])
+  const matchedItems = useMemo(() => matchItems(deferredInput), [matchItems, deferredInput])
 
   const [selectedIdx, setSelectedIdx] = useState(0)
-  const selectedItem: RfdListItem | undefined = matchedItems[selectedIdx]
 
   const handleDismiss = useCallback(() => {
     setInput('')
@@ -176,8 +166,13 @@ const ComboboxWrapper = ({
             onKeyDown={(e) => {
               const lastIdx = matchedItems.length - 1
               if (e.key === 'Enter') {
-                if (!selectedItem) return
-                navigate(`/rfd/${selectedItem.formattedNumber}`)
+                // Resolve the navigation target from the latest input rather
+                // than `deferredInput`, so a fast type+Enter doesn't navigate
+                // to a result from the previous query.
+                const items = input === deferredInput ? matchedItems : matchItems(input)
+                const target = items[selectedIdx] ?? items[0]
+                if (!target) return
+                navigate(`/rfd/${target.formattedNumber}`)
                 handleDismiss()
               } else if (e.key === 'ArrowDown') {
                 const newIdx = selectedIdx === lastIdx ? 0 : selectedIdx + 1

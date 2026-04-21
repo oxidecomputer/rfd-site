@@ -46,11 +46,6 @@ test.describe('Navigation and Basic Functionality', () => {
     await page.getByRole('button', { name: 'Select an RFD' }).click()
     const search = page.getByRole('banner').getByPlaceholder('Search')
     await search.fill('Mission')
-    // Wait for the deferred filter to apply: the first item should be our
-    // target before Enter navigates to the selected (first) match.
-    await expect(page.getByRole('banner').locator('a[data-index="0"]')).toContainText(
-      'Mission, Principles and Values',
-    )
     await search.press('Enter')
 
     await expect(
