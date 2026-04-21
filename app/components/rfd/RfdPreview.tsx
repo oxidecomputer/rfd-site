@@ -279,11 +279,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
                   'hover:text-default inline-block',
                   !author.email && 'pointer-events-none',
                 )}
-                to={
-                  author.email
-                    ? `/?authorEmail=${author.email}&authorName=${author.name}`
-                    : ''
-                }
+                to={author.email ? `/?author=${encodeURIComponent(author.email)}` : ''}
               >
                 {author.name}
               </Link>

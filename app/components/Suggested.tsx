@@ -27,7 +27,7 @@ export const SuggestedAuthors = ({ authors }: { authors: Author[] }) => {
           .map((author, index) => (
             <Link
               key={author.name}
-              to={`/?authorEmail=${author.email}&authorName=${author.name}`}
+              to={`/?author=${encodeURIComponent(author.email)}`}
               state={{ shouldClearInput: true }}
               className="text-semi-sm underline"
             >
@@ -50,7 +50,7 @@ export const SuggestedLabels = ({ labels }: { labels: string[] }) => {
         {labels.map((label, index) => (
           <Link
             key={label}
-            to={`/?label=${label}`}
+            to={`/?label=${encodeURIComponent(label)}`}
             state={{ shouldClearInput: true }}
             className="text-semi-sm underline"
           >

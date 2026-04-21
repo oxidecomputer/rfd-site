@@ -6,10 +6,19 @@
  * Copyright Oxide Computer Company
  */
 
-import { Badge } from '@oxide/design-system/ui'
+import { Badge, Button } from '@oxide/design-system/ui'
+import { useWindowVirtualizer } from '@tanstack/react-virtual'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import {
+  memo,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react'
 import {
   Link,
   redirect,
@@ -20,13 +29,15 @@ import {
   useSearchParams,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type ShouldRevalidateFunctionArgs,
 } from 'react-router'
 
 import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import { SortArrowBottom, SortArrowTop } from '~/components/CustomIcons'
 import Header from '~/components/Header'
-import FilterDropdown from '~/components/home/FilterDropdown'
+import FilterDropdown, { DEFAULT_RFD_STATES } from '~/components/home/FilterDropdown'
+import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
 import { ExactMatch, SuggestedAuthors, SuggestedLabels } from '~/components/Suggested'
 import { useKey } from '~/hooks/use-key'
@@ -45,6 +56,18 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   return parseSortOrder(await rfdSortCookie.parse(cookieHeader))
 }
 
+export function shouldRevalidate({
+  currentUrl,
+  nextUrl,
+  formMethod,
+  defaultShouldRevalidate,
+}: ShouldRevalidateFunctionArgs) {
+  if (!formMethod && currentUrl.pathname === nextUrl.pathname) {
+    return false
+  }
+  return defaultShouldRevalidate
+}
+
 // only for setting the sort order cookie
 export const action = async ({ request }: ActionFunctionArgs) => {
   const body = await request.formData()
@@ -58,61 +81,49 @@ export const action = async ({ request }: ActionFunctionArgs) => {
 }
 
 export default function Index() {
-  const [searchParams] = useSearchParams()
+  const [searchParams, setSearchParams] = useSearchParams()
 
-  // Check for email and name
-  // Helps catch when people use email aliases
-  // Supports both email and name, none or either
-  const authorEmailParam = searchParams.get('authorEmail')
-  const authorNameParam = searchParams.get('authorName')
-  const labelParam = searchParams.get('label')
+  const searchParamsKey = searchParams.toString()
+  const authorEmails = useMemo(
+    () => searchParams.getAll('author'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParamsKey],
+  )
+  const labelValues = useMemo(
+    () => searchParams.getAll('label'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParamsKey],
+  )
+  const stateValues = useMemo(() => {
+    const urlStates = searchParams.getAll('state')
+    return urlStates.length > 0 ? urlStates : DEFAULT_RFD_STATES
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsKey])
 
   const allRfds = useRootLoaderData().rfds
   const rfds = useMemo(() => {
-    let rfds = allRfds
+    let filtered = allRfds
 
-    if (!authorEmailParam && !authorNameParam && !labelParam) {
-      return rfds
-    }
-
-    if (authorEmailParam || authorNameParam) {
-      rfds = rfds.filter((rfd) => {
-        if (!rfd.authors) {
-          return false
-        }
-
-        let isMatch = false
-
-        if (
-          authorEmailParam &&
-          rfd.authors?.some((author) => author.email === authorEmailParam)
-        ) {
-          isMatch = true
-        }
-
-        if (
-          authorNameParam &&
-          rfd.authors?.some((author) => author.name === authorNameParam)
-        ) {
-          isMatch = true
-        }
-
-        return isMatch
+    if (authorEmails.length > 0) {
+      filtered = filtered.filter((rfd) => {
+        if (!rfd.authors) return false
+        return rfd.authors.some((author) => authorEmails.includes(author.email))
       })
     }
 
-    if (labelParam) {
-      rfds = rfds.filter((rfd) => {
-        if (!rfd.labels) {
-          return false
-        }
-
-        return rfd.labels.map((label) => label.trim()).includes(labelParam)
+    if (labelValues.length > 0) {
+      filtered = filtered.filter((rfd) => {
+        if (!rfd.labels) return false
+        const trimmed = rfd.labels.map((l) => l.trim())
+        return labelValues.some((l) => trimmed.includes(l))
       })
     }
 
-    return rfds
-  }, [allRfds, authorEmailParam, authorNameParam, labelParam])
+    const stateSet = new Set(stateValues)
+    filtered = filtered.filter((rfd) => rfd.state !== null && stateSet.has(rfd.state))
+
+    return filtered
+  }, [allRfds, authorEmails, labelValues, stateValues])
 
   const authors = useRootLoaderData().authors
   const labels = useRootLoaderData().labels
@@ -228,6 +239,17 @@ export default function Index() {
 
   const navigate = useNavigate()
 
+  const hasFilters = authorEmails.length > 0 || labelValues.length > 0
+
+  const clearAllFilters = () => {
+    const next = new URLSearchParams(searchParams)
+    next.delete('author')
+    next.delete('label')
+    next.delete('state')
+    setSearchParams(next, { replace: true })
+    setInput('')
+  }
+
   const { state, pathname, hash } = useLocation()
 
   useEffect(() => {
@@ -242,10 +264,22 @@ export default function Index() {
   }, [state])
 
   useEffect(() => {
-    if (inputEl.current) {
-      inputEl.current.focus()
-    }
-  }, [])
+    focusInput()
+  }, [focusInput])
+
+  const listRef = useRef<HTMLDivElement>(null)
+  const [listOffset, setListOffset] = useState(0)
+
+  useLayoutEffect(() => {
+    if (listRef.current) setListOffset(listRef.current.offsetTop)
+  }, [matchedAuthors?.length, matchedLabels?.length, exactMatch?.number])
+
+  const rowVirtualizer = useWindowVirtualizer({
+    count: matchedItems.length,
+    estimateSize: () => 92,
+    overscan: 5,
+    scrollMargin: listOffset,
+  })
 
   return (
     <>
@@ -264,7 +298,7 @@ export default function Index() {
               }}
             />
 
-            <div className="1000:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[97px] relative flex w-full flex-col items-center justify-start">
+            <div className="1200:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[97px] relative flex w-full flex-col items-center justify-start">
               <h1 className="text-sans-2xl text-raise 800:text-sans-3xl text-center">
                 Requests for Discussion
               </h1>
@@ -305,48 +339,75 @@ export default function Index() {
             </div>
           </div>
         </Container>
-        <Container className="mt-4 mb-4 flex justify-between">
+        <Container className="max-600:flex-col 600:items-end 800:max-1200:mt-8 mt-4 mb-4 flex justify-between">
           <FilterDropdown />
-          <div className="text-mono-sm text-default flex">
+          <div className="text-mono-xs text-default max-600:mt-3 flex">
             <div className="text-tertiary mr-1 block">Results:</div>
-            {matchedItems.length}
+            <span data-testid="rfd-count">{matchedItems.length}</span>
           </div>
         </Container>
-        <ul className="space-y-3">
-          <Container
-            isGrid
-            className="text-mono-xs text-secondary bg-raise border-secondary 800:grid hidden h-10 items-center rounded-lg border px-3"
+        <Container
+          isGrid
+          className="text-mono-xs text-secondary bg-raise border-secondary 800:grid mb-3 hidden h-10 items-center rounded-lg border px-3"
+        >
+          <button
+            className="800:col-span-5 group col-span-12 flex cursor-pointer content-start pl-2 select-none"
+            data-testid="sort-number"
+            onClick={() => submitSortOrder('number')}
           >
-            <button
-              className="800:col-span-5 group col-span-12 flex cursor-pointer content-start pl-2 select-none"
-              data-testid="sort-number"
-              onClick={() => submitSortOrder('number')}
-            >
-              <div className="text-mono-xs group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
-                Number <span className="text-quaternary mx-1 inline-block">/</span> Title
-                <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
+            <div className="text-mono-xs group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
+              Number <span className="text-quaternary mx-1 inline-block">/</span> Title
+              <SortIcon isActive={sortAttr === 'number'} direction={sortDir} />
+            </div>
+          </button>
+
+          <div className="1000:col-span-2 col-span-3">State</div>
+
+          <button
+            className="text-mono-xs 1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
+            onClick={() => submitSortOrder('updated')}
+          >
+            <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
+              Updated
+              <SortIcon isActive={sortAttr === 'updated'} direction={sortDir} />
+            </div>
+          </button>
+
+          <div className="1000:block col-span-2 hidden">Labels</div>
+        </Container>
+
+        <div
+          ref={listRef}
+          className="relative"
+          style={{ height: rowVirtualizer.getTotalSize() }}
+          data-testid="rfd-list"
+        >
+          {rowVirtualizer.getVirtualItems().map((virtualRow) => {
+            const rfd = matchedItems[virtualRow.index]
+            return (
+              <RfdRow
+                key={rfd.formattedNumber}
+                rfd={rfd}
+                ref={rowVirtualizer.measureElement}
+                dataIndex={virtualRow.index}
+                offset={virtualRow.start - rowVirtualizer.options.scrollMargin}
+              />
+            )
+          })}
+        </div>
+        {matchedItems.length === 0 && (hasFilters || input) && (
+          <Container className="border-secondary mt-3 flex items-center justify-center border p-10">
+            <div className="m-4 flex max-w-[18rem] flex-col items-center text-center">
+              <div className="text-accent bg-accent mb-4 rounded-md p-1 leading-0">
+                <Icon name="document" size={16} />
               </div>
-            </button>
-
-            <div className="1000:col-span-2 col-span-3">State</div>
-
-            <button
-              className="text-mono-xs 1000:col-span-2 group col-span-3 flex cursor-pointer content-start select-none"
-              onClick={() => submitSortOrder('updated')}
-            >
-              <div className="group-hover:bg-tertiary -ml-1 flex items-center rounded p-1">
-                Updated
-                <SortIcon isActive={sortAttr === 'updated'} direction={sortDir} />
-              </div>
-            </button>
-
-            <div className="1000:block col-span-2 hidden">Labels</div>
+              <h3 className="text-sans-lg text-default">No RFDs match your filters</h3>
+              <Button onClick={clearAllFilters} variant="ghost" size="sm" className="mt-3">
+                Clear filters
+              </Button>
+            </div>
           </Container>
-
-          {matchedItems.map((rfd) => (
-            <RfdRow key={rfd.formattedNumber} rfd={rfd} />
-          ))}
-        </ul>
+        )}
       </div>
     </>
   )
@@ -370,59 +431,78 @@ const SortIcon = ({
   </div>
 )
 
-const RfdRow = ({ rfd }: { rfd: RfdListItem }) => {
-  return (
-    <Container className="text-sans-md border-secondary 800:h-20 relative rounded-lg border">
-      <div className="800:gap-6 800:py-0 grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4">
-        <Link
-          to={`/rfd/${rfd.formattedNumber}`}
-          key={rfd.formattedNumber}
-          prefetch="intent"
-          className="text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md group order-2 col-span-12 -m-4 p-4 pr-10"
-        >
-          <div className="800:group-hover:bg-hover -m-2 inline-flex flex-col rounded-lg p-2">
-            <div>RFD {rfd.number}</div>
-            <div className="text-default line-clamp-2">{rfd.title}</div>
+const RfdRow = memo(
+  ({
+    rfd,
+    ref,
+    dataIndex,
+    offset,
+  }: {
+    rfd: RfdListItem
+    ref: (node: HTMLDivElement | null) => void
+    dataIndex: number
+    offset: number
+  }) => {
+    return (
+      <div
+        ref={ref}
+        data-index={dataIndex}
+        className="absolute top-0 left-0 w-full pb-3"
+        style={{ transform: `translateY(${offset}px)` }}
+      >
+        <Container className="text-sans-md border-secondary 800:h-20 relative rounded-lg border">
+          <div className="800:gap-6 800:py-0 grid h-full w-full grid-cols-12 items-center gap-2 px-5 py-4">
+            <Link
+              to={`/rfd/${rfd.formattedNumber}`}
+              key={rfd.formattedNumber}
+              prefetch="intent"
+              className="text-sans-lg 600:col-span-8 800:order-1 800:col-span-5 800:text-sans-md group order-2 col-span-12 -m-4 p-4 pr-10"
+            >
+              <div className="800:group-hover:bg-hover -m-2 inline-flex flex-col rounded-lg p-2">
+                <div>RFD {rfd.number}</div>
+                <div className="text-default line-clamp-2">{rfd.title}</div>
+              </div>
+            </Link>
+
+            <div className="800:order-2 800:col-span-3 1000:col-span-2 order-1 col-span-12 flex flex-col items-start">
+              {rfd.state && <StatusBadge label={rfd.state} />}
+            </div>
+
+            <div
+              className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2"
+              data-testid="timestamp"
+            >
+              <ClientOnly
+                fallback={
+                  <>
+                    <div className="bg-tertiary h-4 w-24 rounded" />
+                    <div className="bg-tertiary 800:block mt-1 hidden h-4 w-12 rounded"></div>
+                  </>
+                }
+              >
+                {() => (
+                  <>
+                    <div className="text-secondary 800:text-default">
+                      {rfd.latestMajorChangeAt &&
+                        dayjs(rfd.latestMajorChangeAt).format('MMM D, YYYY')}
+                    </div>
+                    <div className="text-quaternary 800:hidden">/</div>
+                    <div className="text-secondary 800:text-tertiary">
+                      {rfd.latestMajorChangeAt &&
+                        dayjs(rfd.latestMajorChangeAt).format('h:mm A')}
+                    </div>
+                  </>
+                )}
+              </ClientOnly>
+            </div>
+
+            {rfd.labels && <Labels labels={rfd.labels} />}
           </div>
-        </Link>
-
-        <div className="800:order-2 800:col-span-3 1000:col-span-2 order-1 col-span-12 flex flex-col items-start">
-          {rfd.state && <StatusBadge label={rfd.state} />}
-        </div>
-
-        <div
-          className="text-sans-md text-default 800:col-span-3 800:block 800:space-x-0 1000:col-span-2 order-3 col-span-12 flex space-x-2"
-          data-testid="timestamp"
-        >
-          <ClientOnly
-            fallback={
-              <>
-                <div className="bg-tertiary h-4 w-24 rounded" />
-                <div className="bg-tertiary 800:block mt-1 hidden h-4 w-12 rounded"></div>
-              </>
-            }
-          >
-            {() => (
-              <>
-                <div className="text-secondary 800:text-default">
-                  {rfd.latestMajorChangeAt &&
-                    dayjs(rfd.latestMajorChangeAt).format('MMM D, YYYY')}
-                </div>
-                <div className="text-quaternary 800:hidden">/</div>
-                <div className="text-secondary 800:text-tertiary">
-                  {rfd.latestMajorChangeAt &&
-                    dayjs(rfd.latestMajorChangeAt).format('h:mm A')}
-                </div>
-              </>
-            )}
-          </ClientOnly>
-        </div>
-
-        {rfd.labels && <Labels labels={rfd.labels} />}
+        </Container>
       </div>
-    </Container>
-  )
-}
+    )
+  },
+)
 
 const Labels = ({ labels }: { labels: string[] }) => (
   <div className="1000:flex order-4 col-span-3 hidden max-h-10">
@@ -449,7 +529,7 @@ const LabelsInner = ({ labels }: { labels: string[] }) => {
     >
       {labels ? (
         labels.map((label) => (
-          <Link key={label} to={`/?label=${label.trim()}`}>
+          <Link key={label} to={`/?label=${encodeURIComponent(label.trim())}`}>
             <Badge color="neutral">{label.trim()}</Badge>
           </Link>
         ))

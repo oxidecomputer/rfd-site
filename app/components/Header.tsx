@@ -66,7 +66,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
   useKey('mod+k', toggleSearchMenu, { global: true })
 
   return (
-    <div className="sticky top-0 z-20">
+    <div className="sticky top-0 z-60">
       {!user && <PublicBanner />}
       <header className="bg-default border-secondary flex h-14 items-center justify-between border-b px-3 print:hidden">
         <div className="flex space-x-3">
@@ -102,7 +102,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
                 </span>
               </DropdownMenu.Trigger>
 
-              <DropdownMenu.Content>
+              <DropdownMenu.Content portal={false}>
                 <div className="DropdownMenuItem ox-menu-item flex-col! items-start!">
                   <div>{user.displayName}</div>
                   <div className="text-tertiary">{user.email}</div>
@@ -171,7 +171,7 @@ function ThemeDropdown() {
       >
         <Contrast16Icon className="shrink-0" />
       </DropdownMenu.Trigger>
-      <DropdownMenu.Content>
+      <DropdownMenu.Content portal={false}>
         <ThemeRadioGroup />
       </DropdownMenu.Content>
     </DropdownMenu.Root>
