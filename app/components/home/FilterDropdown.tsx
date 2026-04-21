@@ -222,6 +222,7 @@ const FilterDropdown = () => {
         selected={selectedAuthors}
         onChange={setSelectedAuthors}
         placeholder="Search authors"
+        className="purple-theme"
       />
       <FilterChip
         iconName="tags"
@@ -230,7 +231,7 @@ const FilterDropdown = () => {
         selected={selectedLabels}
         onChange={setSelectedLabels}
         placeholder="Search labels"
-        className="purple-theme"
+        className="blue-theme"
       />
       <FilterChip
         iconName="hourglass"
@@ -240,6 +241,7 @@ const FilterDropdown = () => {
         onChange={setSelectedStates}
         placeholder="Search states"
         hasSelectionOverride={hasStateDeviation}
+        className="green-theme"
       />
     </div>
   )
