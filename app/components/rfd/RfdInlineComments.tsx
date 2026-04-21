@@ -25,7 +25,6 @@ import uniqBy from 'lodash/uniqBy'
 import { marked } from 'marked'
 import { useEffect, useMemo, useState } from 'react'
 import { renderToString } from 'react-dom/server'
-import diff from 'simple-text-diff'
 
 import Container from '~/components/Container'
 import Icon from '~/components/Icon'
@@ -35,6 +34,7 @@ import type {
   ListReviewsCommentsType,
   ReviewCommentsType,
 } from '~/services/github-discussion.server'
+import { diffPatchBySeparator } from '~/utils/textDiff'
 
 import { calcOffset } from './RfdPreview'
 
@@ -301,7 +301,7 @@ const CodeSuggestion = ({
   suggestion: string
   isOverlay: boolean
 }) => {
-  const textDiff = diff.diffPatchBySeparator(original, suggestion, ' ')
+  const textDiff = diffPatchBySeparator(original, suggestion, ' ')
   return (
     <div
       className={cn(
