@@ -298,7 +298,7 @@ export default function Index() {
               }}
             />
 
-            <div className="1000:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[97px] relative flex w-full flex-col items-center justify-start">
+            <div className="1200:translate-0 600:absolute 600:top-1/2 600:-translate-y-1/2 1200:top-[97px] relative flex w-full flex-col items-center justify-start">
               <h1 className="text-sans-2xl text-raise 800:text-sans-3xl text-center">
                 Requests for Discussion
               </h1>
@@ -339,7 +339,7 @@ export default function Index() {
             </div>
           </div>
         </Container>
-        <Container className="max-600:flex-col 600:items-end mt-4 mb-4 flex justify-between">
+        <Container className="max-600:flex-col 600:items-end 800:max-1200:mt-8 mt-4 mb-4 flex justify-between">
           <FilterDropdown />
           <div className="text-mono-xs text-default max-600:mt-3 flex">
             <div className="text-tertiary mr-1 block">Results:</div>
