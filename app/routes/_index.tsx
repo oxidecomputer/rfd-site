@@ -258,6 +258,7 @@ export default function Index() {
     next.delete('authorEmail')
     next.delete('authorName')
     next.delete('label')
+    next.delete('state')
     setSearchParams(next, { replace: true })
     setInput('')
   }
