@@ -133,15 +133,76 @@ export async function fetchRfdPdf(
 
 export async function fetchRfds(user: User | null): Promise<RfdListItem[] | undefined> {
   try {
-    if (isLocalMode()) {
-      return fetchLocalRfds().map(localRfdToListItem)
-    } else {
-      return (await fetchRemoteRfds(user)).map(apiRfdMetaToListItem)
-    }
+    const rfds = isLocalMode()
+      ? fetchLocalRfds().map(localRfdToListItem)
+      : (await fetchRemoteRfds(user)).map(apiRfdMetaToListItem)
+    return mergeAuthorVariants(rfds)
   } catch (err) {
     console.error('Failed to fetch RFD', err)
     return undefined
   }
+}
+
+// Strip single-letter middle tokens (initials with optional period) so variants
+// like "Adam H. Leventhal" and "Adam Leventhal" share a key.
+const normalizeAuthorName = (name: string): string =>
+  name
+    .replace(/\s+[A-Za-z]\.?(?=\s)/g, '')
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, ' ')
+
+// Collapse author variants that are effectively the same person (e.g. with vs.
+// without a middle initial) to a single canonical {name, email} pair so the
+// filter dropdown and counts don't split them.
+const mergeAuthorVariants = (rfds: RfdListItem[]): RfdListItem[] => {
+  const variantCounts = new Map<
+    string,
+    Map<string, { name: string; email: string; count: number }>
+  >()
+
+  for (const rfd of rfds) {
+    for (const author of rfd.authors || []) {
+      const key = normalizeAuthorName(author.name)
+      if (!key) continue
+      let group = variantCounts.get(key)
+      if (!group) {
+        group = new Map()
+        variantCounts.set(key, group)
+      }
+      const pairKey = `${author.name}|${author.email}`
+      const existing = group.get(pairKey)
+      if (existing) {
+        existing.count++
+      } else {
+        group.set(pairKey, { name: author.name, email: author.email, count: 1 })
+      }
+    }
+  }
+
+  const canonicals = new Map<string, Author>()
+  for (const [key, group] of variantCounts) {
+    const variants = Array.from(group.values()).sort((a, b) => {
+      if (b.count !== a.count) return b.count - a.count
+      if (a.name.length !== b.name.length) return a.name.length - b.name.length
+      return a.name.localeCompare(b.name)
+    })
+    canonicals.set(key, { name: variants[0].name, email: variants[0].email })
+  }
+
+  return rfds.map((rfd) => {
+    if (!rfd.authors || rfd.authors.length === 0) return rfd
+    const seenEmails = new Set<string>()
+    const newAuthors: Author[] = []
+    for (const author of rfd.authors) {
+      const key = normalizeAuthorName(author.name)
+      const canonical = canonicals.get(key) || author
+      if (seenEmails.has(canonical.email)) continue
+      seenEmails.add(canonical.email)
+      newAuthors.push(canonical)
+    }
+    return { ...rfd, authors: newAuthors }
+  })
 }
 
 export const getAuthors = (rfds: RfdListItem[]): Author[] => {

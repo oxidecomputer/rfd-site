@@ -27,7 +27,8 @@ import { ClientOnly } from '~/components/ClientOnly'
 import Container from '~/components/Container'
 import { SortArrowBottom, SortArrowTop } from '~/components/CustomIcons'
 import Header from '~/components/Header'
-import FilterDropdown from '~/components/home/FilterDropdown'
+import FilterDropdown, { DEFAULT_RFD_STATES } from '~/components/home/FilterDropdown'
+import Icon from '~/components/Icon'
 import StatusBadge from '~/components/StatusBadge'
 import { ExactMatch, SuggestedAuthors, SuggestedLabels } from '~/components/Suggested'
 import { useKey } from '~/hooks/use-key'
@@ -91,13 +92,14 @@ export default function Index() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParamsKey],
   )
+  const stateValues = useMemo(() => {
+    const urlStates = searchParams.getAll('state')
+    return urlStates.length > 0 ? urlStates : DEFAULT_RFD_STATES
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParamsKey])
 
   const allRfds = useRootLoaderData().rfds
   const rfds = useMemo(() => {
-    if (authorEmails.length === 0 && authorNames.length === 0 && labelValues.length === 0) {
-      return allRfds
-    }
-
     let filtered = allRfds
 
     if (authorEmails.length > 0 || authorNames.length > 0) {
@@ -118,8 +120,11 @@ export default function Index() {
       })
     }
 
+    const stateSet = new Set(stateValues)
+    filtered = filtered.filter((rfd) => rfd.state !== null && stateSet.has(rfd.state))
+
     return filtered
-  }, [allRfds, authorEmails, authorNames, labelValues])
+  }, [allRfds, authorEmails, authorNames, labelValues, stateValues])
 
   const authors = useRootLoaderData().authors
   const labels = useRootLoaderData().labels
@@ -262,15 +267,13 @@ export default function Index() {
   }, [state])
 
   useEffect(() => {
-    if (inputEl.current) {
-      inputEl.current.focus()
-    }
-  }, [])
+    focusInput()
+  }, [focusInput])
 
   return (
     <>
       {/* key makes the search dialog close on selection */}
-      <Header key={pathname + hash} />
+      <Header key={pathname + hash} homeInputEl={inputEl} />
       <div className="pt-4">
         <Container>
           <div className="600:pt-[calc(299/1200*100%)] max-600:my-4 relative w-full">
@@ -368,10 +371,13 @@ export default function Index() {
           ))}
         </ul>
         {matchedItems.length === 0 && (hasFilters || input) && (
-          <Container>
-            <div className="text-sans-md text-tertiary border-secondary mt-3 flex flex-col items-center gap-3 rounded-lg border px-6 py-12 text-center">
-              <div>No RFDs match your filters</div>
-              <Button onClick={clearAllFilters} variant="ghost" size="sm">
+          <Container className="border-secondary mt-3 flex items-center justify-center border p-10">
+            <div className="m-4 flex max-w-[18rem] flex-col items-center text-center">
+              <div className="text-accent bg-accent mb-4 rounded-md p-1 leading-0">
+                <Icon name="document" size={16} />
+              </div>
+              <h3 className="text-sans-lg text-default">No RFDs match your filters</h3>
+              <Button onClick={clearAllFilters} variant="ghost" size="sm" className="mt-3">
                 Clear filters
               </Button>
             </div>

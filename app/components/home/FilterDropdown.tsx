@@ -23,6 +23,25 @@ type FilterOption = {
   count: number
 }
 
+export const RFD_STATES = [
+  'prediscussion',
+  'ideation',
+  'discussion',
+  'published',
+  'committed',
+  'abandoned',
+] as const
+
+export const DEFAULT_RFD_STATES: readonly string[] = RFD_STATES.filter(
+  (s) => s !== 'abandoned',
+)
+
+const sameSet = (a: string[], b: readonly string[]) => {
+  if (a.length !== b.length) return false
+  const set = new Set(a)
+  return b.every((v) => set.has(v))
+}
+
 const FilterDropdown = () => {
   const [searchParams, setSearchParams] = useSearchParams()
   const { rfds, authors, labels } = useRootLoaderData()
@@ -49,10 +68,22 @@ const FilterDropdown = () => {
     [searchParamsKey],
   )
 
+  const urlStates = useMemo(
+    () => searchParams.getAll('state'),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [searchParamsKey],
+  )
+
+  // The state filter is "default" when no state params are present in the URL,
+  // which implicitly means all non-abandoned states. `effectiveStates` is what
+  // actually filters the list and drives the checkboxes in the dropdown.
+  const hasStateDeviation = urlStates.length > 0
+  const effectiveStates = hasStateDeviation ? urlStates : DEFAULT_RFD_STATES
+
   // Disjunctive facets: each group's counts reflect the filter set with that
   // group's own selection removed, so users see how many results adding an
   // option would yield rather than 0 everywhere once one option is picked.
-  const rfdsForAuthorCounts = useMemo(() => {
+  const rfdsFilteredByLabels = useMemo(() => {
     if (selectedLabels.length === 0) return rfds
     return rfds.filter((rfd) => {
       if (!rfd.labels) return false
@@ -61,7 +92,7 @@ const FilterDropdown = () => {
     })
   }, [rfds, selectedLabels])
 
-  const rfdsForLabelCounts = useMemo(() => {
+  const rfdsFilteredByAuthors = useMemo(() => {
     if (selectedAuthors.length === 0 && !legacyAuthorName) return rfds
     return rfds.filter((rfd) => {
       if (!rfd.authors) return false
@@ -72,6 +103,32 @@ const FilterDropdown = () => {
       )
     })
   }, [rfds, selectedAuthors, legacyAuthorName])
+
+  const rfdsFilteredByStates = useMemo(() => {
+    const allowed = new Set(effectiveStates)
+    return rfds.filter((rfd) => rfd.state !== null && allowed.has(rfd.state))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [rfds, effectiveStates.join(',')])
+
+  const intersect = <T,>(a: T[], b: T[]) => {
+    const setB = new Set(b)
+    return a.filter((x) => setB.has(x))
+  }
+
+  const rfdsForAuthorCounts = useMemo(
+    () => intersect(rfdsFilteredByLabels, rfdsFilteredByStates),
+    [rfdsFilteredByLabels, rfdsFilteredByStates],
+  )
+
+  const rfdsForLabelCounts = useMemo(
+    () => intersect(rfdsFilteredByAuthors, rfdsFilteredByStates),
+    [rfdsFilteredByAuthors, rfdsFilteredByStates],
+  )
+
+  const rfdsForStateCounts = useMemo(
+    () => intersect(rfdsFilteredByAuthors, rfdsFilteredByLabels),
+    [rfdsFilteredByAuthors, rfdsFilteredByLabels],
+  )
 
   const authorOptions = useMemo<FilterOption[]>(() => {
     const counts = new Map<string, number>()
@@ -107,6 +164,19 @@ const FilterDropdown = () => {
     }))
   }, [rfdsForLabelCounts, labels])
 
+  const stateOptions = useMemo<FilterOption[]>(() => {
+    const counts = new Map<string, number>()
+    for (const rfd of rfdsForStateCounts) {
+      if (rfd.state) counts.set(rfd.state, (counts.get(rfd.state) || 0) + 1)
+    }
+    return RFD_STATES.map((state) => ({
+      value: state,
+      label: state,
+      searchText: state,
+      count: counts.get(state) || 0,
+    }))
+  }, [rfdsForStateCounts])
+
   const setSelectedAuthors = (values: string[]) => {
     startTransition(() => {
       const next = new URLSearchParams(searchParams)
@@ -123,6 +193,22 @@ const FilterDropdown = () => {
       const next = new URLSearchParams(searchParams)
       next.delete('label')
       for (const v of values) next.append('label', v)
+      setSearchParams(next, { replace: true })
+    })
+  }
+
+  const setSelectedStates = (values: string[]) => {
+    startTransition(() => {
+      const next = new URLSearchParams(searchParams)
+      next.delete('state')
+      // Collapse back to the default (no params) when the user either clears
+      // the filter or picks the exact default set, or ends up with nothing
+      // selected (otherwise the UI would show zero results with no obvious
+      // way back).
+      const isDefault = values.length === 0 || sameSet(values, DEFAULT_RFD_STATES)
+      if (!isDefault) {
+        for (const v of values) next.append('state', v)
+      }
       setSearchParams(next, { replace: true })
     })
   }
@@ -146,6 +232,15 @@ const FilterDropdown = () => {
         placeholder="Search labels"
         className="purple-theme"
       />
+      <FilterChip
+        iconName="hourglass"
+        label="State"
+        options={stateOptions}
+        selected={effectiveStates as string[]}
+        onChange={setSelectedStates}
+        placeholder="Search states"
+        hasSelectionOverride={hasStateDeviation}
+      />
     </div>
   )
 }
@@ -158,14 +253,16 @@ const FilterChip = ({
   onChange,
   placeholder,
   className,
+  hasSelectionOverride,
 }: {
-  iconName: 'tags' | 'person'
+  iconName: 'tags' | 'person' | 'hourglass'
   label: string
   options: FilterOption[]
   selected: string[]
   onChange: (values: string[]) => void
   placeholder: string
   className?: string
+  hasSelectionOverride?: boolean
 }) => {
   const [searchValue, setSearchValue] = useState('')
 
@@ -178,14 +275,15 @@ const FilterChip = ({
     return idxs.map((i) => options[i])
   }, [options, searchValue])
 
-  const hasSelection = selected.length > 0
+  const hasSelection = hasSelectionOverride ?? selected.length > 0
   const selectedLabel = useMemo(() => {
+    if (!hasSelection) return null
     if (selected.length === 0) return null
     if (selected.length < 3) {
       return selected.map((v) => options.find((o) => o.value === v)?.label ?? v).join(', ')
     }
     return `${selected.length} selected`
-  }, [selected, options])
+  }, [hasSelection, selected, options])
 
   const clearSelection = () => onChange([])
 
@@ -214,7 +312,7 @@ const FilterChip = ({
               )}
             />
             <span>{label}</span>
-            {hasSelection && (
+            {hasSelection && selectedLabel && (
               <span className="text-accent max-w-[220px] truncate">: {selectedLabel}</span>
             )}
           </Ariakit.Select>
