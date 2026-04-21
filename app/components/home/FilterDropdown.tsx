@@ -48,16 +48,8 @@ const FilterDropdown = () => {
 
   const searchParamsKey = searchParams.toString()
 
-  const selectedAuthors = useMemo(() => {
-    const emails = new Set(searchParams.getAll('author'))
-    const legacyEmail = searchParams.get('authorEmail')
-    if (legacyEmail) emails.add(legacyEmail)
-    return Array.from(emails)
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsKey])
-
-  const legacyAuthorName = useMemo(
-    () => searchParams.get('authorName'),
+  const selectedAuthors = useMemo(
+    () => searchParams.getAll('author'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [searchParamsKey],
   )
@@ -93,16 +85,12 @@ const FilterDropdown = () => {
   }, [rfds, selectedLabels])
 
   const rfdsFilteredByAuthors = useMemo(() => {
-    if (selectedAuthors.length === 0 && !legacyAuthorName) return rfds
+    if (selectedAuthors.length === 0) return rfds
     return rfds.filter((rfd) => {
       if (!rfd.authors) return false
-      return rfd.authors.some(
-        (a) =>
-          selectedAuthors.includes(a.email) ||
-          (legacyAuthorName !== null && a.name === legacyAuthorName),
-      )
+      return rfd.authors.some((a) => selectedAuthors.includes(a.email))
     })
-  }, [rfds, selectedAuthors, legacyAuthorName])
+  }, [rfds, selectedAuthors])
 
   const rfdsFilteredByStates = useMemo(() => {
     const allowed = new Set(effectiveStates)
@@ -181,8 +169,6 @@ const FilterDropdown = () => {
     startTransition(() => {
       const next = new URLSearchParams(searchParams)
       next.delete('author')
-      next.delete('authorEmail')
-      next.delete('authorName')
       for (const v of values) next.append('author', v)
       setSearchParams(next, { replace: true })
     })

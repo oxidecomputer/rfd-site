@@ -280,9 +280,7 @@ export default function Rfd() {
                         !author.email && 'pointer-events-none',
                       )}
                       href={
-                        author.email
-                          ? `/?authorEmail=${author.email}&authorName=${author.name}`
-                          : ''
+                        author.email ? `/?author=${encodeURIComponent(author.email)}` : ''
                       }
                     >
                       {author.name}

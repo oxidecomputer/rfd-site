@@ -84,18 +84,11 @@ export default function Index() {
   const [searchParams, setSearchParams] = useSearchParams()
 
   const searchParamsKey = searchParams.toString()
-  const authorEmails = useMemo(() => {
-    const emails = new Set(searchParams.getAll('author'))
-    const legacyEmail = searchParams.get('authorEmail')
-    if (legacyEmail) emails.add(legacyEmail)
-    return Array.from(emails)
+  const authorEmails = useMemo(
+    () => searchParams.getAll('author'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsKey])
-  const authorNames = useMemo(() => {
-    const legacyName = searchParams.get('authorName')
-    return legacyName ? [legacyName] : []
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchParamsKey])
+    [searchParamsKey],
+  )
   const labelValues = useMemo(
     () => searchParams.getAll('label'),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,13 +104,10 @@ export default function Index() {
   const rfds = useMemo(() => {
     let filtered = allRfds
 
-    if (authorEmails.length > 0 || authorNames.length > 0) {
+    if (authorEmails.length > 0) {
       filtered = filtered.filter((rfd) => {
         if (!rfd.authors) return false
-        return rfd.authors.some(
-          (author) =>
-            authorEmails.includes(author.email) || authorNames.includes(author.name),
-        )
+        return rfd.authors.some((author) => authorEmails.includes(author.email))
       })
     }
 
@@ -133,7 +123,7 @@ export default function Index() {
     filtered = filtered.filter((rfd) => rfd.state !== null && stateSet.has(rfd.state))
 
     return filtered
-  }, [allRfds, authorEmails, authorNames, labelValues, stateValues])
+  }, [allRfds, authorEmails, labelValues, stateValues])
 
   const authors = useRootLoaderData().authors
   const labels = useRootLoaderData().labels
@@ -249,14 +239,11 @@ export default function Index() {
 
   const navigate = useNavigate()
 
-  const hasFilters =
-    authorEmails.length > 0 || authorNames.length > 0 || labelValues.length > 0
+  const hasFilters = authorEmails.length > 0 || labelValues.length > 0
 
   const clearAllFilters = () => {
     const next = new URLSearchParams(searchParams)
     next.delete('author')
-    next.delete('authorEmail')
-    next.delete('authorName')
     next.delete('label')
     next.delete('state')
     setSearchParams(next, { replace: true })
