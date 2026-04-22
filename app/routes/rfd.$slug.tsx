@@ -193,7 +193,7 @@ const SectionTrackingOutlines = ({
       </div>
 
       {/* Mobile Outline */}
-      <div className="fixed inset-x-0 bottom-0 *:mb-0">
+      <div className="fixed inset-x-0 bottom-0 z-10 *:mb-0">
         <SmallScreenOutline
           toc={sections}
           activeItem={activeItem}
@@ -226,7 +226,7 @@ export default function Rfd() {
     <div ref={containerRef}>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
-      <main className="800:mt-16 relative mt-12 print:mt-0">
+      <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
         {inlineComments && user && pullNumber && (
           <RfdInlineComments pullNumber={pullNumber} />
         )}

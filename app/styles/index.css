@@ -55,16 +55,6 @@
   isolation: isolate;
 }
 
-/*.light-mode {
-  filter: invert(1) hue-rotate(180deg);
-}
-
-.light-mode img,
-.light-mode picture,
-.light-mode video {
-  filter: invert(1) hue-rotate(180deg);
-}*/
-
 html,
 body {
   -webkit-font-smoothing: antialiased;

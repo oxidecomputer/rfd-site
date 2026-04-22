@@ -17,22 +17,22 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
   if (doc.footnotes.length > 0 && doc.blocks && !doc.attributes['nofootnotes']) {
     return (
       <div id="footnotes" className="border-secondary 800:mt-16 mt-12 border-t pt-4">
-        <Container isGrid>
-          <div className="text-mono-xs text-tertiary 1200:col-span-2 1200:col-start-1 col-span-12 col-start-2">
+        <Container isGrid className="items-baseline">
+          <div className="text-mono-xs text-tertiary 1200:col-span-2 1200:col-start-1 800:col-start-2 col-span-12">
             Footnotes
           </div>
 
           <ul
             id="footnotes"
-            className="800:pr-16 1200:col-start-3 1200:w-[calc(100%-var(--toc-width))] col-span-12 col-start-2 print:col-span-12! print:col-start-1!"
+            className="800:pr-16 1200:w-[calc(100%-var(--toc-width))] 1200:col-start-3 800:col-start-2 col-span-10 print:col-span-12! print:col-start-1!"
           >
             {doc.footnotes.map((footnote) => (
               <li
                 key={footnote.index}
                 id={`_footnotedef_${footnote.index}`}
-                className="relative mb-2"
+                className="max-800:flex relative mb-2 items-baseline"
               >
-                <div className="text-mono-xs text-default bg-tertiary absolute -top-[2px] -left-12 flex shrink-0 items-center justify-center rounded-full px-[4px] py-[2px] tracking-normal!">
+                <div className="text-mono-xs text-tertiary 800:absolute 800:top-0.5 800:-left-12 800:text-right w-6 shrink-0 rounded-full tracking-normal!">
                   {footnote.index}
                 </div>
                 <div className="text-sans-md text-default max-w-200">
