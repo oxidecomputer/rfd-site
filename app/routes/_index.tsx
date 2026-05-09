@@ -53,8 +53,7 @@ import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 export const meta: MetaFunction = () =>
   buildMeta({
     title: 'RFD | Oxide',
-    description:
-      'Browse and search Oxide Computer Company Requests for Discussion (RFDs).',
+    description: 'Browse and search Oxide Computer Company Requests for Discussion (RFDs).',
     path: '/',
   })
 

@@ -42,8 +42,7 @@ import { buildMeta } from './utils/meta'
 export const meta: MetaFunction = () =>
   buildMeta({
     title: 'RFD | Oxide',
-    description:
-      'Browse and search Oxide Computer Company Requests for Discussion (RFDs).',
+    description: 'Browse and search Oxide Computer Company Requests for Discussion (RFDs).',
     path: '/',
   })
 
