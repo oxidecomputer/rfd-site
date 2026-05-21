@@ -29,7 +29,6 @@ import {
   useSearchParams,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
-  type MetaFunction,
   type ShouldRevalidateFunctionArgs,
 } from 'react-router'
 
@@ -47,15 +46,7 @@ import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
 import { fuzz } from '~/utils/fuzz'
-import { buildMeta } from '~/utils/meta'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
-
-export const meta: MetaFunction = () =>
-  buildMeta({
-    title: 'RFD | Oxide',
-    description: 'Browse and search Oxide Computer Company Requests for Discussion (RFDs).',
-    path: '/',
-  })
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')

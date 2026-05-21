@@ -120,10 +120,11 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data && data.rfd) {
-    const title = data.rfd.title ?? ''
+    const prefix = data.rfd.title
+      ? `${data.rfd.number} - ${data.rfd.title}`
+      : `${data.rfd.number}`
     return buildMeta({
-      title: `${data.rfd.number} - ${title} | RFD | Oxide`,
-      description: title,
+      title: `${prefix} | RFD | Oxide`,
       path: `/rfd/${formatRfdNum(data.rfd.number)}`,
       type: 'article',
     })
