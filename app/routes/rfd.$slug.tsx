@@ -125,7 +125,7 @@ export const meta: MetaFunction<typeof loader> = ({ data }) => {
       : `${data.rfd.number}`
     return buildMeta({
       title: `${prefix} | RFD | Oxide`,
-      path: `/rfd/${formatRfdNum(data.rfd.number)}`,
+      path: `/rfd/${data.rfd.formattedNumber}`,
       type: 'article',
     })
   } else {
