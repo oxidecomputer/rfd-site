@@ -46,7 +46,8 @@ import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
-import { canonicalRfdUrl, formatRfdNum } from '~/utils/canonicalUrl'
+import { formatRfdNum } from '~/utils/canonicalUrl'
+import { buildMeta } from '~/utils/meta'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
@@ -119,12 +120,16 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
   if (data && data.rfd) {
-    return [
-      { title: `${data.rfd.number} - ${data.rfd.title} / RFD / Oxide` },
-      { tagName: 'link', rel: 'canonical', href: canonicalRfdUrl(data.rfd.number) },
-    ]
+    const prefix = data.rfd.title
+      ? `${data.rfd.number} - ${data.rfd.title}`
+      : `${data.rfd.number}`
+    return buildMeta({
+      title: `${prefix} | RFD | Oxide`,
+      path: `/rfd/${data.rfd.formattedNumber}`,
+      type: 'article',
+    })
   } else {
-    return [{ title: 'Page not found / Oxide' }]
+    return [{ title: 'Page not found | Oxide' }]
   }
 }
 

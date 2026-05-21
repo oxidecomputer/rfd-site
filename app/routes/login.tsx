@@ -16,13 +16,19 @@ import {
   useLoaderData,
   type ActionFunctionArgs,
   type LoaderFunctionArgs,
+  type MetaFunction,
 } from 'react-router'
 
 import { auth, getUserFromSession } from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
-import { canonicalUrl } from '~/utils/canonicalUrl'
+import { buildMeta } from '~/utils/meta'
 
-export const links = () => [{ rel: 'canonical', href: canonicalUrl('/login') }]
+export const meta: MetaFunction = () =>
+  buildMeta({
+    title: 'Login | RFD | Oxide',
+    description: 'Log in to view Oxide Requests for Discussion.',
+    path: '/login',
+  })
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const url = new URL(request.url)

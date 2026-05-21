@@ -37,10 +37,14 @@ import {
   provideNewRfdNumber,
 } from './services/rfd.server'
 import { useApplyTheme } from './stores/theme'
+import { buildMeta } from './utils/meta'
 
-export const meta: MetaFunction = () => {
-  return [{ title: 'RFD / Oxide' }]
-}
+export const meta: MetaFunction = () =>
+  buildMeta({
+    title: 'RFD | Oxide',
+    description: 'Browse and search Oxide Computer Company Requests for Discussion (RFDs).',
+    path: '/',
+  })
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
