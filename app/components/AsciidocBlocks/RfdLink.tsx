@@ -6,15 +6,22 @@
  * Copyright Oxide Computer Company
  */
 
-import { inlineHtml, parse, useConverterContext, type Inline } from '@oxide/react-asciidoc'
+import {
+  Context,
+  inlineHtml,
+  parse,
+  RenderInline,
+  useConverterContext,
+  type Inline,
+} from '@oxide/react-asciidoc'
 import cn from 'classnames'
-import { isValidElement, useEffect, useRef, type ReactNode } from 'react'
-import { Link, useNavigation, useRouteLoaderData } from 'react-router'
+import { isValidElement, type ReactNode } from 'react'
+import { Link, useRouteLoaderData } from 'react-router'
 
 import Icon from '~/components/Icon'
-import { calcOffset, extractRfdNumber } from '~/components/rfd/RfdPreview'
+import { extractRfdNumber, RfdPreviewCard } from '~/components/rfd/RfdPreview'
+import { useHoverCard } from '~/components/rfd/use-hover-card'
 import type { RfdListItem } from '~/services/rfd.server'
-import { closeRfdPreview, openRfdPreview } from '~/stores/rfd-preview'
 
 type AnchorProps = {
   href?: string
@@ -43,6 +50,15 @@ const RfdLink = ({ node, children }: { node: Inline.AnchorNode; children: ReactN
   // priority over the stock in-page (`#id`) anchor href.
   const externalHref = node.subtype === 'xref' ? node.externalHref : undefined
 
+  // The resolved bibliography entry's content, when an xref points at one.
+  // Added upstream alongside `externalHref`; until it lands this is never set,
+  // so the reference-card branch below is simply a no-op.
+  const referenceInlines =
+    node.subtype === 'xref'
+      ? (node as Inline.AnchorNode & { referenceInlines?: Inline.InlineNode[] })
+          .referenceInlines
+      : undefined
+
   // The target used to detect RFD references: a link's decoded href, a
   // bibliography xref's resolved URL, or a classic `<<rfd-123>>`'s `#` anchor.
   const navHref = externalHref ?? props?.href
@@ -53,6 +69,23 @@ const RfdLink = ({ node, children }: { node: Inline.AnchorNode; children: ReactN
       <RfdHoverLink rfdNumber={rfdNumber} id={props?.id} className={props?.className}>
         {children}
       </RfdHoverLink>
+    )
+  }
+
+  // Bibliography cross-reference: read the entry in a hover card without
+  // scrolling to the references section. Clicking still follows the citation —
+  // an external URL, or the stock in-page `#id` anchor.
+  if (referenceInlines?.length) {
+    return (
+      <RfdReferenceLink
+        href={externalHref ?? props?.href}
+        external={!!externalHref}
+        id={props?.id}
+        className={props?.className}
+        nodes={referenceInlines}
+      >
+        {children}
+      </RfdReferenceLink>
     )
   }
 
@@ -85,6 +118,60 @@ const RfdLink = ({ node, children }: { node: Inline.AnchorNode; children: ReactN
 }
 
 /**
+ * A `[bibliography]` cross-reference. Clicking follows the citation (an external
+ * URL, or the stock in-page anchor); hovering shows the entry's content in a
+ * card so it can be read — and its links clicked — without scrolling down.
+ */
+const RfdReferenceLink = ({
+  href,
+  external,
+  id,
+  className,
+  nodes,
+  children,
+}: {
+  external: boolean
+  nodes: Inline.InlineNode[]
+  children: ReactNode
+} & AnchorProps) => {
+  // The card renders outside the <Asciidoc> tree, so re-provide the converter
+  // context — that keeps the entry's inner links flowing through our overrides,
+  // and `.footnotes` gives it the footnotes-section styling.
+  const ctx = useConverterContext()
+
+  const { ref, onMouseEnter, onMouseLeave, onClick } = useHoverCard<HTMLAnchorElement>(
+    () => ({
+      key: `ref-${href ?? ''}`,
+      content: (
+        <Context.Provider value={ctx}>
+          <div className="footnotes text-sans-md text-default">
+            <p className="m-0">
+              <RenderInline nodes={nodes} />
+            </p>
+          </div>
+        </Context.Provider>
+      ),
+    }),
+  )
+
+  return (
+    <a
+      ref={ref}
+      href={href}
+      id={id}
+      className={className}
+      target={external ? '_blank' : undefined}
+      rel={external ? 'noopener' : undefined}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
+    >
+      {children}
+    </a>
+  )
+}
+
+/**
  * A link to another RFD: navigates client-side and opens a hover preview after
  * a short delay. The delay and cleanup live in this component, so there's no
  * document-wide event delegation.
@@ -98,7 +185,6 @@ const RfdHoverLink = ({
   rfdNumber: number
   children: ReactNode
 } & AnchorProps) => {
-  const navigation = useNavigation()
   // Read the root loader directly rather than importing `useRootLoaderData`:
   // this component sits in the server-side asciidoctor import chain, and
   // importing `~/root` there would create a circular import.
@@ -108,20 +194,14 @@ const RfdHoverLink = ({
   const rfds = data?.rfds ?? []
   const { document } = useConverterContext()
   const currentRfd = Number(document.attributes?.rfdnumber)
-
-  const ref = useRef<HTMLAnchorElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-
-  const clearHoverTimeout = () => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-  }
-
-  useEffect(() => clearHoverTimeout, [])
-
   const matchedRfd = rfds.find((rfd) => rfd.number === rfdNumber)
+
+  const { ref, onMouseEnter, onMouseLeave, onClick } = useHoverCard<HTMLAnchorElement>(
+    () =>
+      matchedRfd && rfdNumber !== currentRfd
+        ? { key: `rfd-${rfdNumber}`, content: <RfdPreviewCard rfd={matchedRfd} /> }
+        : null,
+  )
 
   // The linked RFD isn't in the set this reader can see. We can't (and
   // shouldn't) tell "private" apart from "doesn't exist" — that mirrors the RFD
@@ -158,31 +238,15 @@ const RfdHoverLink = ({
     )
   }
 
-  const handleMouseEnter = () => {
-    if (navigation.state !== 'idle') return
-    if (!matchedRfd || rfdNumber === currentRfd) return
-    if (timeoutRef.current) return
-
-    timeoutRef.current = setTimeout(() => {
-      const anchor = ref.current
-      if (anchor) {
-        openRfdPreview({ rfd: matchedRfd, position: calcOffset(anchor), anchor })
-      }
-      timeoutRef.current = null
-    }, 125)
-  }
-
-  const handleMouseLeave = () => clearHoverTimeout()
-
   return (
     <Link
       ref={ref}
       to={`/rfd/${rfdNumber.toString().padStart(4, '0')}`}
       id={id}
       className={className}
-      onMouseEnter={handleMouseEnter}
-      onMouseLeave={handleMouseLeave}
-      onClick={closeRfdPreview}
+      onMouseEnter={onMouseEnter}
+      onMouseLeave={onMouseLeave}
+      onClick={onClick}
       prefetch="intent"
     >
       {children}

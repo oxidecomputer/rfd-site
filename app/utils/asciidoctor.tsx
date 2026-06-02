@@ -11,6 +11,7 @@ import {
 } from '@oxide/design-system/asciidoc'
 import { type InlineOverrides } from '@oxide/react-asciidoc'
 
+import Footnote from '~/components/AsciidocBlocks/Footnote'
 import { InlineImage } from '~/components/AsciidocBlocks/Image'
 import RfdLink from '~/components/AsciidocBlocks/RfdLink'
 
@@ -26,6 +27,7 @@ const inlineOverrides: InlineOverrides = {
   ...baseInlineOverrides,
   image: InlineImage,
   anchor: RfdLink,
+  footnote: Footnote,
 }
 
 export { ad, attrs, inlineOverrides }

@@ -9,10 +9,12 @@
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
 import { Fragment, useEffect, useRef } from 'react'
 import { Link } from 'react-router'
 
-import { closeRfdPreview, useRfdPreviewStore } from '~/stores/rfd-preview'
+import type { RfdListItem } from '~/services/rfd.server'
+import { closeHoverCard, useHoverCardStore } from '~/stores/hover-card'
 
 dayjs.extend(relativeTime)
 
@@ -53,98 +55,13 @@ export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   return { left: x, top: y }
 }
 
-const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
-  const preview = useRfdPreviewStore((state) => state.preview)
-  const previewRef = useRef<HTMLDivElement>(null)
-
-  // Dismiss any open preview when navigating to a different RFD
-  useEffect(() => closeRfdPreview, [currentRfd])
-
-  useEffect(() => {
-    if (!preview) return
-
-    type Point = [number, number]
-    type Polygon = Point[]
-
-    // 1┌────────────┐2
-    //  └────────────┘\
-    //  |              \
-    //  ┌───────────────┐3
-    //  │               │
-    // 5└───────────────┘4
-    //
-    // Returns a set of points for each corner of a polygon
-    // that the cursor can safely be within without closing
-    // the floating preview. Plus a buffer of 10px to avoid
-    // it being too sensitive
-    const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Polygon => {
-      const buffer = 10
-      const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
-      const p2: Point = [
-        anchorRect.left + anchorRect.width + buffer,
-        anchorRect.top + anchorRect.height - buffer,
-      ]
-      const p3: Point = [
-        floatingRect.left + floatingRect.width + buffer,
-        floatingRect.top - buffer,
-      ]
-      const p4: Point = [
-        floatingRect.left + floatingRect.width + buffer,
-        floatingRect.top + floatingRect.height + buffer,
-      ]
-      const p5: Point = [
-        floatingRect.left - buffer,
-        floatingRect.top + floatingRect.height + buffer,
-      ]
-      return [p1, p2, p3, p4, p5]
-    }
-
-    const isPointInPolygon = (point: Point, polygon: Polygon) => {
-      const [x, y] = point
-      let isInside = false
-      const length = polygon.length
-      for (let i = 0, j = length - 1; i < length; j = i++) {
-        const [xi, yi] = polygon[i] || [0, 0]
-        const [xj, yj] = polygon[j] || [0, 0]
-        const intersect =
-          yi >= y !== yj >= y && x <= ((xj - xi) * (y - yi)) / (yj - yi) + xi
-        if (intersect) {
-          isInside = !isInside
-        }
-      }
-      return isInside
-    }
-
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!previewRef.current) return
-
-      const cursor: Point = [event.clientX, event.clientY]
-      const floatingRect = previewRef.current.getBoundingClientRect()
-      const anchorRect = preview.anchor.getBoundingClientRect()
-
-      const polygon = getPolygon(anchorRect, floatingRect)
-      const isInside = isPointInPolygon(cursor, polygon)
-
-      if (!isInside) {
-        closeRfdPreview()
-      }
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [preview])
-
-  if (!preview) return null
-
-  const { title, number, state, latestMajorChangeAt, formattedNumber } = preview.rfd
-  const authors = preview.rfd.authors || []
+/** The body of the hover card for an RFD link: number, title, authors, state. */
+export const RfdPreviewCard = ({ rfd }: { rfd: RfdListItem }) => {
+  const { title, number, state, latestMajorChangeAt, formattedNumber } = rfd
+  const authors = rfd.authors || []
 
   return (
-    <div
-      ref={previewRef}
-      className="shadow-tooltip bg-raise absolute z-10 mt-8 flex w-[24rem] rounded-lg p-3"
-      style={{ top: preview.position.top, left: preview.position.left }}
-    >
+    <div className="flex w-[22rem]">
       <Link
         prefetch="intent"
         to={`/rfd/${formattedNumber}`}
@@ -186,4 +103,132 @@ const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
   )
 }
 
-export default RfdPreview
+// ease-out-quart — a fast start that settles in, the right feel for an element
+// arriving on screen (see web-animation-design).
+const EASE_OUT = [0.165, 0.84, 0.44, 1] as const
+
+/**
+ * The single floating hover card. It renders whatever a trigger (RFD link,
+ * footnote, …) put in the store, positioned under that trigger, and closes when
+ * the cursor leaves the safe polygon between the trigger and the card.
+ */
+const HoverCard = ({ currentRfd }: { currentRfd: number }) => {
+  const card = useHoverCardStore((state) => state.card)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
+
+  // Dismiss any open card when navigating to a different RFD
+  useEffect(() => closeHoverCard, [currentRfd])
+
+  useEffect(() => {
+    if (!card) return
+
+    type Point = [number, number]
+    type Polygon = Point[]
+
+    // 1┌────────────┐2
+    //  └────────────┘\
+    //  |              \
+    //  ┌───────────────┐3
+    //  │               │
+    // 5└───────────────┘4
+    //
+    // Returns a set of points for each corner of a polygon
+    // that the cursor can safely be within without closing
+    // the floating card. Plus a buffer of 10px to avoid
+    // it being too sensitive
+    const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Polygon => {
+      const buffer = 10
+      const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
+      const p2: Point = [
+        anchorRect.left + anchorRect.width + buffer,
+        anchorRect.top + anchorRect.height - buffer,
+      ]
+      const p3: Point = [
+        floatingRect.left + floatingRect.width + buffer,
+        floatingRect.top - buffer,
+      ]
+      const p4: Point = [
+        floatingRect.left + floatingRect.width + buffer,
+        floatingRect.top + floatingRect.height + buffer,
+      ]
+      const p5: Point = [
+        floatingRect.left - buffer,
+        floatingRect.top + floatingRect.height + buffer,
+      ]
+      return [p1, p2, p3, p4, p5]
+    }
+
+    const isPointInPolygon = (point: Point, polygon: Polygon) => {
+      const [x, y] = point
+      let isInside = false
+      const length = polygon.length
+      for (let i = 0, j = length - 1; i < length; j = i++) {
+        const [xi, yi] = polygon[i] || [0, 0]
+        const [xj, yj] = polygon[j] || [0, 0]
+        const intersect =
+          yi >= y !== yj >= y && x <= ((xj - xi) * (y - yi)) / (yj - yi) + xi
+        if (intersect) {
+          isInside = !isInside
+        }
+      }
+      return isInside
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!cardRef.current) return
+
+      const cursor: Point = [event.clientX, event.clientY]
+      const floatingRect = cardRef.current.getBoundingClientRect()
+      const anchorRect = card.anchor.getBoundingClientRect()
+
+      const polygon = getPolygon(anchorRect, floatingRect)
+      const isInside = isPointInPolygon(cursor, polygon)
+
+      if (!isInside) {
+        closeHoverCard()
+      }
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [card])
+
+  // AnimatePresence keeps the card mounted long enough to play its exit, so the
+  // hard close from the safe-polygon check fades out instead of snapping away.
+  return (
+    <AnimatePresence>
+      {card && (
+        <motion.div
+          // Re-key per target so hopping between links cross-fades rather than
+          // sliding the same card to a new position.
+          key={card.key}
+          ref={cardRef}
+          // `break-words` (inherited) wraps long, unbreakable URLs so they
+          // can't overflow past `max-w`.
+          className="shadow-tooltip bg-raise absolute z-10 mt-6 w-max max-w-[24rem] rounded-lg p-3 break-words"
+          style={{
+            top: card.position.top,
+            left: card.position.left,
+            // Grow from the anchored top-left corner (under the trigger), not center.
+            transformOrigin: 'top left',
+            willChange: 'transform, opacity',
+          }}
+          initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: -4 }}
+          transition={{
+            duration: 0.18,
+            ease: EASE_OUT,
+            // Exits ~20% quicker than entrances feel right.
+            opacity: { duration: 0.14, ease: EASE_OUT },
+          }}
+        >
+          {card.content}
+        </motion.div>
+      )}
+    </AnimatePresence>
+  )
+}
+
+export default HoverCard

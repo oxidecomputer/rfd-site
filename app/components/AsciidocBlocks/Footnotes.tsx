@@ -43,7 +43,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
                     className="footnote group text-accent-tertiary group-hover:text-accent -m-2 p-2 whitespace-nowrap"
                     to={`#_footnoteref_${footnote.index}`}
                   >
-                    <GotoIcon className="inline-block rotate-180" />
+                    <GotoIcon className="ml-1 inline-block rotate-180" />
                     <span className="inline-block translate-x-0 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100">
                       View
                     </span>
