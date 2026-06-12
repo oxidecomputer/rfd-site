@@ -12,4 +12,7 @@ import { vercelPreset } from '@vercel/react-router/vite'
 export default {
   presets: [vercelPreset()],
   ssr: true,
+  // we have few routes, so skip lazy route discovery (and its /__manifest
+  // endpoint) and ship the full route manifest in the initial document
+  routeDiscovery: { mode: 'initial' },
 } satisfies Config
