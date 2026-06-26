@@ -67,7 +67,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
 
   return (
     <div className="sticky top-0 z-60">
-      {!user && <PublicBanner />}
+      {!user && !localMode && <PublicBanner />}
       <header className="bg-default border-secondary flex h-14 items-center justify-between border-b px-3 print:hidden">
         <div className="flex space-x-3">
           <Link
