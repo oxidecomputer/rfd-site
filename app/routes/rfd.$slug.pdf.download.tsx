@@ -24,9 +24,7 @@ export const loader: LoaderFunction = async ({ request, params: { slug } }) => {
   const pdf = rfd.content[0]
 
   if (pdf.source === 'google') {
-    throw redirect(
-      `https://drive.google.com/uc?export=download&id=${pdf.externalId}`,
-    )
+    throw redirect(`https://drive.google.com/uc?export=download&id=${pdf.externalId}`)
   }
 
   throw redirect(pdf.link)
