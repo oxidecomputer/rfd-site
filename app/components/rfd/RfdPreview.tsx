@@ -9,11 +9,10 @@
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useNavigation } from 'react-router'
+import { Fragment, useEffect, useRef } from 'react'
+import { Link } from 'react-router'
 
-import { useRootLoaderData } from '~/root'
-import type { RfdListItem } from '~/services/rfd.server'
+import { closeRfdPreview, useRfdPreviewStore } from '~/stores/rfd-preview'
 
 dayjs.extend(relativeTime)
 
@@ -54,122 +53,12 @@ export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   return { left: x, top: y }
 }
 
-interface RfdPreviewState {
-  rfd: RfdListItem
-  position: { left: number; top: number }
-  anchor: HTMLAnchorElement
-}
-
-interface RfdPreviewProps {
-  currentRfd: number
-  nodeRef: React.RefObject<HTMLElement | null>
-}
-
-const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
-  const navigate = useNavigate()
-  const navigation = useNavigation()
-  const isNavigating = navigation.state !== 'idle'
-  const { rfds } = useRootLoaderData()
-  const [preview, setPreview] = useState<RfdPreviewState | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
+const RfdPreview = ({ currentRfd }: { currentRfd: number }) => {
+  const preview = useRfdPreviewStore((state) => state.preview)
   const previewRef = useRef<HTMLDivElement>(null)
 
-  const clearHoverTimeout = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-  }, [])
-
-  useEffect(() => {
-    setPreview(null)
-  }, [currentRfd])
-
-  // Based on https://github.com/remix-run/react-router-website/blob/main/app/ui/delegate-markdown-links.ts
-  // Converts regular AsciiDoc a tags and makes them React Routery
-  useEffect(() => {
-    const node = nodeRef.current
-    if (!node) return
-
-    const handleClick = (event: MouseEvent) => {
-      if (!(event.target instanceof HTMLElement)) return
-
-      const a = event.target.closest('a')
-
-      if (
-        a && // is anchor or has anchor parent
-        a.hasAttribute('href') && // has an href
-        a.host === window.location.host && // is internal
-        event.button === 0 && // left click
-        (!a.target || a.target === '_self') && // Let browser handle "target=_blank" etc.
-        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) // not modified
-      ) {
-        const rfdNum = extractRfdNumber(a.getAttribute('href') || '')
-
-        if (rfdNum !== null) {
-          event.preventDefault()
-          clearHoverTimeout()
-          setPreview(null)
-          const formattedNumber = rfdNum.toString().padStart(4, '0')
-          navigate(`/rfd/${formattedNumber}`)
-          return
-        }
-
-        if (a.host === window.location.host) {
-          event.preventDefault()
-          const { pathname, search, hash } = a
-          navigate({ pathname, search, hash })
-        }
-      }
-    }
-
-    const handleMouseOver = (event: MouseEvent) => {
-      if (isNavigating) return
-      if (!(event.target instanceof HTMLElement)) return
-
-      const anchor = event.target.closest('a')
-      if (!anchor) return
-
-      const rfdNum = extractRfdNumber(anchor.getAttribute('href') || '')
-
-      if (rfdNum === null || rfdNum === currentRfd) return
-
-      const matchedRfd = rfds.find((rfd) => rfd.number === rfdNum)
-      if (!matchedRfd) return
-
-      if (timeoutRef.current) return
-
-      timeoutRef.current = setTimeout(() => {
-        const offset = calcOffset(anchor)
-        setPreview({
-          rfd: matchedRfd,
-          position: offset,
-          anchor,
-        })
-        timeoutRef.current = null
-      }, 125)
-    }
-
-    const handleMouseOut = (event: MouseEvent) => {
-      if (!(event.target instanceof HTMLElement)) return
-
-      const anchor = event.target.closest('a')
-      if (anchor) {
-        clearHoverTimeout()
-      }
-    }
-
-    node.addEventListener('click', handleClick)
-    node.addEventListener('mouseover', handleMouseOver)
-    node.addEventListener('mouseout', handleMouseOut)
-
-    return () => {
-      node.removeEventListener('click', handleClick)
-      node.removeEventListener('mouseover', handleMouseOver)
-      node.removeEventListener('mouseout', handleMouseOut)
-      clearHoverTimeout()
-    }
-  }, [navigate, nodeRef, currentRfd, rfds, clearHoverTimeout, isNavigating])
+  // Dismiss any open preview when navigating to a different RFD
+  useEffect(() => closeRfdPreview, [currentRfd])
 
   useEffect(() => {
     if (!preview) return
@@ -237,7 +126,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
       const isInside = isPointInPolygon(cursor, polygon)
 
       if (!isInside) {
-        setPreview(null)
+        closeRfdPreview()
       }
     }
 

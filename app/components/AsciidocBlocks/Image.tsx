@@ -7,56 +7,34 @@
  */
 
 import * as Ariakit from '@ariakit/react'
-import { type Block, type Inline } from '@asciidoctor/core'
-import { Title, useConverterContext, type ImageBlock } from '@oxide/react-asciidoc'
+import {
+  Title,
+  useConverterContext,
+  type ImageBlock,
+  type Inline,
+} from '@oxide/react-asciidoc'
 import { useState } from 'react'
 
-function nodeIsInline(node: Block | Inline): node is Inline {
-  return node.isInline()
-}
+const InlineImage = ({ node }: { node: Inline.ImageNode }) => {
+  const { document } = useConverterContext()
+  const docAttrs = document.attributes || {}
 
-const InlineImage = ({ node }: { node: Block | Inline }) => {
-  const documentAttrs = node.getDocument().getAttributes()
+  const url = `/rfd/image/${docAttrs.rfdnumber}/${node.target}`
 
-  let target = ''
-  if (nodeIsInline(node)) {
-    target = node.getTarget() || '' // Getting target on inline nodes
-  } else {
-    target = node.getAttribute('target') // Getting target on block nodes
-  }
+  let img = <img src={url} alt={node.alt} width={node.width} height={node.height} />
 
-  const uri = node.getImageUri(target)
-  let url = ''
-
-  url = `/rfd/image/${documentAttrs.rfdnumber}/${uri}`
-
-  let img = (
-    <img
-      src={url}
-      alt={node.getAttribute('alt')}
-      width={node.getAttribute('width')}
-      height={node.getAttribute('height')}
-    />
-  )
-
-  if (node.hasAttribute('link')) {
+  if (node.link) {
     img = (
-      <a className="image" href={node.getAttribute('link')}>
+      <a className="image" href={node.link}>
         {img}
       </a>
     )
   }
 
   return (
-    <div
-      className={`image ${
-        node.hasAttribute('align') ? 'text-' + node.getAttribute('align') : ''
-      } ${node.hasAttribute('float') ? node.getAttribute('float') : ''} ${
-        node.getRole() ? node.getRole() : ''
-      }`}
-    >
+    <span className={`image ${node.float ? node.float : ''} ${node.role ? node.role : ''}`}>
       {img}
-    </div>
+    </span>
   )
 }
 
