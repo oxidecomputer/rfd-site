@@ -16,12 +16,17 @@ describe('sanitizeRedirect', () => {
     expect(sanitizeRedirect('/rfd/0001')).toBe('/rfd/0001')
   })
 
-  it('allows the RFD discussion path', () => {
+  it('allows RFD sub-paths', () => {
     expect(sanitizeRedirect('/rfd/0001/discussion')).toBe('/rfd/0001/discussion')
+    expect(sanitizeRedirect('/rfd/0001/raw')).toBe('/rfd/0001/raw')
+    expect(sanitizeRedirect('/rfd/0001/pdf')).toBe('/rfd/0001/pdf')
   })
 
   it('allows RFD paths with query params', () => {
     expect(sanitizeRedirect('/rfd/0001?arg=value')).toBe('/rfd/0001?arg=value')
+    expect(sanitizeRedirect('/rfd/0001/discussion?arg=value')).toBe(
+      '/rfd/0001/discussion?arg=value',
+    )
   })
 
   it('allows index query params', () => {
@@ -42,7 +47,6 @@ describe('sanitizeRedirect', () => {
   it('rejects malformed RFD paths', () => {
     expect(sanitizeRedirect('/rfd/00001')).toBe('/')
     expect(sanitizeRedirect('/rfd/0001/')).toBe('/')
-    expect(sanitizeRedirect('/rfd/0001/raw')).toBe('/')
   })
 
   it('rejects external redirects', () => {
