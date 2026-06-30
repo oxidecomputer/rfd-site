@@ -175,7 +175,7 @@ export { auth, handleAuthenticationCallback }
 
 const RFD_PATH = /^\/rfd\/[0-9]{1,4}\??.*$/
 
-function sanitizeRedirect(path: string): string {
+export function sanitizeRedirect(path: string): string {
   const decoded = decodeURIComponent(path)
 
   // Allow direct links to RFDs
