@@ -19,7 +19,7 @@ import {
   type MetaFunction,
 } from 'react-router'
 
-import { auth, getUserFromSession } from '~/services/auth.server'
+import { auth, getUserFromSession, sanitizeRedirect } from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
 import { buildMeta } from '~/utils/meta'
 
@@ -35,10 +35,11 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const returnTo = url.searchParams.get('returnTo')
   const emailResponse = url.searchParams.get('email')
 
-  // If we're already logged in, just return to the home page. This may occur
-  // while navigating back and forward or from their history
+  // If we're already logged in, honor returnTo if present (e.g. an auth-gated
+  // RFD redirected here), otherwise go home. This may also occur while
+  // navigating back/forward or from history.
   if (await getUserFromSession(request)) {
-    throw redirect('/')
+    throw redirect(returnTo ? sanitizeRedirect(returnTo) : '/')
   }
 
   const headers = new Headers()

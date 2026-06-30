@@ -173,10 +173,22 @@ async function handleAuthenticationCallback(provider: string, request: Request) 
 
 export { auth, handleAuthenticationCallback }
 
-const RFD_PATH = /^\/rfd\/[0-9]{1,4}\??.*$/
+// Allowlist of redirect targets: a bare RFD (`/rfd/0001`) or any of its
+// sub-paths (`/rfd/0001/discussion`, `/raw`, `/pdf`), optionally with a query
+// string. The auth-gated RFD routes set returnTo to their own URL so a user
+// bounced to login lands back on exactly what they asked for, so the allowlist
+// has to admit those sub-paths. returnTo is user-controlled (a /login query
+// param), but every match here is a same-origin path under /rfd/<number>, so
+// it can't be used as an open redirect.
+const RFD_PATH = /^\/rfd\/[0-9]{1,4}(?:\/[^?\s]+)?(?:\?.*)?$/
 
-function sanitizeRedirect(path: string): string {
-  const decoded = decodeURIComponent(path)
+export function sanitizeRedirect(path: string): string {
+  let decoded
+  try {
+    decoded = decodeURIComponent(path)
+  } catch {
+    return '/'
+  }
 
   // Allow direct links to RFDs
   if (RFD_PATH.test(decoded)) {

@@ -34,8 +34,8 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   }
 
   // If someone goes to a private RFD but they're not logged in, they will
-  // want to log in and see it.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}`)
+  // want to log in and see it. Send them back to the raw view they asked for.
+  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}/raw`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.
