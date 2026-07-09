@@ -154,7 +154,10 @@ export default function Index() {
         : ''
       return `${rfd.number} ¦ ${rfd.title || ''} ¦ ${authorString}`
     })
-    const idxs = fuzz.filter(haystack, input)
+    // Strip leading zeros before fuzzy matching the haystack (0013->13)
+    const isNumericInput = /^\d+$/.test(input.trim())
+    const searchInput = isNumericInput ? String(parsedInput) : input
+    const idxs = fuzz.filter(haystack, searchInput)
 
     let filteredRfds: RfdListItem[] = []
 
