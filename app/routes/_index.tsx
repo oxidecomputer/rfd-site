@@ -46,6 +46,7 @@ import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
 import { fuzz } from '~/utils/fuzz'
+import { filterRfds } from '~/utils/rfdSearch'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
@@ -148,22 +149,7 @@ export default function Index() {
       return [sortedRfds, undefined]
     }
 
-    const haystack = rfds.map((rfd) => {
-      const authorString = rfd.authors
-        ? rfd.authors.map((a) => `${a.name} ${a.email}`).join(' ')
-        : ''
-      return `${rfd.number} ¦ ${rfd.title || ''} ¦ ${authorString}`
-    })
-    // Strip leading zeros before fuzzy matching the haystack (0013->13)
-    const isNumericInput = /^\d+$/.test(input.trim())
-    const searchInput = isNumericInput ? String(parsedInput) : input
-    const idxs = fuzz.filter(haystack, searchInput)
-
-    let filteredRfds: RfdListItem[] = []
-
-    if (idxs) {
-      filteredRfds = idxs.map((i) => rfds[i])
-    }
+    const filteredRfds = filterRfds(rfds, input)
 
     const exactMatch = rfds.find(
       (rfd) => !isNaN(parsedInput) && rfd.number === parsedInput && rfd,
