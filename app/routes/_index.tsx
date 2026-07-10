@@ -46,6 +46,7 @@ import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
 import { fuzz } from '~/utils/fuzz'
+import { parseRfdNum } from '~/utils/parseRfdNum'
 import { filterRfds } from '~/utils/rfdSearch'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
@@ -132,7 +133,8 @@ export default function Index() {
   const inputEl = useRef<HTMLInputElement>(null)
 
   const [matchedItems, exactMatch] = useMemo(() => {
-    const parsedInput = parseInt(input)
+    const parsedInput = parseRfdNum(input.trim())
+    const now = Date.now()
 
     if (!input.trim()) {
       const sortedRfds = sortBy(rfds, (rfd) => {
@@ -141,7 +143,7 @@ export default function Index() {
             ? rfd.number
             : rfd.latestMajorChangeAt
               ? rfd.latestMajorChangeAt.getTime()
-              : new Date().getTime()
+              : now
         const mult = sortDir === 'asc' ? 1 : -1
         return sortVal * mult
       })
@@ -151,9 +153,7 @@ export default function Index() {
 
     const filteredRfds = filterRfds(rfds, input)
 
-    const exactMatch = rfds.find(
-      (rfd) => !isNaN(parsedInput) && rfd.number === parsedInput && rfd,
-    )
+    const exactMatch = rfds.find((rfd) => rfd.number === parsedInput)
 
     const sortedRfds = sortBy(filteredRfds, (rfd) => {
       const sortVal =
@@ -161,7 +161,7 @@ export default function Index() {
           ? rfd.number
           : rfd.latestMajorChangeAt
             ? rfd.latestMajorChangeAt.getTime()
-            : new Date().getTime()
+            : now
       const mult = sortDir === 'asc' ? 1 : -1
       return sortVal * mult
     })

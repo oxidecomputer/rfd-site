@@ -9,7 +9,6 @@
 import { fuzz } from './fuzz'
 
 type SearchableRfd = {
-  number: number
   formattedNumber: string
   title: string | null
   authors: { name: string; email: string }[]
