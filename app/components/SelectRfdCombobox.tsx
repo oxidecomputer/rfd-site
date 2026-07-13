@@ -24,7 +24,8 @@ import Icon from '~/components/Icon'
 import { useKey } from '~/hooks/use-key'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
 import { classed } from '~/utils/classed'
-import { fuzz } from '~/utils/fuzz'
+import { parseRfdNum } from '~/utils/parseRfdNum'
+import { filterRfds } from '~/utils/rfdSearch'
 
 const Outline = classed.div`absolute left-0 top-0 z-10 h-full w-full rounded border border-accent pointer-events-none`
 
@@ -101,15 +102,12 @@ const ComboboxWrapper = ({
     (query: string): RfdListItem[] => {
       if (!query.trim()) return rfds
 
-      const parsedInput = parseInt(query)
-      const haystack = rfds.map((rfd) => `${rfd.number} ¦ ${rfd.title || ''}`)
-      const idxs = fuzz.filter(haystack, query)
-      if (!idxs) return []
+      const parsedInput = parseRfdNum(query.trim())
 
-      return idxs
-        .map((i) => ({
-          ...rfds[i],
-          _exactMatch: !isNaN(parsedInput) && rfds[i].number === parsedInput,
+      return filterRfds(rfds, query)
+        .map((rfd) => ({
+          ...rfd,
+          _exactMatch: rfd.number === parsedInput,
         }))
         .sort((a, b) => {
           if (a._exactMatch && !b._exactMatch) return -1
