@@ -35,17 +35,17 @@ class BoundedCache<V> {
 // logout handler must clear() this.
 export const rfdPageCache = new BoundedCache<unknown>(30)
 
-// content sha per RFD from the most recently loaded list, used to validate
-// cached documents
-const rfdShaIndex = new Map<number, string | null>()
+// lets the background refresh in rfd.$slug's clientLoader tell the mounted
+// route to revalidate when it finds changed content
+const staleListeners = new Set<() => void>()
 
-export function updateRfdShaIndex(rfds: { number: number; sha: string | null }[]) {
-  rfdShaIndex.clear()
-  for (const rfd of rfds) {
-    rfdShaIndex.set(rfd.number, rfd.sha)
+export function subscribeRfdStale(fn: () => void) {
+  staleListeners.add(fn)
+  return () => {
+    staleListeners.delete(fn)
   }
 }
 
-export function currentRfdSha(num: number): string | null | undefined {
-  return rfdShaIndex.get(num)
+export function notifyRfdStale() {
+  for (const fn of staleListeners) fn()
 }

@@ -40,7 +40,6 @@ import {
   provideNewRfdNumber,
 } from './services/rfd.server'
 import { useApplyTheme } from './stores/theme'
-import { updateRfdShaIndex } from './utils/clientCache'
 import { buildMeta } from './utils/meta'
 
 export const meta: MetaFunction = () =>
@@ -191,11 +190,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
 export default function App() {
   useApplyTheme()
   useStaleRootRefresh()
-  const { localMode, rfds } = useLoaderData<typeof loader>()
-
-  useEffect(() => {
-    updateRfdShaIndex(rfds)
-  }, [rfds])
+  const { localMode } = useLoaderData<typeof loader>()
 
   return (
     <Layout>
