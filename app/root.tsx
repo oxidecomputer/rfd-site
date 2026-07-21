@@ -7,6 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import {
   isRouteErrorResponse,
   Links,
@@ -15,6 +16,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
+  useRevalidator,
   useRouteError,
   useRouteLoaderData,
   type LinksFunction,
@@ -86,18 +89,58 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 }
 
+// How stale the root data (the RFD list) may get in a long-lived tab before
+// a navigation or window focus triggers a background refresh.
+const ROOT_DATA_MAX_AGE_MS = 5 * 60 * 1000
+// Client module state: when root data was last fetched (init ≈ document load)
+// and whether useStaleRootRefresh has requested a refresh that shouldRevalidate
+// should let through.
+let rootDataLoadedAt = Date.now()
+let rootRefreshRequested = false
+
 export function shouldRevalidate({
-  currentUrl,
-  nextUrl,
   formMethod,
   defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs) {
-  // Skip revalidation when only search params change on the same path
-  // (e.g. filter changes). Form submissions still revalidate.
-  if (!formMethod && currentUrl.pathname === nextUrl.pathname) {
+  // Refresh requested by useStaleRootRefresh below
+  if (rootRefreshRequested) {
+    rootRefreshRequested = false
+    return true
+  }
+  // The RFD list is expensive to fetch and changes rarely, so keep the data
+  // from the initial document load for all plain GET navigations. Form
+  // submissions (logout, sort/comment cookies) still revalidate, and auth
+  // state changes go through actions or full document loads.
+  if (!formMethod) {
     return false
   }
+  rootDataLoadedAt = Date.now()
   return defaultShouldRevalidate
+}
+
+// Refresh the RFD list in the background once it's older than
+// ROOT_DATA_MAX_AGE_MS, checked on navigation and on window focus. Runs after
+// the navigation completes, so navigations stay instant and the list updates
+// in place when the loader returns.
+function useStaleRootRefresh() {
+  const revalidator = useRevalidator()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const refreshIfStale = () => {
+      if (
+        Date.now() - rootDataLoadedAt > ROOT_DATA_MAX_AGE_MS &&
+        revalidator.state === 'idle'
+      ) {
+        rootDataLoadedAt = Date.now()
+        rootRefreshRequested = true
+        revalidator.revalidate()
+      }
+    }
+    refreshIfStale()
+    window.addEventListener('focus', refreshIfStale)
+    return () => window.removeEventListener('focus', refreshIfStale)
+  }, [pathname, revalidator])
 }
 
 export function useRootLoaderData() {
@@ -156,6 +199,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
 
 export default function App() {
   useApplyTheme()
+  useStaleRootRefresh()
   const { localMode } = useLoaderData<typeof loader>()
 
   return (

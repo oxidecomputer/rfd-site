@@ -17,6 +17,7 @@ import dayjs from 'dayjs'
 import {
   Fragment,
   ReactNode,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -24,9 +25,11 @@ import {
   useState,
 } from 'react'
 import {
+  Await,
   redirect,
   useLoaderData,
   useLocation,
+  type ClientLoaderFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from 'react-router'
@@ -47,6 +50,7 @@ import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
+import { rfdPageCache } from '~/utils/clientCache'
 import { buildMeta } from '~/utils/meta'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
@@ -85,6 +89,12 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   const user = await authenticate(request)
 
+  // Kicked off before the RFD fetch but not awaited: the groups list only
+  // feeds the cosmetic AccessWarning banner, so it's streamed to the client
+  // and rendered when it arrives rather than blocking the document. Errors
+  // collapse to an empty list (no banner) instead of failing the page.
+  const allGroups = fetchGroups(user).catch(() => [])
+
   const rfd = await fetchRfd(num, user)
 
   // If someone goes to a private RFD but they're not logged in, they will
@@ -100,22 +110,39 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // necessarily exhaustive. The permissions assigned to this user will determine
   // which groups they are allowed to list. The list returned from the API is
   // then filtered down to include only the groups that provide access to this RFD.
-  const groups = (await fetchGroups(user))
-    .filter((group) => can(group.permissions, { GetRfd: num }))
-    .map((g) => g.name)
+  const groups = allGroups.then((allGroups) => {
+    const groups = allGroups
+      .filter((group) => can(group.permissions, { GetRfd: num }))
+      .map((g) => g.name)
 
-  // Currently the RFD API does not have a "public" group. Instead the "public"
-  // setting of an RFD is controlled by the visibility flag. To make this consistent
-  // with the previous experience, if an RFD is public we add a fake group to
-  // the display list
-  if (rfd.visibility === 'public') {
-    groups.unshift('public')
-  }
+    // Currently the RFD API does not have a "public" group. Instead the "public"
+    // setting of an RFD is controlled by the visibility flag. To make this consistent
+    // with the previous experience, if an RFD is public we add a fake group to
+    // the display list
+    if (rfd.visibility === 'public') {
+      groups.unshift('public')
+    }
+
+    return groups
+  })
 
   return {
     rfd,
     groups,
   }
+}
+
+// Serve recently viewed RFDs from a client-side cache so revisiting a
+// document during a session is instant. The server loader (and the API's
+// access check) still runs on first visit and after the TTL expires.
+export async function clientLoader({ params, serverLoader }: ClientLoaderFunctionArgs) {
+  const key = params.slug!
+  const cached = rfdPageCache.get(key)
+  if (cached) return cached as Awaited<ReturnType<typeof loader>>
+
+  const data = await serverLoader<typeof loader>()
+  rfdPageCache.set(key, data)
+  return data
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -259,7 +286,13 @@ export default function Rfd() {
                 </div>
               )}
             </div>
-            <AccessWarning groups={groups} />
+            {/* invisible placeholder reserves the banner's height so the
+                groups streaming in don't cause a layout shift */}
+            <Suspense fallback={<AccessWarning groups={undefined} />}>
+              <Await resolve={groups}>
+                {(groups) => <AccessWarning groups={groups} />}
+              </Await>
+            </Suspense>
           </div>
         </Container>
         <div className="border-secondary border-b print:m-auto print:max-w-300 print:rounded-lg print:border">
