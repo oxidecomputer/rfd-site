@@ -40,6 +40,7 @@ import {
   provideNewRfdNumber,
 } from './services/rfd.server'
 import { useApplyTheme } from './stores/theme'
+import { updateRfdShaIndex } from './utils/clientCache'
 import { buildMeta } from './utils/meta'
 
 export const meta: MetaFunction = () =>
@@ -89,12 +90,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 }
 
-// How stale the root data (the RFD list) may get in a long-lived tab before
-// a navigation or window focus triggers a background refresh.
 const ROOT_DATA_MAX_AGE_MS = 5 * 60 * 1000
-// Client module state: when root data was last fetched (init ≈ document load)
-// and whether useStaleRootRefresh has requested a refresh that shouldRevalidate
-// should let through.
 let rootDataLoadedAt = Date.now()
 let rootRefreshRequested = false
 
@@ -102,15 +98,12 @@ export function shouldRevalidate({
   formMethod,
   defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs) {
-  // Refresh requested by useStaleRootRefresh below
   if (rootRefreshRequested) {
     rootRefreshRequested = false
     return true
   }
-  // The RFD list is expensive to fetch and changes rarely, so keep the data
-  // from the initial document load for all plain GET navigations. Form
-  // submissions (logout, sort/comment cookies) still revalidate, and auth
-  // state changes go through actions or full document loads.
+  // The RFD list is expensive to fetch and changes rarely, so skip
+  // revalidation on plain GET navigations. Form submissions still revalidate.
   if (!formMethod) {
     return false
   }
@@ -118,10 +111,8 @@ export function shouldRevalidate({
   return defaultShouldRevalidate
 }
 
-// Refresh the RFD list in the background once it's older than
-// ROOT_DATA_MAX_AGE_MS, checked on navigation and on window focus. Runs after
-// the navigation completes, so navigations stay instant and the list updates
-// in place when the loader returns.
+// Refresh root data in the background (after navigation or on window focus)
+// once it's older than ROOT_DATA_MAX_AGE_MS, so navigations stay instant.
 function useStaleRootRefresh() {
   const revalidator = useRevalidator()
   const { pathname } = useLocation()
@@ -200,7 +191,11 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
 export default function App() {
   useApplyTheme()
   useStaleRootRefresh()
-  const { localMode } = useLoaderData<typeof loader>()
+  const { localMode, rfds } = useLoaderData<typeof loader>()
+
+  useEffect(() => {
+    updateRfdShaIndex(rfds)
+  }, [rfds])
 
   return (
     <Layout>

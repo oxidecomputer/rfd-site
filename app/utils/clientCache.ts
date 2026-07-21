@@ -6,36 +6,21 @@
  * Copyright Oxide Computer Company
  */
 
-/**
- * A small TTL cache for client loader data, so revisiting a page during a
- * session doesn't wait on the server. Module state is per-tab and is wiped by
- * any full document load. Logout happens via SPA navigation, so the logout
- * handler must clear() this explicitly to avoid serving pages the user could
- * see before but not after.
- */
-class TtlCache<V> {
-  #entries = new Map<string, { value: V; storedAt: number }>()
-  #ttl: number
+class BoundedCache<V> {
+  #entries = new Map<string, V>()
   #max: number
 
-  constructor(ttl: number, max: number) {
-    this.#ttl = ttl
+  constructor(max: number) {
     this.#max = max
   }
 
   get(key: string): V | undefined {
-    const entry = this.#entries.get(key)
-    if (!entry) return undefined
-    if (Date.now() - entry.storedAt > this.#ttl) {
-      this.#entries.delete(key)
-      return undefined
-    }
-    return entry.value
+    return this.#entries.get(key)
   }
 
   set(key: string, value: V) {
     this.#entries.delete(key)
-    this.#entries.set(key, { value, storedAt: Date.now() })
+    this.#entries.set(key, value)
     while (this.#entries.size > this.#max) {
       this.#entries.delete(this.#entries.keys().next().value!)
     }
@@ -46,5 +31,21 @@ class TtlCache<V> {
   }
 }
 
-/** Cache of rfd.$slug loader data, keyed by slug */
-export const rfdPageCache = new TtlCache<unknown>(5 * 60 * 1000, 30)
+// rfd.$slug loader data keyed by slug. Logout navigates client-side, so the
+// logout handler must clear() this.
+export const rfdPageCache = new BoundedCache<unknown>(30)
+
+// content sha per RFD from the most recently loaded list, used to validate
+// cached documents
+const rfdShaIndex = new Map<number, string | null>()
+
+export function updateRfdShaIndex(rfds: { number: number; sha: string | null }[]) {
+  rfdShaIndex.clear()
+  for (const rfd of rfds) {
+    rfdShaIndex.set(rfd.number, rfd.sha)
+  }
+}
+
+export function currentRfdSha(num: number): string | null | undefined {
+  return rfdShaIndex.get(num)
+}

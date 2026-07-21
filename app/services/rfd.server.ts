@@ -267,7 +267,7 @@ async function parseContent(
   if (key) {
     const cached = parseCache.get(key)
     if (cached) {
-      // re-insert to keep recently used entries at the back of the map
+      // re-insert for LRU order
       parseCache.delete(key)
       parseCache.set(key, cached)
       return cached
@@ -353,8 +353,7 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
   let content: DocumentBlock | undefined
 
   if (rfd.content) {
-    // no sha in local mode, so this parse is never cached — local authoring
-    // should always reflect the file on disk
+    // null sha: local mode is never cached
     content = await parseContent(rfd.content, rfd.number, null)
   }
 

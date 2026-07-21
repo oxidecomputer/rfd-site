@@ -51,8 +51,7 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
   }
 
   const logout = () => {
-    // Logout redirects via SPA navigation, so cached pages would survive it.
-    // Drop them: they may contain RFDs the logged-out user can't access.
+    // cached pages may contain RFDs the logged-out user can't access
     rfdPageCache.clear()
     fetcher.submit({}, { method: 'post', action: '/logout' })
   }

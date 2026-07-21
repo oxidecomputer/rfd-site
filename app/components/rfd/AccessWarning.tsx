@@ -11,11 +11,8 @@ import { Fragment } from 'react'
 
 import Icon from '~/components/Icon'
 
-// `groups === undefined` means the list is still streaming in: render the
-// same banner invisibly with placeholder content so its space is reserved and
-// the real banner can fill it without layout shift. The reserved height
-// matches a single-line banner; a group list long enough to wrap will still
-// shift, and in the rare case the list resolves empty the space collapses.
+// undefined groups = still streaming in: render the banner invisibly to
+// reserve its height and avoid layout shift when the list resolves
 const AccessWarning = ({ groups }: { groups: string[] | undefined }) => {
   const pending = groups === undefined
   if (!pending && groups.length === 0) return null

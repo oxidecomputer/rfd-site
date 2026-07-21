@@ -50,7 +50,7 @@ import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
-import { rfdPageCache } from '~/utils/clientCache'
+import { currentRfdSha, rfdPageCache } from '~/utils/clientCache'
 import { buildMeta } from '~/utils/meta'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
@@ -89,10 +89,8 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   const user = await authenticate(request)
 
-  // Kicked off before the RFD fetch but not awaited: the groups list only
-  // feeds the cosmetic AccessWarning banner, so it's streamed to the client
-  // and rendered when it arrives rather than blocking the document. Errors
-  // collapse to an empty list (no banner) instead of failing the page.
+  // not awaited: groups only feed the AccessWarning banner, which streams in
+  // after the document renders
   const allGroups = fetchGroups(user).catch(() => [])
 
   const rfd = await fetchRfd(num, user)
@@ -132,13 +130,16 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   }
 }
 
-// Serve recently viewed RFDs from a client-side cache so revisiting a
-// document during a session is instant. The server loader (and the API's
-// access check) still runs on first visit and after the TTL expires.
+// Serve cached documents while their sha matches the RFD list's sha for that
+// number. Null/unknown shas (e.g. local mode) never match.
 export async function clientLoader({ params, serverLoader }: ClientLoaderFunctionArgs) {
   const key = params.slug!
-  const cached = rfdPageCache.get(key)
-  if (cached) return cached as Awaited<ReturnType<typeof loader>>
+  const num = parseRfdNum(key)
+
+  const cached = rfdPageCache.get(key) as Awaited<ReturnType<typeof loader>> | undefined
+  if (cached && cached.rfd.sha && num && cached.rfd.sha === currentRfdSha(num)) {
+    return cached
+  }
 
   const data = await serverLoader<typeof loader>()
   rfdPageCache.set(key, data)
@@ -286,8 +287,6 @@ export default function Rfd() {
                 </div>
               )}
             </div>
-            {/* invisible placeholder reserves the banner's height so the
-                groups streaming in don't cause a layout shift */}
             <Suspense fallback={<AccessWarning groups={undefined} />}>
               <Await resolve={groups}>
                 {(groups) => <AccessWarning groups={groups} />}
