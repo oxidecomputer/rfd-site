@@ -17,6 +17,7 @@ import dayjs from 'dayjs'
 import {
   Fragment,
   ReactNode,
+  Suspense,
   useCallback,
   useEffect,
   useMemo,
@@ -24,9 +25,12 @@ import {
   useState,
 } from 'react'
 import {
+  Await,
   redirect,
   useLoaderData,
   useLocation,
+  useRevalidator,
+  type ClientLoaderFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from 'react-router'
@@ -47,6 +51,7 @@ import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
+import { notifyRfdStale, rfdPageCache, subscribeRfdStale } from '~/utils/clientCache'
 import { buildMeta } from '~/utils/meta'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
@@ -85,6 +90,10 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   const user = await authenticate(request)
 
+  // not awaited: groups only feed the AccessWarning banner, which streams in
+  // after the document renders
+  const allGroups = fetchGroups(user).catch(() => [])
+
   const rfd = await fetchRfd(num, user)
 
   // If someone goes to a private RFD but they're not logged in, they will
@@ -100,22 +109,60 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // necessarily exhaustive. The permissions assigned to this user will determine
   // which groups they are allowed to list. The list returned from the API is
   // then filtered down to include only the groups that provide access to this RFD.
-  const groups = (await fetchGroups(user))
-    .filter((group) => can(group.permissions, { GetRfd: num }))
-    .map((g) => g.name)
+  const groups = allGroups.then((allGroups) => {
+    const groups = allGroups
+      .filter((group) => can(group.permissions, { GetRfd: num }))
+      .map((g) => g.name)
 
-  // Currently the RFD API does not have a "public" group. Instead the "public"
-  // setting of an RFD is controlled by the visibility flag. To make this consistent
-  // with the previous experience, if an RFD is public we add a fake group to
-  // the display list
-  if (rfd.visibility === 'public') {
-    groups.unshift('public')
-  }
+    // Currently the RFD API does not have a "public" group. Instead the "public"
+    // setting of an RFD is controlled by the visibility flag. To make this consistent
+    // with the previous experience, if an RFD is public we add a fake group to
+    // the display list
+    if (rfd.visibility === 'public') {
+      groups.unshift('public')
+    }
+
+    return groups
+  })
 
   return {
     rfd,
     groups,
   }
+}
+
+type CacheEntry = { data: Awaited<ReturnType<typeof loader>>; fetchedAt: number }
+
+// skip the background refresh for loads triggered by our own revalidation
+const JUST_FETCHED_MS = 5000
+
+// Stale-while-revalidate: serve the cached document instantly but always
+// refetch in the background, revalidating if the content changed. The cache
+// never blocks fresh content from showing.
+export async function clientLoader({ params, serverLoader }: ClientLoaderFunctionArgs) {
+  const key = params.slug!
+  const entry = rfdPageCache.get(key) as CacheEntry | undefined
+  if (entry && Date.now() - entry.fetchedAt < JUST_FETCHED_MS) return entry.data
+
+  const fresh = serverLoader<typeof loader>().then((data) => {
+    rfdPageCache.set(key, { data, fetchedAt: Date.now() } satisfies CacheEntry)
+    return data
+  })
+
+  if (!entry) return await fresh
+
+  fresh
+    .then((data) => {
+      // also compare committedAt because local mode has no shas
+      if (
+        data.rfd.sha !== entry.data.rfd.sha ||
+        data.rfd.committedAt?.getTime() !== entry.data.rfd.committedAt?.getTime()
+      ) {
+        notifyRfdStale()
+      }
+    })
+    .catch(() => {})
+  return entry.data
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -212,6 +259,12 @@ const SectionTrackingOutlines = ({
 export default function Rfd() {
   const { pathname, hash } = useLocation()
 
+  const revalidator = useRevalidator()
+  useEffect(
+    () => subscribeRfdStale(() => revalidator.revalidate()),
+    [revalidator],
+  )
+
   const { rfd, groups } = useLoaderData<typeof loader>()
   const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
 
@@ -259,7 +312,11 @@ export default function Rfd() {
                 </div>
               )}
             </div>
-            <AccessWarning groups={groups} />
+            <Suspense fallback={<AccessWarning groups={undefined} />}>
+              <Await resolve={groups}>
+                {(groups) => <AccessWarning groups={groups} />}
+              </Await>
+            </Suspense>
           </div>
         </Container>
         <div className="border-secondary border-b print:m-auto print:max-w-300 print:rounded-lg print:border">

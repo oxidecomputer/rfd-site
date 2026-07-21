@@ -26,6 +26,7 @@ import { useKey } from '~/hooks/use-key'
 import { useRootLoaderData } from '~/root'
 import type { RfdItem, RfdListItem } from '~/services/rfd.server'
 import { setThemePreference, useThemeStore, type ThemePreference } from '~/stores/theme'
+import { rfdPageCache } from '~/utils/clientCache'
 
 import * as DropdownMenu from './Dropdown'
 import { PublicBanner } from './PublicBanner'
@@ -50,6 +51,8 @@ export default function Header({ currentRfd }: { currentRfd?: RfdItem }) {
   }
 
   const logout = () => {
+    // cached pages may contain RFDs the logged-out user can't access
+    rfdPageCache.clear()
     fetcher.submit({}, { method: 'post', action: '/logout' })
   }
 

@@ -251,18 +251,53 @@ export const provideNewRfdNumber = (rfds: RfdListItem[]): number | null => {
   return latestRfd.number + 1
 }
 
+// Parsed asciidoc cache, keyed by content identity (number + commit sha).
+// Entries are only read or written after the API has already returned
+// so access control stays entirely with the API. A new commit produces
+// a new sha and misses naturally. State persists per warm serverless instance
+const parseCache = new Map<string, DocumentBlock>()
+const PARSE_CACHE_MAX = 150 // 150 entries (~75–100MB) in local tests
+
+async function parseContent(
+  content: string,
+  num: number,
+  sha: string | null,
+): Promise<DocumentBlock> {
+  const key = sha ? `${num}:${sha}` : null
+  if (key) {
+    const cached = parseCache.get(key)
+    if (cached) {
+      // re-insert for LRU order
+      parseCache.delete(key)
+      parseCache.set(key, cached)
+      return cached
+    }
+  }
+
+  const doc = ad.load(content, {
+    ...attrs,
+    attributes: {
+      rfdnumber: num,
+    },
+    sourcemap: true,
+  })
+  const parsed = await handleDocument(doc)
+
+  if (key) {
+    parseCache.set(key, parsed)
+    while (parseCache.size > PARSE_CACHE_MAX) {
+      parseCache.delete(parseCache.keys().next().value!)
+    }
+  }
+
+  return parsed
+}
+
 async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
   let content: DocumentBlock | undefined
 
   if (rfd.content) {
-    const doc = ad.load(rfd.content, {
-      ...attrs,
-      attributes: {
-        rfdnumber: rfd.rfdNumber,
-      },
-      sourcemap: true,
-    })
-    content = await handleDocument(doc)
+    content = await parseContent(rfd.content, rfd.rfdNumber, rfd.sha ?? null)
   }
 
   return {
@@ -318,14 +353,8 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
   let content: DocumentBlock | undefined
 
   if (rfd.content) {
-    const doc = ad.load(rfd.content, {
-      ...attrs,
-      attributes: {
-        rfdnumber: rfd.number,
-      },
-      sourcemap: true,
-    })
-    content = await handleDocument(doc)
+    // null sha: local mode is never cached
+    content = await parseContent(rfd.content, rfd.number, null)
   }
 
   return {

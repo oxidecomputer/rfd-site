@@ -7,6 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useEffect } from 'react'
 import {
   isRouteErrorResponse,
   Links,
@@ -15,6 +16,8 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
+  useRevalidator,
   useRouteError,
   useRouteLoaderData,
   type LinksFunction,
@@ -86,18 +89,48 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   }
 }
 
+const ROOT_DATA_MAX_AGE_MS = 5 * 60 * 1000
+let rootDataLoadedAt = Date.now()
+let rootRefreshRequested = false
+
 export function shouldRevalidate({
-  currentUrl,
-  nextUrl,
   formMethod,
   defaultShouldRevalidate,
 }: ShouldRevalidateFunctionArgs) {
-  // Skip revalidation when only search params change on the same path
-  // (e.g. filter changes). Form submissions still revalidate.
-  if (!formMethod && currentUrl.pathname === nextUrl.pathname) {
+  if (rootRefreshRequested) {
+    rootRefreshRequested = false
+    return true
+  }
+  // The RFD list is expensive to fetch and changes rarely, so skip
+  // revalidation on plain GET navigations. Form submissions still revalidate.
+  if (!formMethod) {
     return false
   }
+  rootDataLoadedAt = Date.now()
   return defaultShouldRevalidate
+}
+
+// Refresh root data in the background (after navigation or on window focus)
+// once it's older than ROOT_DATA_MAX_AGE_MS, so navigations stay instant.
+function useStaleRootRefresh() {
+  const revalidator = useRevalidator()
+  const { pathname } = useLocation()
+
+  useEffect(() => {
+    const refreshIfStale = () => {
+      if (
+        Date.now() - rootDataLoadedAt > ROOT_DATA_MAX_AGE_MS &&
+        revalidator.state === 'idle'
+      ) {
+        rootDataLoadedAt = Date.now()
+        rootRefreshRequested = true
+        revalidator.revalidate()
+      }
+    }
+    refreshIfStale()
+    window.addEventListener('focus', refreshIfStale)
+    return () => window.removeEventListener('focus', refreshIfStale)
+  }, [pathname, revalidator])
 }
 
 export function useRootLoaderData() {
@@ -156,6 +189,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
 
 export default function App() {
   useApplyTheme()
+  useStaleRootRefresh()
   const { localMode } = useLoaderData<typeof loader>()
 
   return (
