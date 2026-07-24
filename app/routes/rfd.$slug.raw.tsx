@@ -9,9 +9,9 @@
 import { RfdWithRaw } from '@oxide/rfd.ts/client'
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutStaleSession } from '~/services/auth.server'
 import { fetchLocalRfd, isLocalMode, LocalRfd } from '~/services/rfd.local.server'
-import { fetchRemoteRfd } from '~/services/rfd.remote.server'
+import { AuthenticationError, fetchRemoteRfd } from '~/services/rfd.remote.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
@@ -29,6 +29,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   try {
     rfd = isLocalMode() ? fetchLocalRfd(num) : await fetchRemoteRfd(num, user)
   } catch (err) {
+    if (err instanceof AuthenticationError) await logoutStaleSession(request)
     console.error('Failed to fetch RFD', err)
     throw resp404()
   }

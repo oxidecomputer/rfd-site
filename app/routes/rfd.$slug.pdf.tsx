@@ -8,7 +8,7 @@
 
 import { redirect, type LoaderFunction } from 'react-router'
 
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchRfdPdf } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
@@ -18,7 +18,7 @@ export const loader: LoaderFunction = async ({ request, params: { slug } }) => {
   if (!num) throw new Response('Not Found', { status: 404 })
 
   const user = await authenticate(request)
-  const rfd = await fetchRfdPdf(num, user)
+  const rfd = await logoutOnAuthError(request, () => fetchRfdPdf(num, user))
 
   // If someone goes to a private RFD's PDF but they're not logged in, they will
   // want to log in and see it. Send them back to the PDF they asked for.

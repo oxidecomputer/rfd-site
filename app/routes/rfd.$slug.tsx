@@ -44,7 +44,7 @@ import RfdInlineComments from '~/components/rfd/RfdInlineComments'
 import RfdPreview from '~/components/rfd/RfdPreview'
 import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { buildMeta } from '~/utils/meta'
@@ -85,7 +85,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   const user = await authenticate(request)
 
-  const rfd = await fetchRfd(num, user)
+  const rfd = await logoutOnAuthError(request, () => fetchRfd(num, user))
 
   // If someone goes to a private RFD but they're not logged in, they will
   // want to log in and see it.
@@ -100,7 +100,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // necessarily exhaustive. The permissions assigned to this user will determine
   // which groups they are allowed to list. The list returned from the API is
   // then filtered down to include only the groups that provide access to this RFD.
-  const groups = (await fetchGroups(user))
+  const groups = (await logoutOnAuthError(request, () => fetchGroups(user)))
     .filter((group) => can(group.permissions, { GetRfd: num }))
     .map((g) => g.name)
 
