@@ -26,6 +26,7 @@ import {
   type LocalRfd,
 } from './rfd.local.server'
 import {
+  AuthenticationError,
   fetchRemoteGroups,
   fetchRemoteRfd,
   fetchRemoteRfdJobs,
@@ -92,6 +93,9 @@ export async function fetchRfd(
       return rfd && apiRfdToItem(rfd)
     }
   } catch (err) {
+    // A 401 means the session's token is dead, not that the RFD is missing.
+    // Let callers distinguish that from a 404 so they can clear the session.
+    if (err instanceof AuthenticationError) throw err
     console.error('Failed to fetch RFD', err)
     return undefined
   }
@@ -107,6 +111,7 @@ export async function fetchRfdJobs(num: number, user: User | null): Promise<Job[
       return await fetchRemoteRfdJobs(num, user)
     }
   } catch (err) {
+    if (err instanceof AuthenticationError) throw err
     console.error('Failed to fetch RFD jobs', err)
     return []
   }
@@ -126,6 +131,7 @@ export async function fetchRfdPdf(
       return rfd
     }
   } catch (err) {
+    if (err instanceof AuthenticationError) throw err
     console.error('Failed to fetch RFD', err)
     return undefined
   }
@@ -138,6 +144,7 @@ export async function fetchRfds(user: User | null): Promise<RfdListItem[] | unde
       : (await fetchRemoteRfds(user)).map(apiRfdMetaToListItem)
     return mergeAuthorVariants(rfds)
   } catch (err) {
+    if (err instanceof AuthenticationError) throw err
     console.error('Failed to fetch RFD', err)
     return undefined
   }

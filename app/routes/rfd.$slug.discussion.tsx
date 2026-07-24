@@ -8,7 +8,7 @@
 
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
@@ -20,7 +20,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   if (!num) throw resp404()
 
   const user = await authenticate(request)
-  const rfd = await fetchRfd(num, user)
+  const rfd = await logoutOnAuthError(request, () => fetchRfd(num, user))
 
   // !rfd covers both non-existent and private RFDs for the logged-out user. In
   // both cases, once they log in, if they have permission to read it, they'll

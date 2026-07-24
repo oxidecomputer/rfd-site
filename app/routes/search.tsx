@@ -9,14 +9,16 @@
 import type { SearchResults } from '@oxide/rfd.ts/client'
 import { type LoaderFunctionArgs } from 'react-router'
 
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { searchRfds } from '~/services/rfd.remote.server'
 
 export async function loader({ request }: LoaderFunctionArgs) {
   const user = await authenticate(request)
   const url = new URL(request.url)
 
-  const results = await searchRfds(user, url.searchParams.entries())
+  const results = await logoutOnAuthError(request, () =>
+    searchRfds(user, url.searchParams.entries()),
+  )
   return adaptResults(results)
 }
 

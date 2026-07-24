@@ -19,8 +19,14 @@ import {
   type MetaFunction,
 } from 'react-router'
 
-import { auth, getUserFromSession, sanitizeRedirect } from '~/services/auth.server'
+import {
+  auth,
+  getUserFromSession,
+  isSessionValid,
+  sanitizeRedirect,
+} from '~/services/auth.server'
 import { returnToCookie } from '~/services/cookies.server'
+import { sessionStorage } from '~/services/session.server'
 import { buildMeta } from '~/utils/meta'
 
 export const meta: MetaFunction = () =>
@@ -35,15 +41,24 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   const returnTo = url.searchParams.get('returnTo')
   const emailResponse = url.searchParams.get('email')
 
+  const headers = new Headers()
+  headers.append('Cache-Control', 'no-cache')
+
   // If we're already logged in, honor returnTo if present (e.g. an auth-gated
   // RFD redirected here), otherwise go home. This may also occur while
   // navigating back/forward or from history.
-  if (await getUserFromSession(request)) {
-    throw redirect(returnTo ? sanitizeRedirect(returnTo) : '/')
+  const user = await getUserFromSession(request)
+  if (user) {
+    if (await isSessionValid(user)) {
+      throw redirect(returnTo ? sanitizeRedirect(returnTo) : '/')
+    }
+    // The cookie exists but the API rejects its token (e.g. it predates an
+    // API upgrade). Clear it and show the login page — bouncing away here
+    // would leave the user with no way to re-authenticate.
+    const session = await sessionStorage.getSession(request.headers.get('Cookie'))
+    session.unset('user')
+    headers.append('Set-Cookie', await sessionStorage.commitSession(session))
   }
-
-  const headers = new Headers()
-  headers.append('Cache-Control', 'no-cache')
 
   if (returnTo) {
     headers.append('Set-Cookie', await returnToCookie.serialize(returnTo))
