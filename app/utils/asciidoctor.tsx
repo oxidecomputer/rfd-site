@@ -5,11 +5,14 @@
  *
  * Copyright Oxide Computer Company
  */
-import { type Block, type Html5Converter } from '@asciidoctor/core'
-import { InlineConverter, loadAsciidoctor } from '@oxide/design-system/asciidoc'
-import { renderToString } from 'react-dom/server'
+import {
+  inlineOverrides as baseInlineOverrides,
+  loadAsciidoctor,
+} from '@oxide/design-system/asciidoc'
+import { type InlineOverrides } from '@oxide/react-asciidoc'
 
 import { InlineImage } from '~/components/AsciidocBlocks/Image'
+import RfdLink from '~/components/AsciidocBlocks/RfdLink'
 
 const attrs = {
   sectlinks: 'true',
@@ -19,27 +22,10 @@ const attrs = {
 
 const ad = loadAsciidoctor({})
 
-class CustomInlineConverter {
-  baseConverter: Html5Converter
-
-  constructor() {
-    this.baseConverter = new InlineConverter()
-  }
-
-  convert(node: Block, transform: string) {
-    switch (node.getNodeName()) {
-      case 'inline_image':
-        return renderToString(<InlineImage node={node} />)
-      case 'image':
-        return renderToString(<InlineImage node={node} />)
-      default:
-        break
-    }
-
-    return this.baseConverter.convert(node, transform)
-  }
+const inlineOverrides: InlineOverrides = {
+  ...baseInlineOverrides,
+  image: InlineImage,
+  anchor: RfdLink,
 }
 
-ad.ConverterFactory.register(new CustomInlineConverter(), ['html5'])
-
-export { ad, attrs }
+export { ad, attrs, inlineOverrides }
