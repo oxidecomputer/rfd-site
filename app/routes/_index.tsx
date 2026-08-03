@@ -70,11 +70,11 @@ export function shouldRevalidate({
 }
 
 // only for setting the sort order cookie
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, url }: ActionFunctionArgs) => {
   const body = await request.formData()
   const newCookie = parseSortOrder(Object.fromEntries(body))
   // redirect to same URL to preserve query params
-  return redirect(request.url, {
+  return redirect(url.toString(), {
     headers: {
       'Set-Cookie': await rfdSortCookie.serialize(newCookie),
     },

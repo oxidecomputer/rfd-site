@@ -13,7 +13,7 @@ import { fetchLocalImage, isLocalMode } from '~/services/rfd.local.server'
 import { fetchRfd } from '~/services/rfd.server'
 import { getExpiringUrl } from '~/services/storage.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, url, params }: LoaderFunctionArgs) {
   const rfd = params['rfd']
   const filename = params['*']
 
@@ -41,7 +41,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
     })
   } else {
     const user = await authenticate(request)
-    const remoteRfd = await logoutOnAuthError(request, () => fetchRfd(rfdNumber, user))
+    const remoteRfd = await logoutOnAuthError(request, url, () => fetchRfd(rfdNumber, user))
 
     // If the user can read the RFD than they can access the images in the RFD
     if (remoteRfd) {
