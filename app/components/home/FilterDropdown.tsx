@@ -95,8 +95,7 @@ const FilterDropdown = () => {
   const rfdsFilteredByStates = useMemo(() => {
     const allowed = new Set(effectiveStates)
     return rfds.filter((rfd) => rfd.state !== null && allowed.has(rfd.state))
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rfds, effectiveStates.join(',')])
+  }, [rfds, effectiveStates])
 
   const intersect = <T,>(a: T[], b: T[]) => {
     const setB = new Set(b)

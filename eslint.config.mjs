@@ -15,7 +15,7 @@ export default tseslint.config(
   eslint.configs.recommended,
   tseslint.configs.recommended,
   jsxA11y.flatConfigs.recommended,
-  reactHooks.configs['recommended-latest'],
+  reactHooks.configs.flat['recommended-latest'],
   {
     ...playwright.configs['flat/recommended'],
     files: ['test/e2e/**'],

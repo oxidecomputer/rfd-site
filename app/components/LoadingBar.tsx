@@ -40,10 +40,10 @@ function LoadingBar() {
 
   // only used for checking the loading state from inside the timeout callback
   const loadingRef = useRef(false)
-  loadingRef.current = navigation.state === 'loading'
 
   useEffect(() => {
     const loading = navigation.state === 'loading'
+    loadingRef.current = loading
     if (barRef.current) {
       if (loading) {
         // instead of adding the `loading` class right when loading starts, set

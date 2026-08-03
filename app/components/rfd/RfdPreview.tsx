@@ -55,6 +55,7 @@ export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
 }
 
 interface RfdPreviewState {
+  sourceRfd: number
   rfd: RfdListItem
   position: { left: number; top: number }
   anchor: HTMLAnchorElement
@@ -81,9 +82,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
     }
   }, [])
 
-  useEffect(() => {
-    setPreview(null)
-  }, [currentRfd])
+  const activePreview = preview?.sourceRfd === currentRfd ? preview : null
 
   // Based on https://github.com/remix-run/react-router-website/blob/main/app/ui/delegate-markdown-links.ts
   // Converts regular AsciiDoc a tags and makes them React Routery
@@ -142,6 +141,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
       timeoutRef.current = setTimeout(() => {
         const offset = calcOffset(anchor)
         setPreview({
+          sourceRfd: currentRfd,
           rfd: matchedRfd,
           position: offset,
           anchor,
@@ -172,7 +172,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
   }, [navigate, nodeRef, currentRfd, rfds, clearHoverTimeout, isNavigating])
 
   useEffect(() => {
-    if (!preview) return
+    if (!activePreview) return
 
     type Point = [number, number]
     type Polygon = Point[]
@@ -231,7 +231,7 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
 
       const cursor: Point = [event.clientX, event.clientY]
       const floatingRect = previewRef.current.getBoundingClientRect()
-      const anchorRect = preview.anchor.getBoundingClientRect()
+      const anchorRect = activePreview.anchor.getBoundingClientRect()
 
       const polygon = getPolygon(anchorRect, floatingRect)
       const isInside = isPointInPolygon(cursor, polygon)
@@ -243,18 +243,18 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
 
     window.addEventListener('mousemove', handleMouseMove)
     return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [preview])
+  }, [activePreview])
 
-  if (!preview) return null
+  if (!activePreview) return null
 
-  const { title, number, state, latestMajorChangeAt, formattedNumber } = preview.rfd
-  const authors = preview.rfd.authors || []
+  const { title, number, state, latestMajorChangeAt, formattedNumber } = activePreview.rfd
+  const authors = activePreview.rfd.authors || []
 
   return (
     <div
       ref={previewRef}
       className="shadow-tooltip bg-raise absolute z-10 mt-8 flex w-[24rem] rounded-lg p-3"
-      style={{ top: preview.position.top, left: preview.position.left }}
+      style={{ top: activePreview.position.top, left: activePreview.position.left }}
     >
       <Link
         prefetch="intent"
