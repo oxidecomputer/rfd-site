@@ -288,12 +288,11 @@ const ComboboxItem = memo(
     // Only if the user has typed something, with a timeout to
     // avoid prefetching everything
     useEffect(() => {
-      if (selected && isDirty) {
-        timer.current = setTimeout(() => setShouldPrefetch(true), 250)
-      } else {
-        clear()
-        setShouldPrefetch(false)
-      }
+      const shouldEnable = selected && isDirty
+      timer.current = setTimeout(
+        () => setShouldPrefetch(shouldEnable),
+        shouldEnable ? 250 : 0,
+      )
 
       return clear
     }, [selected, isDirty])

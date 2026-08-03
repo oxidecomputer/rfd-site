@@ -18,17 +18,12 @@ function nodeIsInline(node: Block | Inline): node is Inline {
 const InlineImage = ({ node }: { node: Block | Inline }) => {
   const documentAttrs = node.getDocument().getAttributes()
 
-  let target = ''
-  if (nodeIsInline(node)) {
-    target = node.getTarget() || '' // Getting target on inline nodes
-  } else {
-    target = node.getAttribute('target') // Getting target on block nodes
-  }
+  const target = nodeIsInline(node)
+    ? node.getTarget() || '' // Getting target on inline nodes
+    : node.getAttribute('target') // Getting target on block nodes
 
   const uri = node.getImageUri(target)
-  let url = ''
-
-  url = `/rfd/image/${documentAttrs.rfdnumber}/${uri}`
+  const url = `/rfd/image/${documentAttrs.rfdnumber}/${uri}`
 
   let img = (
     <img
@@ -64,11 +59,9 @@ const Image = ({ node }: { node: ImageBlock }) => {
   const { document } = useConverterContext()
   const docAttrs = document.attributes || {}
 
-  let url = ''
-
   const [lightboxOpen, setLightboxOpen] = useState(false)
 
-  url = `/rfd/image/${docAttrs.rfdnumber}/${node.imageUri}`
+  const url = `/rfd/image/${docAttrs.rfdnumber}/${node.imageUri}`
 
   let img = (
     <img

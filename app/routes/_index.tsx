@@ -50,6 +50,8 @@ import { parseRfdNum } from '~/utils/parseRfdNum'
 import { filterRfds } from '~/utils/rfdSearch'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
 
+const UNDATED_SORT_VALUE = Number.MAX_SAFE_INTEGER
+
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')
   return parseSortOrder(await rfdSortCookie.parse(cookieHeader))
@@ -134,7 +136,6 @@ export default function Index() {
 
   const [matchedItems, exactMatch] = useMemo(() => {
     const parsedInput = parseRfdNum(input.trim())
-    const now = Date.now()
 
     if (!input.trim()) {
       const sortedRfds = sortBy(rfds, (rfd) => {
@@ -143,7 +144,7 @@ export default function Index() {
             ? rfd.number
             : rfd.latestMajorChangeAt
               ? rfd.latestMajorChangeAt.getTime()
-              : now
+              : UNDATED_SORT_VALUE
         const mult = sortDir === 'asc' ? 1 : -1
         return sortVal * mult
       })
@@ -161,7 +162,7 @@ export default function Index() {
           ? rfd.number
           : rfd.latestMajorChangeAt
             ? rfd.latestMajorChangeAt.getTime()
-            : now
+            : UNDATED_SORT_VALUE
       const mult = sortDir === 'asc' ? 1 : -1
       return sortVal * mult
     })
@@ -245,7 +246,8 @@ export default function Index() {
     // instead of a callback because it should only happen after the nav,
     // otherwise we get a flash of the unfiltered list.
     if (state && state.shouldClearInput) {
-      setInput('')
+      const timeout = setTimeout(() => setInput(''), 0)
+      return () => clearTimeout(timeout)
     }
   }, [state])
 
