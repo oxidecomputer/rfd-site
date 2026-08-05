@@ -17,7 +17,7 @@ import { parseRfdNum } from '~/utils/parseRfdNum'
 
 import { resp404 } from './rfd.$slug'
 
-export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
+export async function loader({ request, url, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
@@ -29,7 +29,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   try {
     rfd = isLocalMode() ? fetchLocalRfd(num) : await fetchRemoteRfd(num, user)
   } catch (err) {
-    if (err instanceof AuthenticationError) await logoutStaleSession(request)
+    if (err instanceof AuthenticationError) await logoutStaleSession(request, url)
     console.error('Failed to fetch RFD', err)
     throw resp404()
   }

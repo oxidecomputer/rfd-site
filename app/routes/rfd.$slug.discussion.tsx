@@ -15,12 +15,12 @@ import { parseRfdNum } from '~/utils/parseRfdNum'
 
 import { resp404 } from './rfd.$slug'
 
-export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
+export async function loader({ request, url, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
   const user = await authenticate(request)
-  const rfd = await logoutOnAuthError(request, () => fetchRfd(num, user))
+  const rfd = await logoutOnAuthError(request, url, () => fetchRfd(num, user))
 
   // !rfd covers both non-existent and private RFDs for the logged-out user. In
   // both cases, once they log in, if they have permission to read it, they'll

@@ -159,8 +159,8 @@ export async function logout(request: Request, redirectTo: string) {
  * every RFD as a 404, while logged out the public ones are visible and the
  * login page is reachable. Always throws (a redirect).
  */
-export async function logoutStaleSession(request: Request): Promise<never> {
-  const { pathname, search } = new URL(request.url)
+export async function logoutStaleSession(request: Request, url: URL): Promise<never> {
+  const { pathname, search } = url
   await logout(request, pathname + search)
   throw new Error('unreachable: logout always throws a redirect')
 }
@@ -172,13 +172,14 @@ export async function logoutStaleSession(request: Request): Promise<never> {
  */
 export async function logoutOnAuthError<T>(
   request: Request,
+  url: URL,
   fn: () => Promise<T>,
 ): Promise<T> {
   try {
     return await fn()
   } catch (err) {
     if (err instanceof AuthenticationError) {
-      await logoutStaleSession(request)
+      await logoutStaleSession(request, url)
     }
     throw err
   }

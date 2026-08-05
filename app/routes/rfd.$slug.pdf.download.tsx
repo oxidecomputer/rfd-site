@@ -12,12 +12,12 @@ import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchRfdPdf } from '~/services/rfd.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
-export const loader: LoaderFunction = async ({ request, params: { slug } }) => {
+export const loader: LoaderFunction = async ({ request, url, params: { slug } }) => {
   const num = parseRfdNum(slug)
   if (!num) throw new Response('Not Found', { status: 404 })
 
   const user = await authenticate(request)
-  const rfd = await logoutOnAuthError(request, () => fetchRfdPdf(num, user))
+  const rfd = await logoutOnAuthError(request, url, () => fetchRfdPdf(num, user))
 
   if (!rfd || rfd.content.length === 0) throw new Response('Not Found', { status: 404 })
 

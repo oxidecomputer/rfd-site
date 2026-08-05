@@ -10,7 +10,7 @@ import { data, type LoaderFunctionArgs } from 'react-router'
 import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchRfdJobs } from '~/services/rfd.server'
 
-export async function loader({ request, params }: LoaderFunctionArgs) {
+export async function loader({ request, url, params }: LoaderFunctionArgs) {
   const rfdNumber = parseInt(params.slug || '')
 
   if (isNaN(rfdNumber)) {
@@ -18,7 +18,7 @@ export async function loader({ request, params }: LoaderFunctionArgs) {
   }
 
   const user = await authenticate(request)
-  const jobs = await logoutOnAuthError(request, () => fetchRfdJobs(rfdNumber, user))
+  const jobs = await logoutOnAuthError(request, url, () => fetchRfdJobs(rfdNumber, user))
 
   return data(jobs)
 }

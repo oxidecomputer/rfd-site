@@ -48,7 +48,7 @@ export const meta: MetaFunction = () =>
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, url }: LoaderFunctionArgs) => {
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
@@ -58,7 +58,7 @@ export const loader = async ({ request }: LoaderFunctionArgs) => {
   // clear the session and reload this URL logged out. Without this, a user
   // with a dead token sees 404s everywhere — including on public RFDs — and
   // /login bounces them away because a session cookie still exists.
-  const rfds = (await logoutOnAuthError(request, () => fetchRfds(user))) || []
+  const rfds = (await logoutOnAuthError(request, url, () => fetchRfds(user))) || []
 
   return {
     inlineComments,

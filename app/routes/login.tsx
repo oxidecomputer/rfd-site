@@ -36,8 +36,7 @@ export const meta: MetaFunction = () =>
     path: '/login',
   })
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
-  const url = new URL(request.url)
+export const loader = async ({ request, url }: LoaderFunctionArgs) => {
   const returnTo = url.searchParams.get('returnTo')
   const emailResponse = url.searchParams.get('email')
 

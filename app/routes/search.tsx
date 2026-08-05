@@ -12,11 +12,10 @@ import { type LoaderFunctionArgs } from 'react-router'
 import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { searchRfds } from '~/services/rfd.remote.server'
 
-export async function loader({ request }: LoaderFunctionArgs) {
+export async function loader({ request, url }: LoaderFunctionArgs) {
   const user = await authenticate(request)
-  const url = new URL(request.url)
 
-  const results = await logoutOnAuthError(request, () =>
+  const results = await logoutOnAuthError(request, url, () =>
     searchRfds(user, url.searchParams.entries()),
   )
   return adaptResults(results)

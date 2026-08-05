@@ -13,12 +13,12 @@ import { fetchRfdPdf } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
-export const loader: LoaderFunction = async ({ request, params: { slug } }) => {
+export const loader: LoaderFunction = async ({ request, url, params: { slug } }) => {
   const num = parseRfdNum(slug)
   if (!num) throw new Response('Not Found', { status: 404 })
 
   const user = await authenticate(request)
-  const rfd = await logoutOnAuthError(request, () => fetchRfdPdf(num, user))
+  const rfd = await logoutOnAuthError(request, url, () => fetchRfdPdf(num, user))
 
   // If someone goes to a private RFD's PDF but they're not logged in, they will
   // want to log in and see it. Send them back to the PDF they asked for.

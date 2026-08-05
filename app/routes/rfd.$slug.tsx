@@ -73,7 +73,7 @@ export const resp404 = () => new Response('Not Found', { status: 404 })
  * | no rfd      | 404        | 404         | login redirect |
  *
  */
-export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
+export async function loader({ request, url, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
@@ -85,7 +85,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
   const user = await authenticate(request)
 
-  const rfd = await logoutOnAuthError(request, () => fetchRfd(num, user))
+  const rfd = await logoutOnAuthError(request, url, () => fetchRfd(num, user))
 
   // If someone goes to a private RFD but they're not logged in, they will
   // want to log in and see it.
@@ -100,7 +100,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   // necessarily exhaustive. The permissions assigned to this user will determine
   // which groups they are allowed to list. The list returned from the API is
   // then filtered down to include only the groups that provide access to this RFD.
-  const groups = (await logoutOnAuthError(request, () => fetchGroups(user)))
+  const groups = (await logoutOnAuthError(request, url, () => fetchGroups(user)))
     .filter((group) => can(group.permissions, { GetRfd: num }))
     .map((g) => g.name)
 
@@ -118,14 +118,14 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   }
 }
 
-export const meta: MetaFunction<typeof loader> = ({ data }) => {
-  if (data && data.rfd) {
-    const prefix = data.rfd.title
-      ? `${data.rfd.number} - ${data.rfd.title}`
-      : `${data.rfd.number}`
+export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
+  if (loaderData && loaderData.rfd) {
+    const prefix = loaderData.rfd.title
+      ? `${loaderData.rfd.number} - ${loaderData.rfd.title}`
+      : `${loaderData.rfd.number}`
     return buildMeta({
       title: `${prefix} | RFD | Oxide`,
-      path: `/rfd/${data.rfd.formattedNumber}`,
+      path: `/rfd/${loaderData.rfd.formattedNumber}`,
       type: 'article',
     })
   } else {
