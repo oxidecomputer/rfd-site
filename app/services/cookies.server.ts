@@ -8,11 +8,13 @@
 
 import { createCookie } from 'react-router'
 
+const cookieSecret = process.env.COOKIE_SECRET || 's3cr3t'
+
 export const returnToCookie = createCookie('_return_to', {
   sameSite: 'lax',
   path: '/',
   httpOnly: true,
-  secrets: ['s3cr3t'],
+  secrets: [cookieSecret],
   maxAge: 60 * 10, // 10 minutes
   secure: process.env.NODE_ENV === 'production',
 })
@@ -28,7 +30,7 @@ export const inlineCommentsCookie = createCookie('_inline_comments', {
   sameSite: 'lax',
   path: '/',
   httpOnly: true,
-  secrets: ['s3cr3t'],
+  secrets: [cookieSecret],
   secure: process.env.NODE_ENV === 'production',
   maxAge: 60 * 60 * 24 * 365, // Keep cookie for a year
 })
