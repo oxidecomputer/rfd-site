@@ -20,3 +20,28 @@ test('keeps the first and last characters exact', () => {
 test('still tolerates an internal transposition', () => {
   expect(matching('netwroking', ['networking'])).toEqual(['networking'])
 })
+
+test.each([
+  ['an internal substitution', 'netwarking'],
+  ['a missing internal character', 'netorking'],
+  ['an extra internal character', 'networkking'],
+])('tolerates %s', (_, input) => {
+  expect(matching(input, ['networking'])).toEqual(['networking'])
+})
+
+test.each([
+  ['a leading typo', 'betworking'],
+  ['a trailing typo', 'networkinh'],
+])('rejects %s', (_, input) => {
+  expect(matching(input, ['networking'])).toEqual([])
+})
+
+test('still matches a plain prefix while typing', () => {
+  expect(matching('netw', ['networking'])).toEqual(['networking'])
+})
+
+test('tolerates a typo within one term of a multi-term query', () => {
+  expect(matching('user netwroking', ['user networking policy'])).toEqual([
+    'user networking policy',
+  ])
+})
