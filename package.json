@@ -80,13 +80,13 @@
     "@types/react-dom": "^19.2.4",
     "@types/react-instantsearch-dom": "^6.12.9",
     "autoprefixer": "^10.4.21",
-    "cssnano": "^7.1.1",
+    "cssnano": "^8.0.6",
     "eslint": "^9.39.5",
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-playwright": "^2.11.0",
     "eslint-plugin-react-hooks": "^7.1.1",
     "instantsearch.js": "^4.80.0",
-    "postcss": "^8.5.25",
+    "postcss": "^8.5.6",
     "postcss-import": "^16.1.1",
     "postcss-nesting": "^13.0.2",
     "postcss-value-parser": "^4.2.0",
@@ -102,6 +102,9 @@
   },
   "overrides": {
     "algoliasearch": "^4.24.0",
-    "algoliasearch-helper": "3.26.0"
+    "algoliasearch-helper": "3.26.0",
+    "@vercel/static-config": {
+      "ajv": "^8.18.0"
+    }
   }
 }
