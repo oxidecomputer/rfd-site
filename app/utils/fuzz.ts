@@ -10,6 +10,7 @@ import uFuzzy from '@leeoniya/ufuzzy'
 
 export const fuzzConf: uFuzzy.Options = {
   intraMode: 1,
+  intraSlice: [1, -1], // Require the first and last characters of each term to match
   intraIns: 1, // Max number of extra chars allowed between each char within a term
   // ↓ Error types to tolerate within terms
   intraSub: 1,
