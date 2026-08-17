@@ -17,14 +17,30 @@ const MAX_DESCRIPTION_LENGTH = 160
 const resolveImage = (image: string): string =>
   image.startsWith('http') ? image : new URL(image, SITE_URL).toString()
 
+const stripTags = (input: string): string => {
+  let previous
+  let current = input
+  // Repeat until stable so overlapping/nested constructs (e.g. `<scr<script>ipt>`)
+  // can't reassemble a tag after a single pass.
+  do {
+    previous = current
+    current = current.replace(/<[^>]*>/g, '')
+  } while (current !== previous)
+  return current
+}
+
 const normalizeDescription = (description: string): string => {
-  const normalized = description
-    .replace(/<[^>]*>/g, '')
-    .replace(/&quot;/g, '"')
-    .replace(/&#39;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>')
-    .replace(/&amp;/g, '&')
+  const normalized = stripTags(
+    description
+      .replace(/&quot;/g, '"')
+      .replace(/&#39;/g, "'")
+      .replace(/&lt;/g, '<')
+      .replace(/&gt;/g, '>')
+      .replace(/&amp;/g, '&'),
+  )
+    // Drop any stray angle brackets left over from malformed/unterminated tags
+    // (e.g. `<script` with no closing `>`).
+    .replace(/[<>]/g, '')
     .replace(/\s+/g, ' ')
     .trim()
 
