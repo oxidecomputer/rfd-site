@@ -7,6 +7,7 @@
  */
 
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { useEffect, useRef, useState } from 'react'
 import {
   isRouteErrorResponse,
   Links,
@@ -15,6 +16,7 @@ import {
   Scripts,
   ScrollRestoration,
   useLoaderData,
+  useLocation,
   useRouteError,
   useRouteLoaderData,
   type LinksFunction,
@@ -114,6 +116,46 @@ const queryClient = new QueryClient()
 // Mirrors logic in app/stores/theme.ts — must stay in sync.
 const themeInitScript = `(function(){try{var p=localStorage.getItem('theme-preference');if(p!=='dark'&&p!=='light'&&p!=='system')p='dark';var r=p==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):p;document.documentElement.dataset.theme=r;}catch(_){document.documentElement.dataset.theme='dark';}})();`
 
+/**
+ * Client-side route transitions don't give screen readers the feedback a real
+ * page load does: nothing is announced and focus is left wherever it was. After
+ * each navigation, announce the new page title in a visually hidden live region
+ * (the same approach as Next.js's built-in route announcer). If focus fell back
+ * to <body> because the element that had it unmounted, move it to the content
+ * wrapper so the reading position starts at the top of the new page; routes
+ * that set their own focus (like the index filter input) are left alone.
+ *
+ * The announce + move-focus combination follows Gatsby's user testing with
+ * screen reader users:
+ * https://www.gatsbyjs.com/blog/2019-07-11-user-testing-accessible-client-routing/
+ * Next.js's built-in announcer implements the same thing:
+ * https://github.com/vercel/next.js/blob/08b1916/packages/next/src/client/route-announcer.tsx
+ */
+const RouteAnnouncer = () => {
+  const { pathname } = useLocation()
+  const [announcement, setAnnouncement] = useState('')
+  // no announcement on initial load — the real page load announces itself
+  const isFirstRender = useRef(true)
+
+  useEffect(() => {
+    if (isFirstRender.current) {
+      isFirstRender.current = false
+      return
+    }
+    // <Meta> has already rendered the new title by the time effects run
+    setAnnouncement(document.title)
+    if (document.activeElement === document.body) {
+      document.querySelector<HTMLElement>('.root')?.focus()
+    }
+  }, [pathname])
+
+  return (
+    <p aria-live="assertive" role="alert" data-testid="route-announcer" className="sr-only">
+      {announcement}
+    </p>
+  )
+}
+
 const Layout = ({ children }: { children: React.ReactNode }) => (
   <html lang="en" suppressHydrationWarning>
     <head>
@@ -132,7 +174,10 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       )}
     </head>
     <body className="mb-32">
-      <div className="root">{children}</div>
+      {/* focus target for RouteAnnouncer, hence tabIndex and outline-none */}
+      <div className="root outline-none" tabIndex={-1}>
+        {children}
+      </div>
       <ScrollRestoration />
       <Scripts />
     </body>
@@ -154,6 +199,9 @@ export default function App() {
           </div>
         )}
       </QueryClientProvider>
+      {/* placed after the outlet so route effects (e.g. the index page focusing
+          its filter input) run before the announcer's focus fallback */}
+      <RouteAnnouncer />
     </Layout>
   )
 }

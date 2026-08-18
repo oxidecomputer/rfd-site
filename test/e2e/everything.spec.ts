@@ -384,3 +384,33 @@ test.describe('Search', () => {
     ).toBeVisible()
   })
 })
+
+test.describe('Accessible client-side navigation', () => {
+  test('route change is announced and focus moves to content', async ({ page }) => {
+    await gotoHome(page)
+
+    // The route announcer live region is present but empty on initial load —
+    // a real page load announces itself, so announcing again would be noise.
+    const announcer = page.getByTestId('route-announcer')
+    await expect(announcer).toHaveText('')
+
+    // Client-side navigate to a known public RFD from the index
+    await page.getByPlaceholder('Filter by').fill('Partnership as Shared Values')
+    await page.getByRole('link', { name: 'Partnership as Shared Values' }).click()
+    await expectRfdPage(page, 'Partnership as Shared Values', 'Bryan Cantrill')
+
+    // The new page title is announced to screen readers...
+    await expect(announcer).toHaveText('68 - Partnership as Shared Values | RFD | Oxide')
+
+    // ...and focus, dropped on <body> when the clicked link unmounted, is
+    // moved to the content wrapper so the reading position starts at the top
+    // of the new page, like a real page load.
+    await expect(page.locator('.root')).toBeFocused()
+
+    // Navigating back to the index announces again, but does not steal focus:
+    // the filter input's own autofocus wins.
+    await page.getByRole('link', { name: 'Back to index' }).click()
+    await expect(announcer).toHaveText('RFD | Oxide')
+    await expect(page.getByPlaceholder('Filter by')).toBeFocused()
+  })
+})
