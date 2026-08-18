@@ -104,9 +104,14 @@ export function ErrorBoundary() {
 
   return (
     <Layout>
-      <div className="flex h-full w-full items-center justify-center">
+      {/* id and tabIndex make this the skip link and route announcer target */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="flex h-full w-full items-center justify-center outline-none"
+      >
         <h1 className="text-2xl">{message}</h1>
-      </div>
+      </main>
     </Layout>
   )
 }
@@ -117,22 +122,21 @@ const queryClient = new QueryClient()
 const themeInitScript = `(function(){try{var p=localStorage.getItem('theme-preference');if(p!=='dark'&&p!=='light'&&p!=='system')p='dark';var r=p==='system'?(matchMedia('(prefers-color-scheme: light)').matches?'light':'dark'):p;document.documentElement.dataset.theme=r;}catch(_){document.documentElement.dataset.theme='dark';}})();`
 
 /**
- * Client-side route transitions don't give screen readers the feedback a real
- * page load does: nothing is announced and focus is left wherever it was. After
- * each navigation, announce the new page title in a visually hidden live region
- * (the same approach as Next.js's built-in route announcer). If focus fell back
- * to <body> because the element that had it unmounted, move it to the content
- * wrapper so the reading position starts at the top of the new page; routes
- * that set their own focus (like the index filter input) are left alone.
+ * A real page load tells a screen reader where it landed: the new page gets
+ * announced and the reading position goes back to the top. A client-side nav
+ * does neither — React Router swaps the DOM in place and focus stays on the
+ * link that was clicked, which usually isn't in the document anymore. Next.js
+ * ships a route announcer for this; React Router leaves it to the app.
  *
- * The announce + move-focus combination follows Gatsby's user testing with
- * screen reader users:
+ * So on every page change we do it ourselves: announce the new page in a
+ * visually hidden live region, and move focus to the top of the content, which
+ * is where the skip link points too. Gatsby's user testing with screen reader
+ * users recommends this announce + move-focus combination:
  * https://www.gatsbyjs.com/blog/2019-07-11-user-testing-accessible-client-routing/
- * Next.js's built-in announcer implements the same thing:
  * https://github.com/vercel/next.js/blob/08b1916/packages/next/src/client/route-announcer.tsx
  */
 const RouteAnnouncer = () => {
-  const { pathname } = useLocation()
+  const { pathname, hash } = useLocation()
   const [announcement, setAnnouncement] = useState('')
   // no announcement on initial load — the real page load announces itself
   const isFirstRender = useRef(true)
@@ -142,12 +146,48 @@ const RouteAnnouncer = () => {
       isFirstRender.current = false
       return
     }
-    // <Meta> has already rendered the new title by the time effects run
-    setAnnouncement(document.title)
-    if (document.activeElement === document.body) {
-      document.querySelector<HTMLElement>('.root')?.focus()
+
+    // <Meta> has already rendered the new title by the time effects run. Commas
+    // instead of pipes so a screen reader reads it as a phrase — "68 -
+    // Partnership as Shared Values, RFD, Oxide" — rather than reading out the
+    // punctuation.
+    setAnnouncement(document.title.split(' | ').join(', '))
+
+    const main = document.getElementById('content')
+
+    // Two cases where we're not the best judge of the reading position:
+    //
+    // - The destination route has already put focus inside the new content (the
+    //   index page focuses its filter input on mount). Checking for focus
+    //   inside #content rather than `activeElement === document.body` because
+    //   the latter varies by browser: Safari doesn't focus links on click, so
+    //   after a link click focus is on the link in Firefox but on the body in
+    //   Safari.
+    // - The nav targets an anchor, e.g. from a search result. The browser jump
+    //   to that heading is where the user asked to be.
+    if (hash || main?.contains(document.activeElement)) return
+
+    // Prefer the page's h1 over <main>. VoiceOver reads a focused heading's
+    // text, whereas focusing a big landmark container just gets "main" with no
+    // content. The h1 also remounts on every page change, while <main> persists
+    // across navs — refocusing an already-focused element is a no-op that fires
+    // no event, so the VO cursor would never move after the first nav. Focusing
+    // the destination page's heading is the standard recommendation for SPA
+    // route changes: https://www.deque.com/blog/single-page-apps-focus-management/
+    //
+    // preventScroll because scroll position is <ScrollRestoration />'s job:
+    // without it, focusing the top of the page clobbers the restored position
+    // on back/forward nav.
+    const heading = main?.querySelector('h1')
+    if (heading) {
+      heading.tabIndex = -1 // headings aren't focusable by default
+      // Safari (unlike Chrome/FF) matches :focus-visible on programmatic focus
+      // even when the nav came from a click. The heading isn't interactive, so
+      // never show a ring.
+      heading.classList.add('outline-none')
     }
-  }, [pathname])
+    ;(heading || main)?.focus({ preventScroll: true })
+  }, [pathname, hash])
 
   return (
     <p aria-live="assertive" role="alert" data-testid="route-announcer" className="sr-only">
@@ -180,10 +220,7 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       >
         Skip to content
       </a>
-      {/* focus target for RouteAnnouncer, hence tabIndex and outline-none */}
-      <div className="root outline-none" tabIndex={-1}>
-        {children}
-      </div>
+      <div className="root">{children}</div>
       <ScrollRestoration />
       <Scripts />
     </body>
@@ -205,8 +242,8 @@ export default function App() {
           </div>
         )}
       </QueryClientProvider>
-      {/* placed after the outlet so route effects (e.g. the index page focusing
-          its filter input) run before the announcer's focus fallback */}
+      {/* after the outlet so a route that focuses something on mount (the index
+          page's filter input) has already done it when the announcer checks */}
       <RouteAnnouncer />
     </Layout>
   )

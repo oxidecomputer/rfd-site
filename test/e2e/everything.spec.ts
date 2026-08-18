@@ -20,6 +20,8 @@ async function expectRfdPage(page: Page, title: string, author: string) {
 // render from `useDeferredValue` / `startTransition`.
 const rfdCountLocator = (page: Page) => page.getByTestId('rfd-count')
 
+const announcer = (page: Page) => page.getByTestId('route-announcer')
+
 async function rfdCount(page: Page): Promise<number> {
   const text = await rfdCountLocator(page).textContent()
   return Number(text?.trim() ?? '0')
@@ -382,36 +384,62 @@ test.describe('Search', () => {
     await expect(
       page.getByRole('heading', { name: 'Architectures', level: 2 }),
     ).toBeVisible()
+
+    // The nav is announced, but because it targets an anchor the route
+    // announcer leaves focus and scroll alone: the user asked for this section,
+    // so dragging focus up to the h1 would undo the jump to it.
+    await expect(announcer(page)).toHaveText('223 - Web Console Architecture, RFD, Oxide')
+    await expect(page.getByRole('heading', { level: 1 })).not.toBeFocused()
+    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
   })
 })
 
 test.describe('Accessible client-side navigation', () => {
-  test('route change is announced and focus moves to content', async ({ page }) => {
+  test('route change is announced and focus moves to the heading', async ({ page }) => {
     await gotoHome(page)
 
     // The route announcer live region is present but empty on initial load —
     // a real page load announces itself, so announcing again would be noise.
-    const announcer = page.getByTestId('route-announcer')
-    await expect(announcer).toHaveText('')
+    await expect(announcer(page)).toHaveText('')
 
     // Client-side navigate to a known public RFD from the index
     await page.getByPlaceholder('Filter by').fill('Partnership as Shared Values')
     await page.getByRole('link', { name: 'Partnership as Shared Values' }).click()
     await expectRfdPage(page, 'Partnership as Shared Values', 'Bryan Cantrill')
 
-    // The new page title is announced to screen readers...
-    await expect(announcer).toHaveText('68 - Partnership as Shared Values | RFD | Oxide')
+    // The new page is announced, with the title's pipes turned into commas so a
+    // screen reader reads it as a phrase rather than reading the punctuation.
+    await expect(announcer(page)).toHaveText(
+      '68 - Partnership as Shared Values, RFD, Oxide',
+    )
 
-    // ...and focus, dropped on <body> when the clicked link unmounted, is
-    // moved to the content wrapper so the reading position starts at the top
-    // of the new page, like a real page load.
-    await expect(page.locator('.root')).toBeFocused()
+    // Focus goes to the new page's h1, not the <main> wrapper: VoiceOver reads
+    // a focused heading, and unlike <main> the h1 remounts on every nav, so
+    // focusing it always fires an event and moves the VO cursor.
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
 
     // Navigating back to the index announces again, but does not steal focus:
-    // the filter input's own autofocus wins.
+    // the filter input's own autofocus wins because it's inside #content.
     await page.getByRole('link', { name: 'Back to index' }).click()
-    await expect(announcer).toHaveText('RFD | Oxide')
+    await expect(announcer(page)).toHaveText('RFD, Oxide')
     await expect(page.getByPlaceholder('Filter by')).toBeFocused()
+  })
+
+  test('focusing the heading does not clobber restored scroll', async ({ page }) => {
+    await page.goto('/rfd/0068')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    await page.evaluate(() => window.scrollTo(0, 1500))
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000)
+
+    await page.getByRole('link', { name: 'Back to index' }).click()
+    await expect(page.getByPlaceholder('Filter by')).toBeFocused()
+
+    // Going back restores the scroll position, and the announcer's focus() uses
+    // preventScroll so it doesn't yank us to the top of the page.
+    await page.goBack()
+    await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000)
   })
 })
 
@@ -437,6 +465,16 @@ test.describe('Skip link and landmarks', () => {
 
     // the filter input steals autofocus on the homepage, so focus the skip
     // link directly rather than tabbing to it
+    const skipLink = page.getByRole('link', { name: 'Skip to content' })
+    await skipLink.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('main')).toBeFocused()
+  })
+
+  test('login page has a main landmark and working skip link', async ({ page }) => {
+    await page.goto('/login')
+    await expect(page.getByRole('heading', { name: 'Sign in' })).toBeVisible()
+
     const skipLink = page.getByRole('link', { name: 'Skip to content' })
     await skipLink.focus()
     await page.keyboard.press('Enter')
