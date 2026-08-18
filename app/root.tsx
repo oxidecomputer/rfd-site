@@ -174,6 +174,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       )}
     </head>
     <body className="mb-32">
+      <a
+        href="#content"
+        className="text-sans-md text-raise bg-tertiary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:p-3"
+      >
+        Skip to content
+      </a>
       {/* focus target for RouteAnnouncer, hence tabIndex and outline-none */}
       <div className="root outline-none" tabIndex={-1}>
         {children}

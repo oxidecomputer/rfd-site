@@ -414,3 +414,32 @@ test.describe('Accessible client-side navigation', () => {
     await expect(page.getByPlaceholder('Filter by')).toBeFocused()
   })
 })
+
+test.describe('Skip link and landmarks', () => {
+  test('skip link is first focusable on RFD page and focuses main', async ({ page }) => {
+    await page.goto('/rfd/0068')
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+
+    const skipLink = page.getByRole('link', { name: 'Skip to content' })
+    // visually hidden until focused, and first in tab order
+    await expect(skipLink).not.toBeInViewport()
+    await page.keyboard.press('Tab')
+    await expect(skipLink).toBeFocused()
+    await expect(skipLink).toBeInViewport()
+
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('main')).toBeFocused()
+  })
+
+  test('homepage has a main landmark and working skip link', async ({ page }) => {
+    await gotoHome(page)
+    await expect(page.getByRole('main')).toBeVisible()
+
+    // the filter input steals autofocus on the homepage, so focus the skip
+    // link directly rather than tabbing to it
+    const skipLink = page.getByRole('link', { name: 'Skip to content' })
+    await skipLink.focus()
+    await page.keyboard.press('Enter')
+    await expect(page.getByRole('main')).toBeFocused()
+  })
+})
