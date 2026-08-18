@@ -153,19 +153,17 @@ const RouteAnnouncer = () => {
     // punctuation.
     setAnnouncement(document.title.split(' | ').join(', '))
 
-    const main = document.getElementById('content')
-
-    // Two cases where we're not the best judge of the reading position:
+    // Two cases where the destination is a better judge of the reading position
+    // than we are: the index page focuses its filter input on mount, and an
+    // anchor nav (from a search result, say) asked for a specific section.
     //
-    // - The destination route has already put focus inside the new content (the
-    //   index page focuses its filter input on mount). Checking for focus
-    //   inside #content rather than `activeElement === document.body` because
-    //   the latter varies by browser: Safari doesn't focus links on click, so
-    //   after a link click focus is on the link in Firefox but on the body in
-    //   Safari.
-    // - The nav targets an anchor, e.g. from a search result. The browser jump
-    //   to that heading is where the user asked to be.
-    if (hash || main?.contains(document.activeElement)) return
+    // Both are decided from the location rather than from document.activeElement
+    // — "focus is still on the body, so the thing that had it unmounted" reads
+    // like the obvious test but isn't reliable. Browsers disagree (Safari
+    // doesn't focus links on click, so after a link click focus is on the link
+    // in Firefox but on the body in Safari), and mid-navigation the outgoing
+    // page's #content can still be in the document alongside the new one.
+    if (pathname === '/' || hash) return
 
     // Prefer the page's h1 over <main>. VoiceOver reads a focused heading's
     // text, whereas focusing a big landmark container just gets "main" with no
@@ -178,6 +176,7 @@ const RouteAnnouncer = () => {
     // preventScroll because scroll position is <ScrollRestoration />'s job:
     // without it, focusing the top of the page clobbers the restored position
     // on back/forward nav.
+    const main = document.getElementById('content')
     const heading = main?.querySelector('h1')
     if (heading) {
       heading.tabIndex = -1 // headings aren't focusable by default
@@ -242,8 +241,6 @@ export default function App() {
           </div>
         )}
       </QueryClientProvider>
-      {/* after the outlet so a route that focuses something on mount (the index
-          page's filter input) has already done it when the announcer checks */}
       <RouteAnnouncer />
     </Layout>
   )

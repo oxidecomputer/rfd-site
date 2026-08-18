@@ -419,7 +419,7 @@ test.describe('Accessible client-side navigation', () => {
     await expect(page.getByRole('heading', { level: 1 })).toBeFocused()
 
     // Navigating back to the index announces again, but does not steal focus:
-    // the filter input's own autofocus wins because it's inside #content.
+    // the index page focuses its own filter input and we stay out of its way.
     await page.getByRole('link', { name: 'Back to index' }).click()
     await expect(announcer(page)).toHaveText('RFD, Oxide')
     await expect(page.getByPlaceholder('Filter by')).toBeFocused()
