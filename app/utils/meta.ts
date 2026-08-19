@@ -17,32 +17,17 @@ const MAX_DESCRIPTION_LENGTH = 160
 const resolveImage = (image: string): string =>
   image.startsWith('http') ? image : new URL(image, SITE_URL).toString()
 
-const stripTags = (input: string): string => {
-  let previous
-  let current = input
-  // Repeat until stable so overlapping/nested constructs (e.g. `<scr<script>ipt>`)
-  // can't reassemble a tag after a single pass.
-  do {
-    previous = current
-    current = current.replace(/<[^>]*>/g, '')
-  } while (current !== previous)
-  return current
-}
-
+/**
+ * Collapse whitespace and truncate to a search-result-friendly length.
+ *
+ * Descriptions are plain text written by hand at the call sites, so there is
+ * no HTML to strip or entities to decode. If RFD content (e.g. a rendered
+ * abstract) ever flows in here, that caller will need to strip tags first.
+ * Either way this is only about readability, not security: descriptions are
+ * emitted through React Router `MetaDescriptor`s, which escape on render.
+ */
 const normalizeDescription = (description: string): string => {
-  const normalized = stripTags(
-    description
-      .replace(/&quot;/g, '"')
-      .replace(/&#39;/g, "'")
-      .replace(/&lt;/g, '<')
-      .replace(/&gt;/g, '>')
-      .replace(/&amp;/g, '&'),
-  )
-    // Drop any stray angle brackets left over from malformed/unterminated tags
-    // (e.g. `<script` with no closing `>`).
-    .replace(/[<>]/g, '')
-    .replace(/\s+/g, ' ')
-    .trim()
+  const normalized = description.replace(/\s+/g, ' ').trim()
 
   if (normalized.length <= MAX_DESCRIPTION_LENGTH) return normalized
 
