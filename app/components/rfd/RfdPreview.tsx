@@ -9,7 +9,7 @@
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { motion, useReducedMotion } from 'motion/react'
 import { Fragment, useEffect, useRef } from 'react'
 import { Link } from 'react-router'
 
