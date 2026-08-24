@@ -24,6 +24,7 @@ import {
   useState,
 } from 'react'
 import {
+  Link,
   redirect,
   useLoaderData,
   useLocation,
@@ -225,17 +226,15 @@ export default function Rfd() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  const containerRef = useRef<HTMLDivElement>(null)
-
   return (
-    <div ref={containerRef}>
+    <div>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
         {inlineComments && user && pullNumber && (
           <RfdInlineComments pullNumber={pullNumber} />
         )}
-        <RfdPreview currentRfd={number} nodeRef={containerRef} />
+        <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
             <div className="800:col-start-2 1200:col-start-3 flex print:hidden">
@@ -279,18 +278,18 @@ export default function Rfd() {
               <div>
                 {authors.map((author, index) => (
                   <Fragment key={author.name}>
-                    <a
+                    <Link
                       className={cn(
                         'link-with-underline inline-block',
                         !author.email && 'pointer-events-none',
                       )}
-                      href={
+                      to={
                         author.email ? `/?author=${encodeURIComponent(author.email)}` : ''
                       }
                     >
                       {author.name}
                       {index < authors.length - 1 && ', '}
-                    </a>{' '}
+                    </Link>{' '}
                   </Fragment>
                 ))}
               </div>
@@ -301,13 +300,13 @@ export default function Rfd() {
               <div>
                 {labels.map((label, index) => (
                   <Fragment key={label}>
-                    <a
+                    <Link
                       className="link-with-underline inline-block"
-                      href={`/?label=${label.trim()}`}
+                      to={`/?label=${label.trim()}`}
                     >
                       {label.trim()}
                       {index < labels.length - 1 && ', '}
-                    </a>{' '}
+                    </Link>{' '}
                   </Fragment>
                 ))}
               </div>
