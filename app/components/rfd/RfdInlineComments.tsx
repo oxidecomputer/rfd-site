@@ -140,13 +140,18 @@ const RfdInlineComments = ({ pullNumber }: { pullNumber: number }) => {
       })
     })
 
-    // Group comments by block
-    // in_reply_to_id
-    setInlineComments(newComments)
+    // Group comments by block. Defer the state updates so the effect only
+    // synchronizes with the rendered document and does not cascade renders.
+    const commentsTimeout = setTimeout(() => {
+      setInlineComments(newComments)
+      setIsLoaded(false)
+    }, 0)
+    const loadedTimeout = setTimeout(() => setIsLoaded(true), 50)
 
-    setTimeout(() => {
-      setIsLoaded(true)
-    }, 50)
+    return () => {
+      clearTimeout(commentsTimeout)
+      clearTimeout(loadedTimeout)
+    }
   }, [discussion?.comments])
 
   if (!inlineComments) return null

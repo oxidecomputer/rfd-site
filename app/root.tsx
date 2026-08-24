@@ -27,7 +27,7 @@ import {
 import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
-import { authenticate, logout } from './services/auth.server'
+import { authenticate, logoutOnAuthError } from './services/auth.server'
 import { inlineCommentsCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
 import {
@@ -48,41 +48,26 @@ export const meta: MetaFunction = () =>
 
 export const links: LinksFunction = () => [{ rel: 'stylesheet', href: styles }]
 
-export const loader = async ({ request }: LoaderFunctionArgs) => {
+export const loader = async ({ request, url }: LoaderFunctionArgs) => {
   const inlineComments =
     (await inlineCommentsCookie.parse(request.headers.get('Cookie'))) ?? true
 
   const user = await authenticate(request)
-  try {
-    const rfds = (await fetchRfds(user)) || []
 
-    const authors = rfds ? getAuthors(rfds) : []
-    const labels = rfds ? getLabels(rfds) : []
+  // If the API rejects the session's token (e.g. it predates an API upgrade),
+  // clear the session and reload this URL logged out. Without this, a user
+  // with a dead token sees 404s everywhere — including on public RFDs — and
+  // /login bounces them away because a session cookie still exists.
+  const rfds = (await logoutOnAuthError(request, url, () => fetchRfds(user))) || []
 
-    return {
-      inlineComments,
-      user,
-      rfds,
-      authors,
-      labels,
-      localMode: isLocalMode(),
-      newRfdNumber: provideNewRfdNumber([...rfds]),
-    }
-  } catch {
-    // The only error that should be caught here is the unauthenticated error.
-    // And if that occurs we need to log the user out
-    await logout(request, '/')
-  }
-
-  // Convince remix that a return type will always be provided
   return {
     inlineComments,
     user,
-    rfds: [],
-    authors: [],
-    labels: [],
+    rfds,
+    authors: getAuthors(rfds),
+    labels: getLabels(rfds),
     localMode: isLocalMode(),
-    newRfdNumber: undefined,
+    newRfdNumber: provideNewRfdNumber([...rfds]),
   }
 }
 

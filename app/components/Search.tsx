@@ -34,7 +34,7 @@ import type { RfdItem } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 
 const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const searchClient = useRef<InstantMeiliSearchInstance>(null)
+  const [searchClient, setSearchClient] = useState<InstantMeiliSearchInstance | null>(null)
 
   useEffect(() => {
     const { searchClient: client } = instantMeiliSearch(
@@ -48,7 +48,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     // Additionally we are adding short circuiting logic so that we do not perform search requests
     // until N characters have been submitted
     // https://www.algolia.com/doc/guides/building-search-ui/going-further/conditional-requests/react/#implementing-a-proxy
-    searchClient.current = {
+    const configuredClient = {
       ...client,
 
       // We cheat with the any type here so that we do not need to bother with the extensive fields
@@ -92,9 +92,12 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
         })
       },
     }
+
+    const timeout = setTimeout(() => setSearchClient(configuredClient), 0)
+    return () => clearTimeout(timeout)
   }, [])
 
-  if (searchClient.current) {
+  if (searchClient) {
     return (
       <>
         <Dialog
@@ -104,7 +107,7 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
           aria-label="Search"
           backdrop={<div className="backdrop" />}
         >
-          <InstantSearch searchClient={searchClient.current} indexName="rfd">
+          <InstantSearch searchClient={searchClient} indexName="rfd">
             <Configure attributesToSnippet={['content:15']} />
             <SearchWrapper
               dismissSearch={onClose}
@@ -125,11 +128,6 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
   const { items, results } = useHits()
 
   const [selectedIdx, setSelectedIdx] = useState(0)
-
-  useEffect(() => {
-    // Whenever number of groups changes ensure the index is not more than that
-    setSelectedIdx((s) => (s > items.length ? items.length : s))
-  }, [items])
 
   // Remove items without content
   const hitsWithoutEmpty = items.filter((hit) => hit.content !== '')
@@ -157,6 +155,8 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
     flattenedHits.push(...groupedHits[score[0]])
   })
 
+  const activeIdx = Math.min(selectedIdx, Math.max(flattenedHits.length - 1, 0))
+
   const noMatches =
     results &&
     results.query !== '' &&
@@ -169,18 +169,18 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
       onKeyDown={(e) => {
         const lastIdx = hitsWithoutEmpty.length - 1
         if (e.key === 'Enter') {
-          const selectedItem = flattenedHits[selectedIdx]
+          const selectedItem = flattenedHits[activeIdx]
           if (!selectedItem) return
           navigate(`/rfd/${formatRfdNum(selectedItem.rfd_number)}#${selectedItem.anchor}`)
           // needed despite key={pathname + hash} logic in case we navigate
           // to the page we're already on
           dismissSearch()
         } else if (e.key === 'ArrowDown') {
-          const newIdx = selectedIdx < lastIdx ? selectedIdx + 1 : 0
+          const newIdx = activeIdx < lastIdx ? activeIdx + 1 : 0
           setSelectedIdx(newIdx)
           e.preventDefault() // Prevent it from moving input cursor
         } else if (e.key === 'ArrowUp') {
-          const newIdx = selectedIdx === 0 ? lastIdx : selectedIdx - 1
+          const newIdx = activeIdx === 0 ? lastIdx : activeIdx - 1
           setSelectedIdx(newIdx)
           e.preventDefault()
         }
@@ -225,7 +225,7 @@ const SearchWrapper = ({ dismissSearch }: { dismissSearch: () => void }) => {
               <SearchResponse
                 hasHits={items.length > 0}
                 hits={flattenedHits}
-                selectedIdx={selectedIdx}
+                selectedIdx={activeIdx}
               />
             )}
           </div>
@@ -327,8 +327,6 @@ const SearchResponse = ({
 }
 
 const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) => {
-  let prevRFD = -1
-
   const divRef = createRef<HTMLDivElement>()
   const ulRef = createRef<HTMLUListElement>()
 
@@ -341,9 +339,8 @@ const Hits = ({ data, selectedIdx }: { data: RFDHit[]; selectedIdx: number }) =>
     >
       <ul ref={ulRef}>
         {data.map((hit, index) => {
-          const isNewSection = hit.rfd_number !== prevRFD
+          const isNewSection = index === 0 || hit.rfd_number !== data[index - 1].rfd_number
           const sectionIsSelected = data[selectedIdx].rfd_number === hit.rfd_number
-          prevRFD = hit.rfd_number
 
           return (
             <Fragment key={hit.objectID}>

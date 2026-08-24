@@ -20,7 +20,12 @@ import { Authenticator } from 'remix-auth'
 import { isTruthy } from '~/utils/isTruthy'
 
 import { returnToCookie } from './cookies.server'
-import { client, fetchRemoteGroups, handleApiResponse } from './rfd.remote.server'
+import {
+  AuthenticationError,
+  client,
+  fetchRemoteGroups,
+  handleApiResponse,
+} from './rfd.remote.server'
 import { sessionStorage } from './session.server'
 
 export type User = {
@@ -147,6 +152,53 @@ export async function logout(request: Request, redirectTo: string) {
   })
 }
 
+/**
+ * Clear the session and reload the same URL logged out. For recovering from a
+ * session whose access token the API no longer accepts (e.g. tokens issued
+ * before an rfd-api upgrade): being "logged in" with a dead token renders
+ * every RFD as a 404, while logged out the public ones are visible and the
+ * login page is reachable. Always throws (a redirect).
+ */
+export async function logoutStaleSession(request: Request, url: URL): Promise<never> {
+  const { pathname, search } = url
+  await logout(request, pathname + search)
+  throw new Error('unreachable: logout always throws a redirect')
+}
+
+/**
+ * Run an API-fetching function, and if it fails because the API rejected the
+ * session's access token, self-heal via logoutStaleSession. Other errors
+ * (including thrown Responses) propagate unchanged.
+ */
+export async function logoutOnAuthError<T>(
+  request: Request,
+  url: URL,
+  fn: () => Promise<T>,
+): Promise<T> {
+  try {
+    return await fn()
+  } catch (err) {
+    if (err instanceof AuthenticationError) {
+      await logoutStaleSession(request, url)
+    }
+    throw err
+  }
+}
+
+/**
+ * Whether the API still accepts the session's access token. Only a definitive
+ * 401 counts as invalid; other failures (network, 5xx) say nothing about the
+ * session and shouldn't log anyone out.
+ */
+export async function isSessionValid(user: User): Promise<boolean> {
+  try {
+    handleApiResponse(await client(user.token).methods.getSelf({}))
+    return true
+  } catch (err) {
+    return !(err instanceof AuthenticationError)
+  }
+}
+
 async function handleAuthenticationCallback(provider: string, request: Request) {
   const session = await sessionStorage.getSession(request.headers.get('cookie'))
   let user
@@ -173,10 +225,22 @@ async function handleAuthenticationCallback(provider: string, request: Request) 
 
 export { auth, handleAuthenticationCallback }
 
-const RFD_PATH = /^\/rfd\/[0-9]{1,4}\??.*$/
+// Allowlist of redirect targets: a bare RFD (`/rfd/0001`) or any of its
+// sub-paths (`/rfd/0001/discussion`, `/raw`, `/pdf`), optionally with a query
+// string. The auth-gated RFD routes set returnTo to their own URL so a user
+// bounced to login lands back on exactly what they asked for, so the allowlist
+// has to admit those sub-paths. returnTo is user-controlled (a /login query
+// param), but every match here is a same-origin path under /rfd/<number>, so
+// it can't be used as an open redirect.
+const RFD_PATH = /^\/rfd\/[0-9]{1,4}(?:\/[^?\s]+)?(?:\?.*)?$/
 
-function sanitizeRedirect(path: string): string {
-  const decoded = decodeURIComponent(path)
+export function sanitizeRedirect(path: string): string {
+  let decoded
+  try {
+    decoded = decodeURIComponent(path)
+  } catch {
+    return '/'
+  }
 
   // Allow direct links to RFDs
   if (RFD_PATH.test(decoded)) {

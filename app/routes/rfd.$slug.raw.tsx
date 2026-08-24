@@ -9,15 +9,15 @@
 import { RfdWithRaw } from '@oxide/rfd.ts/client'
 import { redirect, type LoaderFunctionArgs } from 'react-router'
 
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutStaleSession } from '~/services/auth.server'
 import { fetchLocalRfd, isLocalMode, LocalRfd } from '~/services/rfd.local.server'
-import { fetchRemoteRfd } from '~/services/rfd.remote.server'
+import { AuthenticationError, fetchRemoteRfd } from '~/services/rfd.remote.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
 import { resp404 } from './rfd.$slug'
 
-export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
+export async function loader({ request, url, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) throw resp404()
 
@@ -29,13 +29,14 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
   try {
     rfd = isLocalMode() ? fetchLocalRfd(num) : await fetchRemoteRfd(num, user)
   } catch (err) {
+    if (err instanceof AuthenticationError) await logoutStaleSession(request, url)
     console.error('Failed to fetch RFD', err)
     throw resp404()
   }
 
   // If someone goes to a private RFD but they're not logged in, they will
-  // want to log in and see it.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}`)
+  // want to log in and see it. Send them back to the raw view they asked for.
+  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}/raw`)
 
   // If you don't see an RFD but you are logged in, you can't tell whether you
   // don't have access or it doesn't exist. That's fine.

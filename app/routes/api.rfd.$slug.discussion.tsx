@@ -8,11 +8,12 @@
 
 import { data, type LoaderFunctionArgs } from 'react-router'
 
-import { authenticate } from '~/services/auth.server'
+import { authenticate, logoutStaleSession } from '~/services/auth.server'
 import { fetchDiscussion } from '~/services/github-discussion.server'
+import { AuthenticationError } from '~/services/rfd.remote.server'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
-export async function loader({ request, params: { slug } }: LoaderFunctionArgs) {
+export async function loader({ request, url, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) {
     throw new Response('Missing pull request number', { status: 400 })
@@ -29,6 +30,7 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
 
     return discussion
   } catch (error) {
+    if (error instanceof AuthenticationError) await logoutStaleSession(request, url)
     console.error('Error fetching discussion:', error)
     return data({ error: 'Failed to fetch discussion' }, { status: 500 })
   }

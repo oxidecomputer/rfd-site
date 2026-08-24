@@ -10,7 +10,6 @@ import { redirect, type LoaderFunction } from 'react-router'
 
 import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchRfdPdf } from '~/services/rfd.server'
-import { formatRfdNum } from '~/utils/canonicalUrl'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 
 export const loader: LoaderFunction = async ({ request, url, params: { slug } }) => {
@@ -20,11 +19,13 @@ export const loader: LoaderFunction = async ({ request, url, params: { slug } })
   const user = await authenticate(request)
   const rfd = await logoutOnAuthError(request, url, () => fetchRfdPdf(num, user))
 
-  // If someone goes to a private RFD's PDF but they're not logged in, they will
-  // want to log in and see it. Send them back to the PDF they asked for.
-  if (!rfd && !user) throw redirect(`/login?returnTo=/rfd/${formatRfdNum(num)}/pdf`)
-
   if (!rfd || rfd.content.length === 0) throw new Response('Not Found', { status: 404 })
 
-  throw redirect(rfd.content[0].link)
+  const pdf = rfd.content[0]
+
+  if (pdf.source === 'google') {
+    throw redirect(`https://drive.google.com/uc?export=download&id=${pdf.externalId}`)
+  }
+
+  throw redirect(pdf.link)
 }

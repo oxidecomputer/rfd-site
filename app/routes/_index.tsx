@@ -46,7 +46,11 @@ import { rfdSortCookie } from '~/services/cookies.server'
 import type { RfdListItem } from '~/services/rfd.server'
 import { sortBy } from '~/utils/array'
 import { fuzz } from '~/utils/fuzz'
+import { parseRfdNum } from '~/utils/parseRfdNum'
+import { filterRfds } from '~/utils/rfdSearch'
 import { parseSortOrder, type SortAttr } from '~/utils/rfdSortOrder.server'
+
+const UNDATED_SORT_VALUE = Number.MAX_SAFE_INTEGER
 
 export const loader = async ({ request }: LoaderFunctionArgs) => {
   const cookieHeader = request.headers.get('Cookie')
@@ -66,11 +70,11 @@ export function shouldRevalidate({
 }
 
 // only for setting the sort order cookie
-export const action = async ({ request }: ActionFunctionArgs) => {
+export const action = async ({ request, url }: ActionFunctionArgs) => {
   const body = await request.formData()
   const newCookie = parseSortOrder(Object.fromEntries(body))
   // redirect to same URL to preserve query params
-  return redirect(request.url, {
+  return redirect(url.toString(), {
     headers: {
       'Set-Cookie': await rfdSortCookie.serialize(newCookie),
     },
@@ -131,7 +135,7 @@ export default function Index() {
   const inputEl = useRef<HTMLInputElement>(null)
 
   const [matchedItems, exactMatch] = useMemo(() => {
-    const parsedInput = parseInt(input)
+    const parsedInput = parseRfdNum(input.trim())
 
     if (!input.trim()) {
       const sortedRfds = sortBy(rfds, (rfd) => {
@@ -140,7 +144,7 @@ export default function Index() {
             ? rfd.number
             : rfd.latestMajorChangeAt
               ? rfd.latestMajorChangeAt.getTime()
-              : new Date().getTime()
+              : UNDATED_SORT_VALUE
         const mult = sortDir === 'asc' ? 1 : -1
         return sortVal * mult
       })
@@ -148,23 +152,9 @@ export default function Index() {
       return [sortedRfds, undefined]
     }
 
-    const haystack = rfds.map((rfd) => {
-      const authorString = rfd.authors
-        ? rfd.authors.map((a) => `${a.name} ${a.email}`).join(' ')
-        : ''
-      return `${rfd.number} ¦ ${rfd.title || ''} ¦ ${authorString}`
-    })
-    const idxs = fuzz.filter(haystack, input)
+    const filteredRfds = filterRfds(rfds, input)
 
-    let filteredRfds: RfdListItem[] = []
-
-    if (idxs) {
-      filteredRfds = idxs.map((i) => rfds[i])
-    }
-
-    const exactMatch = rfds.find(
-      (rfd) => !isNaN(parsedInput) && rfd.number === parsedInput && rfd,
-    )
+    const exactMatch = rfds.find((rfd) => rfd.number === parsedInput)
 
     const sortedRfds = sortBy(filteredRfds, (rfd) => {
       const sortVal =
@@ -172,7 +162,7 @@ export default function Index() {
           ? rfd.number
           : rfd.latestMajorChangeAt
             ? rfd.latestMajorChangeAt.getTime()
-            : new Date().getTime()
+            : UNDATED_SORT_VALUE
       const mult = sortDir === 'asc' ? 1 : -1
       return sortVal * mult
     })
@@ -256,7 +246,8 @@ export default function Index() {
     // instead of a callback because it should only happen after the nav,
     // otherwise we get a flash of the unfiltered list.
     if (state && state.shouldClearInput) {
-      setInput('')
+      const timeout = setTimeout(() => setInput(''), 0)
+      return () => clearTimeout(timeout)
     }
   }, [state])
 

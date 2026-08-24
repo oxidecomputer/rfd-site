@@ -165,6 +165,7 @@ export default function RfdJobsMonitor({
   dialogStore: ReturnType<typeof useDialogStore>
 }) {
   const [expandedJobId, setExpandedJobId] = useState<number | null>(null)
+  const open = dialogStore.useState('open')
 
   const {
     data: jobs = [],
@@ -173,6 +174,7 @@ export default function RfdJobsMonitor({
   } = useQuery<Job[]>({
     queryKey: ['rfdJobs', rfdNumber],
     queryFn: () => fetchRfdJobs(rfdNumber),
+    enabled: open,
     refetchOnWindowFocus: false,
   })
 
