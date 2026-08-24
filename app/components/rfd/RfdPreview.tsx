@@ -9,11 +9,12 @@
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
-import { Fragment, useCallback, useEffect, useRef, useState } from 'react'
-import { Link, useNavigate, useNavigation } from 'react-router'
+import { AnimatePresence, motion, useReducedMotion } from 'motion/react'
+import { Fragment, useEffect, useRef } from 'react'
+import { Link } from 'react-router'
 
-import { useRootLoaderData } from '~/root'
 import type { RfdListItem } from '~/services/rfd.server'
+import { closeHoverCard, useHoverCardStore } from '~/stores/hover-card'
 
 dayjs.extend(relativeTime)
 
@@ -54,208 +55,13 @@ export function calcOffset(element: HTMLAnchorElement | HTMLElement) {
   return { left: x, top: y }
 }
 
-interface RfdPreviewState {
-  sourceRfd: number
-  rfd: RfdListItem
-  position: { left: number; top: number }
-  anchor: HTMLAnchorElement
-}
-
-interface RfdPreviewProps {
-  currentRfd: number
-  nodeRef: React.RefObject<HTMLElement | null>
-}
-
-const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
-  const navigate = useNavigate()
-  const navigation = useNavigation()
-  const isNavigating = navigation.state !== 'idle'
-  const { rfds } = useRootLoaderData()
-  const [preview, setPreview] = useState<RfdPreviewState | null>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const previewRef = useRef<HTMLDivElement>(null)
-
-  const clearHoverTimeout = useCallback(() => {
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
-      timeoutRef.current = null
-    }
-  }, [])
-
-  const activePreview = preview?.sourceRfd === currentRfd ? preview : null
-
-  // Based on https://github.com/remix-run/react-router-website/blob/main/app/ui/delegate-markdown-links.ts
-  // Converts regular AsciiDoc a tags and makes them React Routery
-  useEffect(() => {
-    const node = nodeRef.current
-    if (!node) return
-
-    const handleClick = (event: MouseEvent) => {
-      if (!(event.target instanceof HTMLElement)) return
-
-      const a = event.target.closest('a')
-
-      if (
-        a && // is anchor or has anchor parent
-        a.hasAttribute('href') && // has an href
-        a.host === window.location.host && // is internal
-        event.button === 0 && // left click
-        (!a.target || a.target === '_self') && // Let browser handle "target=_blank" etc.
-        !(event.metaKey || event.altKey || event.ctrlKey || event.shiftKey) // not modified
-      ) {
-        const rfdNum = extractRfdNumber(a.getAttribute('href') || '')
-
-        if (rfdNum !== null) {
-          event.preventDefault()
-          clearHoverTimeout()
-          setPreview(null)
-          const formattedNumber = rfdNum.toString().padStart(4, '0')
-          navigate(`/rfd/${formattedNumber}`)
-          return
-        }
-
-        if (a.host === window.location.host) {
-          event.preventDefault()
-          const { pathname, search, hash } = a
-          navigate({ pathname, search, hash })
-        }
-      }
-    }
-
-    const handleMouseOver = (event: MouseEvent) => {
-      if (isNavigating) return
-      if (!(event.target instanceof HTMLElement)) return
-
-      const anchor = event.target.closest('a')
-      if (!anchor) return
-
-      const rfdNum = extractRfdNumber(anchor.getAttribute('href') || '')
-
-      if (rfdNum === null || rfdNum === currentRfd) return
-
-      const matchedRfd = rfds.find((rfd) => rfd.number === rfdNum)
-      if (!matchedRfd) return
-
-      if (timeoutRef.current) return
-
-      timeoutRef.current = setTimeout(() => {
-        const offset = calcOffset(anchor)
-        setPreview({
-          sourceRfd: currentRfd,
-          rfd: matchedRfd,
-          position: offset,
-          anchor,
-        })
-        timeoutRef.current = null
-      }, 125)
-    }
-
-    const handleMouseOut = (event: MouseEvent) => {
-      if (!(event.target instanceof HTMLElement)) return
-
-      const anchor = event.target.closest('a')
-      if (anchor) {
-        clearHoverTimeout()
-      }
-    }
-
-    node.addEventListener('click', handleClick)
-    node.addEventListener('mouseover', handleMouseOver)
-    node.addEventListener('mouseout', handleMouseOut)
-
-    return () => {
-      node.removeEventListener('click', handleClick)
-      node.removeEventListener('mouseover', handleMouseOver)
-      node.removeEventListener('mouseout', handleMouseOut)
-      clearHoverTimeout()
-    }
-  }, [navigate, nodeRef, currentRfd, rfds, clearHoverTimeout, isNavigating])
-
-  useEffect(() => {
-    if (!activePreview) return
-
-    type Point = [number, number]
-    type Polygon = Point[]
-
-    // 1┌────────────┐2
-    //  └────────────┘\
-    //  |              \
-    //  ┌───────────────┐3
-    //  │               │
-    // 5└───────────────┘4
-    //
-    // Returns a set of points for each corner of a polygon
-    // that the cursor can safely be within without closing
-    // the floating preview. Plus a buffer of 10px to avoid
-    // it being too sensitive
-    const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Polygon => {
-      const buffer = 10
-      const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
-      const p2: Point = [
-        anchorRect.left + anchorRect.width + buffer,
-        anchorRect.top + anchorRect.height - buffer,
-      ]
-      const p3: Point = [
-        floatingRect.left + floatingRect.width + buffer,
-        floatingRect.top - buffer,
-      ]
-      const p4: Point = [
-        floatingRect.left + floatingRect.width + buffer,
-        floatingRect.top + floatingRect.height + buffer,
-      ]
-      const p5: Point = [
-        floatingRect.left - buffer,
-        floatingRect.top + floatingRect.height + buffer,
-      ]
-      return [p1, p2, p3, p4, p5]
-    }
-
-    const isPointInPolygon = (point: Point, polygon: Polygon) => {
-      const [x, y] = point
-      let isInside = false
-      const length = polygon.length
-      for (let i = 0, j = length - 1; i < length; j = i++) {
-        const [xi, yi] = polygon[i] || [0, 0]
-        const [xj, yj] = polygon[j] || [0, 0]
-        const intersect =
-          yi >= y !== yj >= y && x <= ((xj - xi) * (y - yi)) / (yj - yi) + xi
-        if (intersect) {
-          isInside = !isInside
-        }
-      }
-      return isInside
-    }
-
-    const handleMouseMove = (event: MouseEvent) => {
-      if (!previewRef.current) return
-
-      const cursor: Point = [event.clientX, event.clientY]
-      const floatingRect = previewRef.current.getBoundingClientRect()
-      const anchorRect = activePreview.anchor.getBoundingClientRect()
-
-      const polygon = getPolygon(anchorRect, floatingRect)
-      const isInside = isPointInPolygon(cursor, polygon)
-
-      if (!isInside) {
-        setPreview(null)
-      }
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
-    return () => window.removeEventListener('mousemove', handleMouseMove)
-  }, [activePreview])
-
-  if (!activePreview) return null
-
-  const { title, number, state, latestMajorChangeAt, formattedNumber } = activePreview.rfd
-  const authors = activePreview.rfd.authors || []
+/** The body of the hover card for an RFD link: number, title, authors, state. */
+export const RfdPreviewCard = ({ rfd }: { rfd: RfdListItem }) => {
+  const { title, number, state, latestMajorChangeAt, formattedNumber } = rfd
+  const authors = rfd.authors || []
 
   return (
-    <div
-      ref={previewRef}
-      className="shadow-tooltip bg-raise absolute z-10 mt-8 flex w-[24rem] rounded-lg p-3"
-      style={{ top: activePreview.position.top, left: activePreview.position.left }}
-    >
+    <div className="flex w-[22rem]">
       <Link
         prefetch="intent"
         to={`/rfd/${formattedNumber}`}
@@ -297,4 +103,126 @@ const RfdPreview = ({ currentRfd, nodeRef }: RfdPreviewProps) => {
   )
 }
 
-export default RfdPreview
+const EASE_OUT = [0.165, 0.84, 0.44, 1] as const
+
+/**
+ * The single floating hover card. It renders whatever a trigger (RFD link,
+ * footnote, …) put in the store, positioned under that trigger, and closes when
+ * the cursor leaves the safe polygon between the trigger and the card.
+ */
+const HoverCard = ({ currentRfd }: { currentRfd: number }) => {
+  const card = useHoverCardStore((state) => state.card)
+  const cardRef = useRef<HTMLDivElement>(null)
+  const reduceMotion = useReducedMotion()
+
+  // Dismiss any open card when navigating to a different RFD
+  useEffect(() => closeHoverCard, [currentRfd])
+
+  useEffect(() => {
+    if (!card) return
+
+    type Point = [number, number]
+    type Polygon = Point[]
+
+    // 1┌────────────┐2
+    //  └────────────┘\
+    //  |              \
+    //  ┌───────────────┐3
+    //  │               │
+    // 5└───────────────┘4
+    //
+    // Returns a set of points for each corner of a polygon
+    // that the cursor can safely be within without closing
+    // the floating card. Plus a buffer of 10px to avoid
+    // it being too sensitive
+    const getPolygon = (anchorRect: DOMRect, floatingRect: DOMRect): Polygon => {
+      const buffer = 10
+      const p1: Point = [anchorRect.left - buffer, anchorRect.top - buffer]
+      const p2: Point = [
+        anchorRect.left + anchorRect.width + buffer,
+        anchorRect.top + anchorRect.height - buffer,
+      ]
+      const p3: Point = [
+        floatingRect.left + floatingRect.width + buffer,
+        floatingRect.top - buffer,
+      ]
+      const p4: Point = [
+        floatingRect.left + floatingRect.width + buffer,
+        floatingRect.top + floatingRect.height + buffer,
+      ]
+      const p5: Point = [
+        floatingRect.left - buffer,
+        floatingRect.top + floatingRect.height + buffer,
+      ]
+      return [p1, p2, p3, p4, p5]
+    }
+
+    const isPointInPolygon = (point: Point, polygon: Polygon) => {
+      const [x, y] = point
+      let isInside = false
+      const length = polygon.length
+      for (let i = 0, j = length - 1; i < length; j = i++) {
+        const [xi, yi] = polygon[i] || [0, 0]
+        const [xj, yj] = polygon[j] || [0, 0]
+        const intersect =
+          yi >= y !== yj >= y && x <= ((xj - xi) * (y - yi)) / (yj - yi) + xi
+        if (intersect) {
+          isInside = !isInside
+        }
+      }
+      return isInside
+    }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      if (!cardRef.current) return
+
+      const cursor: Point = [event.clientX, event.clientY]
+      const floatingRect = cardRef.current.getBoundingClientRect()
+      const anchorRect = card.anchor.getBoundingClientRect()
+
+      const polygon = getPolygon(anchorRect, floatingRect)
+      const isInside = isPointInPolygon(cursor, polygon)
+
+      if (!isInside) {
+        closeHoverCard()
+      }
+    }
+
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [card])
+
+  return (
+    card && (
+      <motion.div
+        // Re-key per target so hopping between links cross-fades rather than
+        // sliding the same card to a new position.
+        key={card.key}
+        ref={cardRef}
+        // `break-words` (inherited) wraps long, unbreakable URLs so they
+        // can't overflow past `max-w`.
+        className="shadow-tooltip bg-raise absolute z-10 mt-6 w-max max-w-[24rem] rounded-lg p-3 break-words"
+        style={{
+          top: card.position.top,
+          left: card.position.left,
+          // Grow from the anchored top-left corner (under the trigger), not center.
+          transformOrigin: 'top left',
+          willChange: 'transform, opacity',
+        }}
+        initial={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.96, y: -4 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        exit={reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: -4 }}
+        transition={{
+          duration: 0.18,
+          ease: EASE_OUT,
+          // Exits ~20% quicker than entrances feel right.
+          opacity: { duration: 0.14, ease: EASE_OUT },
+        }}
+      >
+        {card.content}
+      </motion.div>
+    )
+  )
+}
+
+export default HoverCard
