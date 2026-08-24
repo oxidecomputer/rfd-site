@@ -24,7 +24,7 @@
     "@leeoniya/ufuzzy": "^1.0.19",
     "@meilisearch/instant-meilisearch": "^0.28.0",
     "@oxide/design-system": "^6.5.3",
-    "@oxide/react-asciidoc": "^2.2.0",
+    "@oxide/react-asciidoc": "^2.2.1",
     "@oxide/remix-auth-rfd": "^0.1.6",
     "@oxide/rfd.ts": "^0.15.5",
     "@radix-ui/react-accordion": "^1.2.12",
