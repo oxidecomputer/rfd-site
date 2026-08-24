@@ -32,7 +32,7 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
                 id={`_footnotedef_${footnote.index}`}
                 className="max-800:flex relative mb-2 items-baseline"
               >
-                <div className="text-mono-xs text-tertiary 800:absolute 800:top-0.5 800:-left-12 800:text-right w-6 shrink-0 rounded-full tracking-normal!">
+                <div className="text-mono-xs text-tertiary 800:absolute 800:top-px 800:-left-12 800:text-right w-6 shrink-0 rounded-full tracking-normal!">
                   {footnote.index}
                 </div>
                 <div className="text-sans-md text-default max-w-200">
