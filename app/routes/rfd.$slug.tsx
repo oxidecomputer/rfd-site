@@ -29,8 +29,6 @@ import {
   redirect,
   useLoaderData,
   useLocation,
-  useRevalidator,
-  type ClientLoaderFunctionArgs,
   type LoaderFunctionArgs,
   type MetaFunction,
 } from 'react-router'
@@ -51,7 +49,6 @@ import { useRootLoaderData } from '~/root'
 import { authenticate } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
-import { notifyRfdStale, rfdPageCache, subscribeRfdStale } from '~/utils/clientCache'
 import { buildMeta } from '~/utils/meta'
 import { parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
@@ -129,40 +126,6 @@ export async function loader({ request, params: { slug } }: LoaderFunctionArgs) 
     rfd,
     groups,
   }
-}
-
-type CacheEntry = { data: Awaited<ReturnType<typeof loader>>; fetchedAt: number }
-
-// skip the background refresh for loads triggered by our own revalidation
-const JUST_FETCHED_MS = 5000
-
-// Stale-while-revalidate: serve the cached document instantly but always
-// refetch in the background, revalidating if the content changed. The cache
-// never blocks fresh content from showing.
-export async function clientLoader({ params, serverLoader }: ClientLoaderFunctionArgs) {
-  const key = params.slug!
-  const entry = rfdPageCache.get(key) as CacheEntry | undefined
-  if (entry && Date.now() - entry.fetchedAt < JUST_FETCHED_MS) return entry.data
-
-  const fresh = serverLoader<typeof loader>().then((data) => {
-    rfdPageCache.set(key, { data, fetchedAt: Date.now() } satisfies CacheEntry)
-    return data
-  })
-
-  if (!entry) return await fresh
-
-  fresh
-    .then((data) => {
-      // also compare committedAt because local mode has no shas
-      if (
-        data.rfd.sha !== entry.data.rfd.sha ||
-        data.rfd.committedAt?.getTime() !== entry.data.rfd.committedAt?.getTime()
-      ) {
-        notifyRfdStale()
-      }
-    })
-    .catch(() => {})
-  return entry.data
 }
 
 export const meta: MetaFunction<typeof loader> = ({ data }) => {
@@ -258,12 +221,6 @@ const SectionTrackingOutlines = ({
 
 export default function Rfd() {
   const { pathname, hash } = useLocation()
-
-  const revalidator = useRevalidator()
-  useEffect(
-    () => subscribeRfdStale(() => revalidator.revalidate()),
-    [revalidator],
-  )
 
   const { rfd, groups } = useLoaderData<typeof loader>()
   const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
