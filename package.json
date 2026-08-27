@@ -23,7 +23,7 @@
     "@floating-ui/react": "^0.17.0",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@meilisearch/instant-meilisearch": "^0.28.0",
-    "@oxide/design-system": "^6.5.4",
+    "@oxide/design-system": "^6.6.1",
     "@oxide/react-asciidoc": "^2.2.0",
     "@oxide/remix-auth-rfd": "^0.1.6",
     "@oxide/rfd.ts": "^0.15.5",

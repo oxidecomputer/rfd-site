@@ -18,7 +18,7 @@ import RfdLink from '~/components/AsciidocBlocks/RfdLink'
 const attrs = {
   sectlinks: 'true',
   stem: 'latexmath',
-  stylesheet: false,
+  icons: 'font',
 }
 
 const ad = loadAsciidoctor({})

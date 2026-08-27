@@ -263,8 +263,8 @@ async function apiRfdToItem(rfd: RfdWithRaw): Promise<RfdItem> {
 
   if (rfd.content) {
     const doc = ad.load(rfd.content, {
-      ...attrs,
       attributes: {
+        ...attrs,
         rfdnumber: rfd.rfdNumber,
       },
       sourcemap: true,
