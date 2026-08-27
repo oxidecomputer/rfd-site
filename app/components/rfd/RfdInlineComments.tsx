@@ -231,9 +231,10 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
       }}
     >
       <button
-        className="flex items-center justify-center"
+        className="group flex items-center justify-center rounded-full bg-neutral-300 p-0.5 hover:bg-neutral-400"
         ref={reference}
         style={{
+          transitionProperty: 'transform, opacity',
           transitionDelay: `${Math.min(index * 150, 500)}ms`,
           opacity: isLoaded ? 1 : 0,
           transform: `translateY(${isLoaded ? '0px' : '5px'})`,
@@ -241,26 +242,23 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
         }}
         {...getReferenceProps()}
       >
-        <div className="bg-tertiary inline-flex items-center justify-center rounded-full p-[2px]">
-          {users.slice(0, 3).map((user, index) => {
-            return (
-              <div
-                key={index}
-                className={cn(
-                  'bg-secondary h-[24px] w-[24px] overflow-hidden rounded-full border-2',
-                  index > 0 && '-ml-2',
-                )}
-                style={{ borderColor: 'var(--surface-tertiary)' }}
-              >
-                <img
-                  src={user.avatar_url}
-                  className="h-full w-full"
-                  alt={`Avatar for ${user.login}`}
-                />
-              </div>
-            )
-          })}
-        </div>
+        {users.slice(0, 3).map((user, index) => {
+          return (
+            <div
+              key={index}
+              className={cn(
+                'size-6 overflow-hidden rounded-full border-2 border-neutral-300 group-hover:border-neutral-400',
+                index > 0 && '-ml-2',
+              )}
+            >
+              <img
+                src={user.avatar_url}
+                className="h-full w-full"
+                alt={`Avatar for ${user.login}`}
+              />
+            </div>
+          )
+        })}
         {users.length > 2 && (
           <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
         )}
