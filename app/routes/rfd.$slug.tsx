@@ -230,7 +230,12 @@ export default function Rfd() {
     <div>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
-      <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
+      {/* id and tabIndex let the skip link in root.tsx target and focus it */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="800:mt-16 relative mt-12 pb-20 outline-none print:mt-0"
+      >
         {inlineComments && user && pullNumber && (
           <RfdInlineComments pullNumber={pullNumber} />
         )}
