@@ -12,7 +12,6 @@ export const returnToCookie = createCookie('_return_to', {
   sameSite: 'lax',
   path: '/',
   httpOnly: true,
-  secrets: ['s3cr3t'],
   maxAge: 60 * 10, // 10 minutes
   secure: process.env.NODE_ENV === 'production',
 })
@@ -28,7 +27,6 @@ export const inlineCommentsCookie = createCookie('_inline_comments', {
   sameSite: 'lax',
   path: '/',
   httpOnly: true,
-  secrets: ['s3cr3t'],
   secure: process.env.NODE_ENV === 'production',
   maxAge: 60 * 60 * 24 * 365, // Keep cookie for a year
 })
