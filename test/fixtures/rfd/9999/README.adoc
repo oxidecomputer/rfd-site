@@ -1,0 +1,106 @@
+= RFD 9999 Mermaid Diagram Test Fixture
+:state: published
+
+== Wide Flowchart
+
+[source,mermaid]
+----
+flowchart LR
+    A[Start] --> B[Step 1]
+    B --> C[Step 2]
+    C --> D[Step 3]
+    D --> E[Step 4]
+    E --> F[Step 5]
+    F --> G[Step 6]
+    G --> H[Step 7]
+    H --> I[Step 8]
+    I --> J[End]
+----
+
+== Tall Sequence Diagram
+
+[source,mermaid]
+----
+sequenceDiagram
+    participant A as Client
+    participant B as API Gateway
+    participant C as Auth Service
+    participant D as Database
+    A->>B: Request
+    B->>C: Validate token
+    C->>D: Lookup user
+    D-->>C: User data
+    C-->>B: Token valid
+    B->>D: Query data
+    D-->>B: Results
+    B-->>A: Response
+    A->>B: Second request
+    B->>C: Revalidate
+    C-->>B: OK
+    B->>D: Update record
+    D-->>B: Confirmed
+    B-->>A: Success
+    A->>B: Third request
+    B->>D: Delete record
+    D-->>B: Deleted
+    B-->>A: Done
+----
+
+== Small State Diagram
+
+[source,mermaid]
+----
+stateDiagram-v2
+    [*] --> Idle
+    Idle --> Running
+    Running --> Done
+    Done --> [*]
+----
+
+== Large State Diagram
+
+[source,mermaid]
+----
+stateDiagram-v2
+    [*] --> Planning
+    Planning --> Design
+    Design --> Review
+    Review --> Planning : Rejected
+    Review --> Implementation
+    Implementation --> Testing
+    Testing --> Implementation : Bug found
+    Testing --> Staging
+    Staging --> Testing : Regression
+    Staging --> Production
+    Production --> Monitoring
+    Monitoring --> Planning : New requirements
+    Monitoring --> Incident
+    Incident --> Rollback
+    Rollback --> Staging
+    Incident --> Hotfix
+    Hotfix --> Testing
+    Production --> [*]
+----
+
+== Gantt Chart
+
+[source,mermaid]
+----
+gantt
+    title Project Timeline
+    dateFormat  YYYY-MM-DD
+    section Planning
+    Requirements         :a1, 2024-01-01, 14d
+    Architecture Design  :a2, after a1, 21d
+    section Development
+    Sprint 1             :b1, after a2, 14d
+    Sprint 2             :b2, after b1, 14d
+    Sprint 3             :b3, after b2, 14d
+    Sprint 4             :b4, after b3, 14d
+    section Testing
+    Integration Tests    :c1, after b3, 14d
+    Performance Tests    :c2, after b4, 14d
+    section Release
+    Staging Deploy       :d1, after c2, 7d
+    Production Deploy    :d2, after d1, 3d
+----
