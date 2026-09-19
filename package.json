@@ -101,7 +101,7 @@
   },
   "overrides": {
     "algoliasearch": "^4.24.0",
-    "algoliasearch-helper": "3.26.0",
+    "algoliasearch-helper": "3.29.3",
     "@vercel/static-config": {
       "ajv": "^8.18.0"
     }
