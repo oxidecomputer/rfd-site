@@ -273,7 +273,8 @@ export default function Index() {
     <>
       {/* key makes the search dialog close on selection */}
       <Header key={pathname + hash} />
-      <div className="pt-4 pb-12">
+      {/* id and tabIndex let the skip link in root.tsx target and focus it */}
+      <main id="content" tabIndex={-1} className="pt-4 pb-12 outline-none">
         <Container>
           <div className="600:pt-[calc(299/1200*100%)] max-600:my-4 relative w-full">
             <img
@@ -396,7 +397,7 @@ export default function Index() {
             </div>
           </Container>
         )}
-      </div>
+      </main>
     </>
   )
 }

@@ -113,7 +113,12 @@ export default function Login() {
 
         <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
       </div>
-      <div className="shadow-modal bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all">
+      {/* id and tabIndex make this the skip link and route announcer target */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="shadow-modal bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all outline-none"
+      >
         {!showEmailForm && (
           <>
             <h1 className="text-sans-2xl light:text-default text-accent mb-8">Sign in</h1>
@@ -172,7 +177,7 @@ export default function Login() {
             </div>
           </>
         )}
-      </div>
+      </main>
     </>
   )
 }

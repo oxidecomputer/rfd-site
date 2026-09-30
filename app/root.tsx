@@ -27,6 +27,7 @@ import {
 import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
+import RouteAnnouncer from './components/RouteAnnouncer'
 import { authenticate, logoutOnAuthError } from './services/auth.server'
 import { inlineCommentsCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
@@ -102,9 +103,14 @@ export function ErrorBoundary() {
 
   return (
     <Layout>
-      <div className="flex h-full w-full items-center justify-center">
+      {/* id and tabIndex make this the skip link and route announcer target */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="flex h-full w-full items-center justify-center outline-none"
+      >
         <h1 className="text-2xl">{message}</h1>
-      </div>
+      </main>
     </Layout>
   )
 }
@@ -132,6 +138,12 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       )}
     </head>
     <body className="mb-32">
+      <a
+        href="#content"
+        className="text-sans-md text-raise bg-tertiary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:p-3"
+      >
+        Skip to content
+      </a>
       <div className="root">{children}</div>
       <ScrollRestoration />
       <Scripts />
@@ -154,6 +166,7 @@ export default function App() {
           </div>
         )}
       </QueryClientProvider>
+      <RouteAnnouncer />
     </Layout>
   )
 }
