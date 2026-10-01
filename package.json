@@ -20,7 +20,7 @@
     "@asciidoctor/core": "^3.0.4",
     "@base-ui/react": "^1.2.0",
     "@eslint/compat": "^2.1.0",
-    "@floating-ui/react": "^0.17.0",
+    "@floating-ui/react": "^0.27.0",
     "@leeoniya/ufuzzy": "^1.0.19",
     "@meilisearch/instant-meilisearch": "^0.28.0",
     "@oxide/design-system": "^6.6.1",
