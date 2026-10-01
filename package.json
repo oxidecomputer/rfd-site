@@ -22,7 +22,7 @@
     "@eslint/compat": "^2.1.0",
     "@floating-ui/react": "^0.17.0",
     "@leeoniya/ufuzzy": "^1.0.19",
-    "@meilisearch/instant-meilisearch": "^0.28.0",
+    "@meilisearch/instant-meilisearch": "^0.31.0",
     "@oxide/design-system": "^6.6.1",
     "@oxide/react-asciidoc": "^2.2.0",
     "@oxide/remix-auth-vapi": "^0.1.2",
