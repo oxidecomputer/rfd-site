@@ -1,5 +1,14 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": ["local>oxidecomputer/renovate-config", "helpers:pinGitHubActionDigests"],
-  "enabledManagers": ["github-actions"]
+  "dependencyDashboardApproval": true,
+  "vulnerabilityAlerts": {
+    "dependencyDashboardApproval": false
+  },
+  "packageRules": [
+    {
+      "matchManagers": ["github-actions"],
+      "dependencyDashboardApproval": false
+    }
+  ]
 }
