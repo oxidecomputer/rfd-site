@@ -11,7 +11,7 @@ import { describe, expect, it } from 'vitest'
 
 import { can } from './permission'
 
-type TestGroup = Omit<Omit<AccessGroup_for_RfdPermission, 'createdAt'>, 'updatedAt'>
+type TestGroup = Omit<AccessGroup_for_RfdPermission, 'createdAt' | 'updatedAt' | 'source'>
 
 describe('Group Permissions', () => {
   it('Validates group has non value permission', () => {
