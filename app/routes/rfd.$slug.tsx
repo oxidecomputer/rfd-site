@@ -49,7 +49,7 @@ import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { buildMeta } from '~/utils/meta'
-import { parseRfdNum } from '~/utils/parseRfdNum'
+import { parsePullNumFromUrl, parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
 function isValue<T>(item: T | null | undefined): item is T {
@@ -134,12 +134,6 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
   }
 }
 
-const getPullNumber = (discussionLink: string): number | null => {
-  const match = discussionLink.match(/\/pull\/(\d+)$/)
-  if (!match) return null
-  return parseInt(match[1], 10)
-}
-
 const SectionTrackingOutlines = ({
   dialog,
   sections,
@@ -216,7 +210,7 @@ export default function Rfd() {
   const { rfd, groups } = useLoaderData<typeof loader>()
   const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
 
-  const pullNumber = rfd.discussion ? getPullNumber(rfd.discussion) : null
+  const pullNumber = parsePullNumFromUrl(rfd.discussion)
 
   const { user, inlineComments } = useRootLoaderData()
 
@@ -231,9 +225,7 @@ export default function Rfd() {
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
-        {inlineComments && user && pullNumber && (
-          <RfdInlineComments pullNumber={pullNumber} />
-        )}
+        {inlineComments && user && pullNumber && <RfdInlineComments rfdNumber={number} />}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
