@@ -26,7 +26,7 @@
     "@oxide/design-system": "^6.6.1",
     "@oxide/react-asciidoc": "^2.2.0",
     "@oxide/remix-auth-vapi": "^0.1.2",
-    "@oxide/rfd.ts": "^0.15.5",
+    "@oxide/rfd.ts": "^0.15.8",
     "@radix-ui/react-accordion": "^1.2.12",
     "@react-router/fs-routes": "^8.3.0",
     "@react-router/node": "^8.3.0",
