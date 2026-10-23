@@ -85,11 +85,11 @@ export const matchCommentToBlock = (
   return block
 }
 
-const RfdInlineComments = ({ pullNumber }: { pullNumber: number }) => {
+const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
   const [isLoaded, setIsLoaded] = useState(false)
   const [inlineComments, setInlineComments] = useState<Comment>({})
 
-  const { data: discussion } = useDiscussionQuery(pullNumber)
+  const { data: discussion } = useDiscussionQuery(rfdNumber)
 
   useEffect(() => {
     if (!discussion?.comments) return

@@ -63,7 +63,7 @@ const RfdDiscussionDialog = ({
   title: string
 }) => {
   const dialog = useDialogStore()
-  const { data: discussion, isLoading, error } = useDiscussionQuery(pullNumber, true)
+  const { data: discussion, isLoading, error } = useDiscussionQuery(rfdNumber, true)
 
   const discussions = useMemo((): Discussions => {
     if (!discussion?.reviews || !discussion?.comments || !discussion?.prComments) {

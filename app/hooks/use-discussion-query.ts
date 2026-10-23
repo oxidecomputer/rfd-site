@@ -21,11 +21,11 @@ interface DiscussionData {
   pullNumber: number
 }
 
-export function useDiscussionQuery(pullNumber: number, enabled = true) {
+export function useDiscussionQuery(rfdNumber: number, enabled = true) {
   return useQuery({
-    queryKey: ['discussion', pullNumber],
+    queryKey: ['discussion', rfdNumber],
     queryFn: async (): Promise<DiscussionData | null> => {
-      const response = await fetch(`/api/rfd/${pullNumber}/discussion`)
+      const response = await fetch(`/api/rfd/${rfdNumber}/discussion`)
 
       if (!response.ok) {
         if (response.status === 404) {

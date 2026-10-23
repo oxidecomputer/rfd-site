@@ -8,7 +8,7 @@
 
 import { expect, test } from 'vitest'
 
-import { parseRfdNum } from './parseRfdNum'
+import { parsePullNumFromUrl, parseRfdNum } from './parseRfdNum'
 
 test.each([
   ['1', 1],
@@ -24,4 +24,18 @@ test.each([
   ['  5', null],
 ])('parseRfdNum', (input: string, result: number | null) => {
   expect(parseRfdNum(input)).toEqual(result)
+})
+
+test.each([
+  ['https://github.com/oxidecomputer/rfd/pull/123', 123],
+  ['https://github.com/oxidecomputer/rfd/pull/123456', 123456],
+  ['https://github.com/oxidecomputer/rfd/pull/1234567', null],
+  ['https://github.com/oxidecomputer/rfd/pull/123/files', null],
+  ['https://github.com/oxidecomputer/rfd/pull/', null],
+  ['https://github.com/oxidecomputer/rfd', null],
+  ['', null],
+  [null, null],
+  [undefined, null],
+])('parsePullNumFromUrl', (input: string | null | undefined, result: number | null) => {
+  expect(parsePullNumFromUrl(input)).toEqual(result)
 })
