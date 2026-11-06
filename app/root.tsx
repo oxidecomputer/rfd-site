@@ -140,8 +140,18 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       )}
     </head>
     <body className="mb-32">
+      {/* Focus the target directly rather than letting the fragment nav change
+          the hash, which React Router would treat as a route change (re-running
+          the announcer, remounting the keyed Header, adding a history entry).
+          Before hydration there is no handler and the native jump still works. */}
       <a
         href="#content"
+        onClick={(e) => {
+          const content = document.getElementById('content')
+          if (!content) return
+          e.preventDefault()
+          content.focus()
+        }}
         className="text-sans-md text-raise bg-tertiary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:p-3"
       >
         Skip to content
