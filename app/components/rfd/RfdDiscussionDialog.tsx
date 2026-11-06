@@ -271,7 +271,7 @@ const DiscussionReviewGroup = ({
           'border-t-secondary relative top-0 right-0 left-0 z-10 -mb-px h-px flex-grow-1 border-t',
         )}
       />
-      <main className="relative h-full overflow-y-auto p-8 pt-4">
+      <div className="relative h-full overflow-y-auto p-8 pt-4">
         {reviewCount > 0 ? (
           <>
             {discussions.map((discussion, index) => {
@@ -316,7 +316,7 @@ const DiscussionReviewGroup = ({
             </div>
           </div>
         )}
-      </main>
+      </div>
     </>
   )
 }

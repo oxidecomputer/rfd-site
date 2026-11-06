@@ -121,7 +121,13 @@ export default function Login() {
       >
         {!showEmailForm && (
           <>
-            <h1 className="text-sans-2xl light:text-default text-accent mb-8">Sign in</h1>
+            {/* tabIndex and outline-none: the route announcer focuses the h1 */}
+            <h1
+              tabIndex={-1}
+              className="text-sans-2xl light:text-default text-accent mb-8 outline-none"
+            >
+              Sign in
+            </h1>
             <Form action="/auth/google" method="post">
               <Button className="w-full" type="submit">
                 Continue with Google
@@ -145,13 +151,17 @@ export default function Login() {
         )}
         {showEmailForm && emailSuccess && (
           <>
-            <h1 className="text-sans-2xl text-accent mb-4">Email sent</h1>
+            <h1 tabIndex={-1} className="text-sans-2xl text-accent mb-4 outline-none">
+              Email sent
+            </h1>
             <div>Check your email for a login link.</div>
           </>
         )}
         {showEmailForm && !emailSuccess && (
           <>
-            <h1 className="text-sans-2xl text-accent mb-8">Sign in</h1>
+            <h1 tabIndex={-1} className="text-sans-2xl text-accent mb-8 outline-none">
+              Sign in
+            </h1>
             <Form action="/login" method="post" className="space-y-4">
               <input
                 placeholder="Email address"

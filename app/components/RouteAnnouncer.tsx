@@ -45,7 +45,9 @@ const RouteAnnouncer = () => {
 
     // <Meta> has already rendered the new title. Commas instead of pipes so it
     // reads as a phrase: "68 - Partnership as Shared Values, RFD, Oxide".
-    // Written to the DOM directly: a live region is an output, not state.
+    // Written to the DOM directly: a live region is an output, not state, and
+    // assigning textContent always swaps the text node, so a title identical to
+    // the last one (e.g. an anchor nav within an RFD) is still announced.
     if (liveRegion.current) {
       liveRegion.current.textContent = document.title.split(' | ').join(', ')
     }
@@ -70,26 +72,24 @@ const RouteAnnouncer = () => {
     // the destination page's heading is the standard recommendation for SPA
     // route changes: https://www.deque.com/blog/single-page-apps-focus-management/
     //
+    // Each such h1 declares tabIndex={-1} (headings aren't focusable otherwise)
+    // and outline-none (Safari shows :focus-visible on programmatic focus).
+    //
     // preventScroll because scroll position is <ScrollRestoration />'s job:
     // without it, focusing the top of the page clobbers the restored position
     // on back/forward nav.
     const main = document.getElementById('content')
-    const heading = main?.querySelector('h1')
-    if (heading) {
-      heading.tabIndex = -1 // headings aren't focusable by default
-      // Safari (unlike Chrome/FF) matches :focus-visible on programmatic focus
-      // even when the nav came from a click. The heading isn't interactive, so
-      // never show a ring.
-      heading.classList.add('outline-none')
-    }
-    ;(heading || main)?.focus({ preventScroll: true })
+    ;(main?.querySelector('h1') ?? main)?.focus({ preventScroll: true })
   }, [pathname, hash])
 
+  // Polite, not assertive: focus moving to the h1 already produces an
+  // announcement, and an assertive one in the same tick would race it. Polite
+  // queues behind the focus announcement instead.
   return (
     <p
       ref={liveRegion}
-      aria-live="assertive"
-      role="alert"
+      aria-live="polite"
+      role="status"
       data-testid="route-announcer"
       className="sr-only"
     />

@@ -390,7 +390,7 @@ test.describe('Search', () => {
     // so dragging focus up to the h1 would undo the jump to it.
     await expect(announcer(page)).toHaveText('223 - Web Console Architecture, RFD, Oxide')
     await expect(page.getByRole('heading', { level: 1 })).not.toBeFocused()
-    expect(await page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
+    await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(0)
   })
 })
 

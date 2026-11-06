@@ -109,7 +109,9 @@ export function ErrorBoundary() {
         tabIndex={-1}
         className="flex h-full w-full items-center justify-center outline-none"
       >
-        <h1 className="text-2xl">{message}</h1>
+        <h1 tabIndex={-1} className="text-2xl outline-none">
+          {message}
+        </h1>
       </main>
     </Layout>
   )
