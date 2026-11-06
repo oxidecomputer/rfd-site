@@ -26,14 +26,17 @@ import { useLocation } from 'react-router'
 const RouteAnnouncer = () => {
   const { pathname, hash } = useLocation()
   const [announcement, setAnnouncement] = useState('')
-  // no announcement on initial load — the real page load announces itself
-  const isFirstRender = useRef(true)
+  // No announcement on initial load — the real page load announces itself. We
+  // track the last location seen rather than a "first render" boolean because
+  // StrictMode runs mount effects twice in dev: a boolean guard is consumed by
+  // the first run, and the second run would then announce the initial load and
+  // steal focus to the heading.
+  const lastLocation = useRef(pathname + hash)
 
   useEffect(() => {
-    if (isFirstRender.current) {
-      isFirstRender.current = false
-      return
-    }
+    const location = pathname + hash
+    if (location === lastLocation.current) return
+    lastLocation.current = location
 
     // <Meta> has already rendered the new title by the time effects run. Commas
     // instead of pipes so a screen reader reads it as a phrase — "68 -
