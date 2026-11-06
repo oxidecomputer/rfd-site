@@ -46,9 +46,9 @@ const Modal = ({
           </DialogDismiss>
         </div>
 
-        <main className="text-sans-md text-default overflow-y-auto px-4 py-6">
+        <div className="text-sans-md text-default overflow-y-auto px-4 py-6">
           {children}
-        </main>
+        </div>
       </Dialog>
     </>
   )

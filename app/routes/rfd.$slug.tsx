@@ -224,7 +224,12 @@ export default function Rfd() {
     <div>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
-      <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
+      {/* id and tabIndex let the skip link in root.tsx target and focus it */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="800:mt-16 relative mt-12 pb-20 outline-none print:mt-0"
+      >
         {inlineComments && user && pullNumber && <RfdInlineComments rfdNumber={number} />}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
@@ -241,7 +246,11 @@ export default function Rfd() {
               <span className="1200:inline hidden">RFD</span> {number}
             </div>
             <div className="800:col-span-11 1200:col-span-10 col-span-12 flex items-baseline">
-              <h1 className="text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 w-full pr-4 text-balance print:pr-0 print:text-center">
+              {/* tabIndex and outline-none: the route announcer focuses this */}
+              <h1
+                tabIndex={-1}
+                className="text-sans-2xl text-raise 600:pr-10 800:text-sans-3xl 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 w-full pr-4 text-balance outline-none print:pr-0 print:text-center"
+              >
                 <span className="hidden print:block">RFD {number}</span> {title}
               </h1>
               {userIsInternal && (
