@@ -9,6 +9,8 @@
 import { AsciiDocBlocks } from '@oxide/design-system/asciidoc'
 import { type Options } from '@oxide/react-asciidoc'
 
+import { inlineOverrides } from '~/utils/asciidoctor'
+
 import { CustomDocument } from './Document'
 import { Image } from './Image'
 import Listing from './Listing'
@@ -21,5 +23,6 @@ export const opts: Options = {
     section: AsciiDocBlocks.Section,
     listing: Listing,
   },
+  inlineOverrides,
   customDocument: CustomDocument,
 }

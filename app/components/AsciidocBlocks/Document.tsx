@@ -8,12 +8,14 @@
 import { Content, type DocumentBlock } from '@oxide/react-asciidoc'
 
 const CustomDocument = ({ document }: { document: DocumentBlock }) => (
-  <div
+  // Rendered as a <article> (rather than a <div>) so that reader
+  // modes (Safari Reader, Firefox Reader View) detect the content correctly
+  <article
     id="content"
     className="asciidoc-body 800:overflow-visible 800:pr-10 1200:w-[calc(100%-var(--toc-width))] 1200:pr-16 max-w-full shrink overflow-hidden print:p-0"
   >
     <Content blocks={document.blocks} />
-  </div>
+  </article>
 )
 
 export { CustomDocument }

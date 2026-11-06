@@ -5,7 +5,7 @@
  *
  * Copyright Oxide Computer Company
  */
-import { type DocumentBlock } from '@oxide/react-asciidoc'
+import { RenderInline, type DocumentBlock } from '@oxide/react-asciidoc'
 import { Link } from 'react-router'
 
 import Container from '../Container'
@@ -32,19 +32,18 @@ const Footnotes = ({ doc }: { doc: DocumentBlock }) => {
                 id={`_footnotedef_${footnote.index}`}
                 className="max-800:flex relative mb-2 items-baseline"
               >
-                <div className="text-mono-xs text-tertiary 800:absolute 800:top-0.5 800:-left-12 800:text-right w-6 shrink-0 rounded-full tracking-normal!">
+                <div className="text-mono-xs text-tertiary 800:absolute 800:top-px 800:-left-12 800:text-right w-6 shrink-0 rounded-full tracking-normal!">
                   {footnote.index}
                 </div>
                 <div className="text-sans-md text-default max-w-200">
-                  <p
-                    dangerouslySetInnerHTML={{ __html: footnote.text || '' }}
-                    className="inline"
-                  />{' '}
+                  <p className="inline">
+                    <RenderInline nodes={footnote.textInlines} />
+                  </p>
                   <Link
                     className="footnote group text-accent-tertiary group-hover:text-accent -m-2 p-2 whitespace-nowrap"
                     to={`#_footnoteref_${footnote.index}`}
                   >
-                    <GotoIcon className="inline-block rotate-180" />
+                    <GotoIcon className="ml-1 inline-block rotate-180" />
                     <span className="inline-block translate-x-0 opacity-0 transition-all group-hover:translate-x-1 group-hover:opacity-100">
                       View
                     </span>

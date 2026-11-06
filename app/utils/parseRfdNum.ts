@@ -13,3 +13,11 @@ export const parseRfdNum = (s: string | undefined): number | null =>
 /** only match and parse 1-6 digit numbers */
 export const parsePullNum = (s: string | undefined): number | null =>
   s && /^[0-9]{1,6}$/.test(s) ? parseInt(s, 10) : null
+
+/** extract the pull request number from an RFD's discussion URL */
+export const parsePullNumFromUrl = (
+  discussionUrl: string | null | undefined,
+): number | null => {
+  const match = discussionUrl?.match(/\/pull\/(\d+)$/)
+  return match ? parsePullNum(match[1]) : null
+}

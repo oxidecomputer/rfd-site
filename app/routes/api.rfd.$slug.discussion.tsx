@@ -11,18 +11,28 @@ import { data, type LoaderFunctionArgs } from 'react-router'
 import { authenticate, logoutStaleSession } from '~/services/auth.server'
 import { fetchDiscussion } from '~/services/github-discussion.server'
 import { AuthenticationError } from '~/services/rfd.remote.server'
-import { parseRfdNum } from '~/utils/parseRfdNum'
+import { fetchRfd } from '~/services/rfd.server'
+import { parsePullNumFromUrl, parseRfdNum } from '~/utils/parseRfdNum'
 
 export async function loader({ request, url, params: { slug } }: LoaderFunctionArgs) {
   const num = parseRfdNum(slug)
   if (!num) {
-    throw new Response('Missing pull request number', { status: 400 })
+    throw new Response('Missing RFD number', { status: 400 })
   }
 
   const user = await authenticate(request)
 
   try {
-    const discussion = await fetchDiscussion(num, num, user)
+    // Fetching the RFD as the current user enforces read access and yields the
+    // discussion URL, from which the pull request number is taken. RFD and PR
+    // numbers differ: permissions are checked by RFD, GitHub is queried by PR.
+    const rfd = await fetchRfd(num, user)
+    const pullNumber = parsePullNumFromUrl(rfd?.discussion)
+    if (!pullNumber) {
+      return null
+    }
+
+    const discussion = await fetchDiscussion(num, pullNumber, user)
 
     if (!discussion) {
       return null

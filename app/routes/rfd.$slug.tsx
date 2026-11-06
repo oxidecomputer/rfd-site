@@ -24,6 +24,7 @@ import {
   useState,
 } from 'react'
 import {
+  Link,
   redirect,
   useLoaderData,
   useLocation,
@@ -48,7 +49,7 @@ import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { buildMeta } from '~/utils/meta'
-import { parseRfdNum } from '~/utils/parseRfdNum'
+import { parsePullNumFromUrl, parseRfdNum } from '~/utils/parseRfdNum'
 import { can } from '~/utils/permission'
 
 function isValue<T>(item: T | null | undefined): item is T {
@@ -133,12 +134,6 @@ export const meta: MetaFunction<typeof loader> = ({ loaderData }) => {
   }
 }
 
-const getPullNumber = (discussionLink: string): number | null => {
-  const match = discussionLink.match(/\/pull\/(\d+)$/)
-  if (!match) return null
-  return parseInt(match[1], 10)
-}
-
 const SectionTrackingOutlines = ({
   dialog,
   sections,
@@ -215,7 +210,7 @@ export default function Rfd() {
   const { rfd, groups } = useLoaderData<typeof loader>()
   const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
 
-  const pullNumber = rfd.discussion ? getPullNumber(rfd.discussion) : null
+  const pullNumber = parsePullNumFromUrl(rfd.discussion)
 
   const { user, inlineComments } = useRootLoaderData()
 
@@ -225,10 +220,8 @@ export default function Rfd() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  const containerRef = useRef<HTMLDivElement>(null)
-
   return (
-    <div ref={containerRef}>
+    <div>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       {/* id and tabIndex let the skip link in root.tsx target and focus it */}
@@ -237,10 +230,8 @@ export default function Rfd() {
         tabIndex={-1}
         className="800:mt-16 relative mt-12 pb-20 outline-none print:mt-0"
       >
-        {inlineComments && user && pullNumber && (
-          <RfdInlineComments pullNumber={pullNumber} />
-        )}
-        <RfdPreview currentRfd={number} nodeRef={containerRef} />
+        {inlineComments && user && pullNumber && <RfdInlineComments rfdNumber={number} />}
+        <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
             <div className="800:col-start-2 1200:col-start-3 flex print:hidden">
@@ -284,18 +275,18 @@ export default function Rfd() {
               <div>
                 {authors.map((author, index) => (
                   <Fragment key={author.name}>
-                    <a
+                    <Link
                       className={cn(
                         'link-with-underline inline-block',
                         !author.email && 'pointer-events-none',
                       )}
-                      href={
+                      to={
                         author.email ? `/?author=${encodeURIComponent(author.email)}` : ''
                       }
                     >
                       {author.name}
                       {index < authors.length - 1 && ', '}
-                    </a>{' '}
+                    </Link>{' '}
                   </Fragment>
                 ))}
               </div>
@@ -306,13 +297,13 @@ export default function Rfd() {
               <div>
                 {labels.map((label, index) => (
                   <Fragment key={label}>
-                    <a
+                    <Link
                       className="link-with-underline inline-block"
-                      href={`/?label=${label.trim()}`}
+                      to={`/?label=${label.trim()}`}
                     >
                       {label.trim()}
                       {index < labels.length - 1 && ', '}
-                    </a>{' '}
+                    </Link>{' '}
                   </Fragment>
                 ))}
               </div>

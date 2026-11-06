@@ -7,11 +7,11 @@
  */
 
 import {
-  RfdMagicLinkStrategy,
-  RfdOAuthStrategy,
+  VApiMagicLinkStrategy,
+  VApiOAuthStrategy,
   type ExpiringUser,
-  type RfdVerifyCallback,
-} from '@oxide/remix-auth-rfd'
+  type VApiVerifyCallback,
+} from '@oxide/remix-auth-vapi'
 import type { RfdPermission } from '@oxide/rfd.ts/client'
 import { decode } from 'jsonwebtoken'
 import { redirect } from 'react-router'
@@ -86,13 +86,14 @@ const fetchUser = async (accessToken: string) => {
   }
 }
 
-const verify: RfdVerifyCallback<User> = async ({ tokens }) => {
+const verify: VApiVerifyCallback<User> = async ({ tokens }) => {
   const accessToken = tokens.accessToken()
   return fetchUser(accessToken)
 }
 
-const googleOAuth = new RfdOAuthStrategy(
+const googleOAuth = new VApiOAuthStrategy(
   {
+    name: 'rfd-google',
     host: process.env.RFD_API || '',
     clientId: process.env.RFD_API_CLIENT_ID || '',
     clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
@@ -104,8 +105,9 @@ const googleOAuth = new RfdOAuthStrategy(
 )
 auth.use(googleOAuth)
 
-const githubOAuth = new RfdOAuthStrategy(
+const githubOAuth = new VApiOAuthStrategy(
   {
+    name: 'rfd-github',
     host: process.env.RFD_API || '',
     clientId: process.env.RFD_API_CLIENT_ID || '',
     clientSecret: process.env.RFD_API_CLIENT_SECRET || '',
@@ -117,8 +119,9 @@ const githubOAuth = new RfdOAuthStrategy(
 )
 auth.use(githubOAuth)
 
-const magicLink = new RfdMagicLinkStrategy(
+const magicLink = new VApiMagicLinkStrategy(
   {
+    name: 'rfd-magic-link',
     storage: sessionStorage,
     host: process.env.RFD_API || '',
     clientSecret: process.env.RFD_API_MLINK_SECRET || '',
