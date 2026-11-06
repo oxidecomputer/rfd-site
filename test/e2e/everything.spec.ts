@@ -22,6 +22,16 @@ const rfdCountLocator = (page: Page) => page.getByTestId('rfd-count')
 
 const announcer = (page: Page) => page.getByTestId('route-announcer')
 
+// Until React hydrates, clicking a <Link> is a plain anchor click and the
+// browser does a full page load instead of a client-side nav. React attaches a
+// fiber property to every DOM node it hydrates, so one on <body> means the
+// whole tree has committed.
+async function waitForHydration(page: Page) {
+  await page.waitForFunction(() =>
+    Object.getOwnPropertyNames(document.body).some((k) => k.startsWith('__reactFiber')),
+  )
+}
+
 async function rfdCount(page: Page): Promise<number> {
   const text = await rfdCountLocator(page).textContent()
   return Number(text?.trim() ?? '0')
@@ -428,6 +438,7 @@ test.describe('Accessible client-side navigation', () => {
   test('focusing the heading does not clobber restored scroll', async ({ page }) => {
     await page.goto('/rfd/0068')
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
+    await waitForHydration(page)
 
     await page.evaluate(() => window.scrollTo(0, 1500))
     await expect.poll(() => page.evaluate(() => window.scrollY)).toBeGreaterThan(1000)
