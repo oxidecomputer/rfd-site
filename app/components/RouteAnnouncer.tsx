@@ -6,7 +6,7 @@
  * Copyright Oxide Computer Company
  */
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef } from 'react'
 import { useLocation } from 'react-router'
 
 /**
@@ -23,26 +23,32 @@ import { useLocation } from 'react-router'
  * https://www.gatsbyjs.com/blog/2019-07-11-user-testing-accessible-client-routing/
  * https://github.com/vercel/next.js/blob/08b1916/packages/next/src/client/route-announcer.tsx
  */
+
+// Last location handled, or null until the first effect after a real page
+// load. Module scope, not a ref: the root ErrorBoundary remounts the whole
+// tree, so a ref would reset on the way into a 404 and back out. Only touched
+// in useEffect, so never on the server.
+let lastLocation: string | null = null
+
 const RouteAnnouncer = () => {
   const { pathname, hash } = useLocation()
-  const [announcement, setAnnouncement] = useState('')
-  // No announcement on initial load — the real page load announces itself. We
-  // track the last location seen rather than a "first render" boolean because
-  // StrictMode runs mount effects twice in dev: a boolean guard is consumed by
-  // the first run, and the second run would then announce the initial load and
-  // steal focus to the heading.
-  const lastLocation = useRef(pathname + hash)
+  const liveRegion = useRef<HTMLParagraphElement>(null)
 
   useEffect(() => {
+    // The real page load announces itself, so only act once the location
+    // changes. Comparing locations (not a first-render flag) also absorbs
+    // StrictMode's double effect run in dev.
     const location = pathname + hash
-    if (location === lastLocation.current) return
-    lastLocation.current = location
+    const changed = lastLocation !== null && location !== lastLocation
+    lastLocation = location
+    if (!changed) return
 
-    // <Meta> has already rendered the new title by the time effects run. Commas
-    // instead of pipes so a screen reader reads it as a phrase — "68 -
-    // Partnership as Shared Values, RFD, Oxide" — rather than reading out the
-    // punctuation.
-    setAnnouncement(document.title.split(' | ').join(', '))
+    // <Meta> has already rendered the new title. Commas instead of pipes so it
+    // reads as a phrase: "68 - Partnership as Shared Values, RFD, Oxide".
+    // Written to the DOM directly: a live region is an output, not state.
+    if (liveRegion.current) {
+      liveRegion.current.textContent = document.title.split(' | ').join(', ')
+    }
 
     // Two cases where the destination is a better judge of the reading position
     // than we are: the index page focuses its filter input on mount, and an
@@ -80,9 +86,13 @@ const RouteAnnouncer = () => {
   }, [pathname, hash])
 
   return (
-    <p aria-live="assertive" role="alert" data-testid="route-announcer" className="sr-only">
-      {announcement}
-    </p>
+    <p
+      ref={liveRegion}
+      aria-live="assertive"
+      role="alert"
+      data-testid="route-announcer"
+      className="sr-only"
+    />
   )
 }
 

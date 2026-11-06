@@ -145,6 +145,8 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
         Skip to content
       </a>
       <div className="root">{children}</div>
+      {/* In Layout, not App, so error pages are announced too */}
+      <RouteAnnouncer />
       <ScrollRestoration />
       <Scripts />
     </body>
@@ -166,7 +168,6 @@ export default function App() {
           </div>
         )}
       </QueryClientProvider>
-      <RouteAnnouncer />
     </Layout>
   )
 }
