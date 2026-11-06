@@ -10,12 +10,11 @@ import { Dialog, DialogDismiss } from '@ariakit/react'
 import {
   instantMeiliSearch,
   type AlgoliaMultipleQueriesQuery,
-  type InstantMeiliSearchInstance,
 } from '@meilisearch/instant-meilisearch'
 import { useQuery } from '@tanstack/react-query'
 import cn from 'classnames'
 import dayjs from 'dayjs'
-import type { BaseHit, Hit, SearchResponse } from 'instantsearch.js'
+import type { BaseHit, Hit, SearchClient, SearchResponse } from 'instantsearch.js'
 import { createRef, Fragment, useEffect, useRef, useState } from 'react'
 import {
   Configure,
@@ -34,7 +33,7 @@ import type { RfdItem } from '~/services/rfd.server'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 
 const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
-  const [searchClient, setSearchClient] = useState<InstantMeiliSearchInstance | null>(null)
+  const [searchClient, setSearchClient] = useState<SearchClient | null>(null)
 
   useEffect(() => {
     const { searchClient: client } = instantMeiliSearch(
@@ -48,8 +47,10 @@ const Search = ({ open, onClose }: { open: boolean; onClose: () => void }) => {
     // Additionally we are adding short circuiting logic so that we do not perform search requests
     // until N characters have been submitted
     // https://www.algolia.com/doc/guides/building-search-ui/going-further/conditional-requests/react/#implementing-a-proxy
-    const configuredClient = {
-      ...client,
+    // instantsearch.js types the client as `SearchClient | CompositionClient`. We only ever use
+    // the plain search client, so narrow to that before overriding `search`.
+    const configuredClient: SearchClient = {
+      ...(client as SearchClient),
 
       // We cheat with the any type here so that we do not need to bother with the extensive fields
       // that are required by the response type
