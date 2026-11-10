@@ -14,6 +14,7 @@ import {
 import { Asciidoc, type DocumentBlock, type DocumentSection } from '@oxide/react-asciidoc'
 import cn from 'classnames'
 import dayjs from 'dayjs'
+import debounce from 'lodash/debounce'
 import {
   Fragment,
   ReactNode,
@@ -47,6 +48,7 @@ import StatusBadge from '~/components/StatusBadge'
 import { useRootLoaderData } from '~/root'
 import { authenticate, logoutOnAuthError } from '~/services/auth.server'
 import { fetchGroups, fetchRfd } from '~/services/rfd.server'
+import { clearSelection, setSelection } from '~/stores/selected-line'
 import { formatRfdNum } from '~/utils/canonicalUrl'
 import { buildMeta } from '~/utils/meta'
 import { parsePullNumFromUrl, parseRfdNum } from '~/utils/parseRfdNum'
@@ -60,6 +62,41 @@ const flattenSections = (sections: DocumentSection[]): DocumentSection[] => {
   return flat(
     sections.map((section) => [section, ...flattenSections(section.sections || [])]),
   )
+}
+
+const setSelectedLineDebounced = debounce((anchorNode: Node) => {
+  const setSelectedLine = (element: HTMLElement | null): void => {
+    if (!element) {
+      clearSelection()
+      return
+    }
+
+    if (element.dataset.lineno && !Number.isNaN(parseInt(element.dataset.lineno))) {
+      setSelection({
+        lineNumber: parseInt(element.dataset.lineno),
+        numberedAnchor: element,
+      })
+    } else {
+      setSelectedLine(element.parentElement)
+    }
+  }
+
+  if (anchorNode instanceof HTMLElement) {
+    setSelectedLine(anchorNode)
+  } else if (anchorNode.parentElement !== null) {
+    setSelectedLine(anchorNode.parentElement)
+  }
+}, 150)
+
+const updateSelectedLine = () => {
+  const selection = document.getSelection()
+
+  if (!selection || !selection.anchorNode || selection.isCollapsed) {
+    setSelectedLineDebounced.cancel()
+    clearSelection()
+  } else {
+    setSelectedLineDebounced(selection.anchorNode)
+  }
 }
 
 export const resp404 = () => new Response('Not Found', { status: 404 })
@@ -220,12 +257,23 @@ export default function Rfd() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
 
+  useEffect(() => clearSelection(), [number])
+  useEffect(() => {
+    document.addEventListener('selectionchange', updateSelectedLine)
+    return () => {
+      document.removeEventListener('selectionchange', updateSelectedLine)
+      setSelectedLineDebounced.cancel()
+    }
+  }, [])
+
   return (
     <div>
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
-        {inlineComments && user && pullNumber && <RfdInlineComments rfdNumber={number} />}
+        {inlineComments && user && pullNumber && (
+          <RfdInlineComments pullNumber={pullNumber} rfdNumber={number} />
+        )}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (

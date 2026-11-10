@@ -17,13 +17,14 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
+import { OpenLink12Icon } from '@oxide/design-system/icons/react'
 import { Badge } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import uniqBy from 'lodash/uniqBy'
 import { marked } from 'marked'
-import { useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState } from 'react'
 import { renderToString } from 'react-dom/server'
 
 import Container from '~/components/Container'
@@ -34,6 +35,7 @@ import type {
   ListReviewsCommentsType,
   ReviewCommentsType,
 } from '~/services/github-discussion.server'
+import { useSelectedLine } from '~/stores/selected-line'
 import { parseMarkdownText } from '~/utils/markdown'
 import { diffPatchBySeparator } from '~/utils/textDiff'
 
@@ -85,9 +87,44 @@ export const matchCommentToBlock = (
   return block
 }
 
-const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
-  const [isLoaded, setIsLoaded] = useState(false)
+// Vertical distance between gutter buttons attached to the same block
+const GUTTER_STACK_SPACING = 32
+
+const getRfdDiffHref = async ({ rfd, pull }: { rfd: number; pull: number }) => {
+  const rfdPath = `rfd/${String(rfd).padStart(4, '0')}/README.adoc`
+  const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rfdPath))
+  const hash = Array.from(new Uint8Array(buffer))
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('')
+
+  return `https://github.com/oxidecomputer/rfd/pull/${pull}/changes#diff-${hash}`
+}
+
+const RfdInlineComments = ({
+  pullNumber,
+  rfdNumber,
+}: {
+  pullNumber: number
+  rfdNumber: number
+}) => {
   const [inlineComments, setInlineComments] = useState<Comment>({})
+  const [changedFileLink, setChangedFileLink] = useState<string | null>(null)
+
+  useEffect(() => {
+    let cancelled = false
+    getRfdDiffHref({ rfd: rfdNumber, pull: pullNumber })
+      .then((href) => {
+        if (!cancelled) setChangedFileLink(href)
+      })
+      // nbd if this fails
+      .catch(() => {})
+
+    return () => {
+      cancelled = true
+    }
+  }, [rfdNumber, pullNumber])
+
+  const { selection } = useSelectedLine()
 
   const { data: discussion } = useDiscussionQuery(rfdNumber)
 
@@ -136,52 +173,63 @@ const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
 
       groupedCommentKeys.forEach((key, index) => {
         const groupedComment = newComments[key]
-        groupedComment.offset = index * 32
+        groupedComment.offset = index * GUTTER_STACK_SPACING
       })
     })
 
     // Group comments by block. Defer the state updates so the effect only
     // synchronizes with the rendered document and does not cascade renders.
-    const commentsTimeout = setTimeout(() => {
-      setInlineComments(newComments)
-      setIsLoaded(false)
-    }, 0)
-    const loadedTimeout = setTimeout(() => setIsLoaded(true), 50)
+    const commentsTimeout = setTimeout(() => setInlineComments(newComments), 0)
 
-    return () => {
-      clearTimeout(commentsTimeout)
-      clearTimeout(loadedTimeout)
-    }
-  }, [discussion?.comments])
+    return () => clearTimeout(commentsTimeout)
+  }, [discussion?.comments, discussion?.pullNumber, rfdNumber])
 
-  if (!inlineComments) return null
+  // Line-number links are much less useful when there's already a discussion
+  // happening on that line, but we have the stacking convention already
+  const threadsOnSelection = selection
+    ? Object.values(inlineComments).filter(
+        (thread) => thread.targetEl === selection.numberedAnchor,
+      ).length
+    : 0
 
   return (
     <Container className="z-10 print:hidden">
       {Object.keys(inlineComments).map((key, index) => {
         const commentThread = inlineComments[parseInt(key)]
-        return (
-          <CommentThread
-            key={key || -1}
-            commentThread={commentThread}
-            isLoaded={isLoaded}
-            index={index}
-          />
-        )
+        return <CommentThread key={key || -1} commentThread={commentThread} index={index} />
       })}
+      {selection && changedFileLink && (
+        <GutterAction
+          anchor={selection.numberedAnchor}
+          extraOffsetTop={threadsOnSelection * GUTTER_STACK_SPACING}
+        >
+          {({ styleAndClass }) => (
+            <a
+              {...styleAndClass}
+              target="_blank"
+              href={`${changedFileLink}R${selection.lineNumber}`}
+              aria-label={`View line ${selection.lineNumber} on GitHub`}
+            >
+              <span className="flex items-center gap-1 px-1 py-0.5 text-xs">
+                <span className="1000:hidden">GH</span>
+                <span className="1000:inline hidden">GitHub</span>
+                <OpenLink12Icon />
+              </span>
+            </a>
+          )}
+        </GutterAction>
+      )}
     </Container>
   )
 }
 
 type CommentThreadProps = {
   commentThread: CommentThreadData
-  isLoaded: boolean
   index: number
 }
 
-const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) => {
+const CommentThread = ({ commentThread, index }: CommentThreadProps) => {
   const [open, setOpen] = useState(false)
-  const { size, hasLargeScreen } = useWindowSize()
 
   const { context, x, y, reference, floating, strategy } = useFloating({
     open,
@@ -202,14 +250,6 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
 
   const headingId = useId()
 
-  // Recalculate the tooltip position when the screen size changes
-  const offsetTop = useMemo(
-    () => (commentThread.targetEl ? calcOffset(commentThread.targetEl).top : 0),
-    // it gets mad when you have extra deps, which is silly
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [size, commentThread.targetEl],
-  )
-
   const users = useMemo(
     () =>
       uniqBy(
@@ -219,7 +259,107 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
     [commentThread],
   )
 
-  if (!commentThread.targetEl || !hasLargeScreen) {
+  return (
+    <GutterAction
+      anchor={commentThread.targetEl}
+      extraOffsetTop={commentThread.offset || 0}
+      transitionDelayMs={Math.min(index * 150, 500)}
+    >
+      {({ styleAndClass }) => (
+        <>
+          <button {...styleAndClass} ref={reference} {...getReferenceProps()}>
+            {users.slice(0, 3).map((user, index) => {
+              return (
+                <div
+                  key={index}
+                  className={cn(
+                    'size-6 overflow-hidden rounded-full border-2 border-neutral-300 group-hover:border-neutral-400',
+                    index > 0 && '-ml-2',
+                  )}
+                >
+                  <img
+                    src={user.avatar_url}
+                    className="h-full w-full"
+                    alt={`Avatar for ${user.login}`}
+                  />
+                </div>
+              )
+            })}
+            {users.length > 2 && (
+              <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
+            )}
+          </button>
+          {open && (
+            <FloatingFocusManager context={context} modal={false}>
+              <div
+                ref={floating}
+                {...getFloatingProps}
+                className="z-10"
+                style={{
+                  position: strategy,
+                  top: y ?? 0,
+                  left: x ?? 0,
+                }}
+                aria-labelledby={headingId}
+              >
+                <CommentThreadBlock
+                  path={commentThread.data[0].path}
+                  line={commentThread.data[0].line}
+                  startLine={commentThread.data[0].start_line}
+                  diffHunk={commentThread.data[0].diff_hunk}
+                  htmlUrl={commentThread.data[0].html_url}
+                  comments={commentThread.data}
+                  handleDismiss={() => setOpen(false)}
+                  isOverlay={true}
+                />
+              </div>
+            </FloatingFocusManager>
+          )}
+        </>
+      )}
+    </GutterAction>
+  )
+}
+
+type GutterActionProps = {
+  anchor: HTMLElement | null
+  children: (args: {
+    styleAndClass: { style: React.CSSProperties; className: string }
+  }) => ReactNode
+  transitionDelayMs?: number
+  extraOffsetTop?: number
+}
+
+const GutterAction = ({
+  anchor,
+  children,
+  transitionDelayMs,
+  extraOffsetTop,
+}: GutterActionProps) => {
+  const { size, hasLargeScreen } = useWindowSize()
+
+  // Recalculate the tooltip position when the screen size changes
+  const offsetTop = useMemo(
+    () => (anchor ? calcOffset(anchor).top : 0),
+    // it gets mad when you have extra deps, which is silly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [size, anchor],
+  )
+
+  const isRendered = anchor && anchor.isConnected && hasLargeScreen
+
+  // Hide for the first frame so we get the 0->1 transition.
+  const [hasEntered, setHasEntered] = useState(false)
+  useEffect(() => {
+    if (!isRendered) return
+    const frame = requestAnimationFrame(() => {
+      setHasEntered(true)
+    })
+
+    return () => cancelAnimationFrame(frame)
+  }, [isRendered])
+
+  if (!isRendered) {
     return null
   }
 
@@ -227,69 +367,28 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
     <div
       className="absolute"
       style={{
-        top: offsetTop + (commentThread.offset || 0),
+        // The extra offset is subject to change by logic, so we animate it. The
+        // regular offset is caused by page resizing or changing anchors, which
+        // don't really merit animation.
+        top: offsetTop,
+        marginTop: extraOffsetTop || 0,
+        transitionProperty: 'margin-top',
+        transitionDuration: '250ms',
       }}
     >
-      <button
-        className="group flex items-center justify-center rounded-full bg-neutral-300 p-0.5 hover:bg-neutral-400"
-        ref={reference}
-        style={{
-          transitionProperty: 'transform, opacity',
-          transitionDelay: `${Math.min(index * 150, 500)}ms`,
-          opacity: isLoaded ? 1 : 0,
-          transform: `translateY(${isLoaded ? '0px' : '5px'})`,
-          transitionDuration: isLoaded ? '250ms' : '0ms',
-        }}
-        {...getReferenceProps()}
-      >
-        {users.slice(0, 3).map((user, index) => {
-          return (
-            <div
-              key={index}
-              className={cn(
-                'size-6 overflow-hidden rounded-full border-2 border-neutral-300 group-hover:border-neutral-400',
-                index > 0 && '-ml-2',
-              )}
-            >
-              <img
-                src={user.avatar_url}
-                className="h-full w-full"
-                alt={`Avatar for ${user.login}`}
-              />
-            </div>
-          )
-        })}
-        {users.length > 2 && (
-          <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
-        )}
-      </button>
-
-      {open && (
-        <FloatingFocusManager context={context} modal={false}>
-          <div
-            ref={floating}
-            {...getFloatingProps}
-            className="z-10"
-            style={{
-              position: strategy,
-              top: y ?? 0,
-              left: x ?? 0,
-            }}
-            aria-labelledby={headingId}
-          >
-            <CommentThreadBlock
-              path={commentThread.data[0].path}
-              line={commentThread.data[0].line}
-              startLine={commentThread.data[0].start_line}
-              diffHunk={commentThread.data[0].diff_hunk}
-              htmlUrl={commentThread.data[0].html_url}
-              comments={commentThread.data}
-              handleDismiss={() => setOpen(false)}
-              isOverlay={true}
-            />
-          </div>
-        </FloatingFocusManager>
-      )}
+      {children({
+        styleAndClass: {
+          className:
+            'group flex items-center justify-center rounded-full bg-neutral-300 p-0.5 hover:bg-neutral-400',
+          style: {
+            transitionProperty: 'transform, opacity',
+            ...(transitionDelayMs ? { transitionDelay: `${transitionDelayMs}ms` } : {}),
+            opacity: hasEntered ? 1 : 0,
+            transform: `translateY(${hasEntered ? '0px' : '5px'})`,
+            transitionDuration: hasEntered ? '250ms' : '0ms',
+          },
+        },
+      })}
     </div>
   )
 }
