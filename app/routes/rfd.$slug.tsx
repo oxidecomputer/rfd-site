@@ -91,7 +91,7 @@ const setSelectedLineDebounced = debounce((anchorNode: Node) => {
 const updateSelectedLine = () => {
   const selection = document.getSelection()
 
-  if (!selection || !selection.anchorNode || selection.isCollapsed) {
+  if (!selection || !selection.anchorNode) {
     setSelectedLineDebounced.cancel()
     clearSelection()
   } else {
