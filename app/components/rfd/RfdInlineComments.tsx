@@ -206,14 +206,29 @@ const RfdInlineComments = ({
           {({ styleAndClass }) => (
             <a
               {...styleAndClass}
+              // I'm evil. Sorry! But this looks "rounded-full" when collapsed,
+              // without increasing rounding when we expand
+              className={styleAndClass.className.replace(
+                'rounded-full',
+                'rounded-[0.75rem]',
+              )}
               target="_blank"
               href={`${changedFileLink}R${selection.lineNumber}`}
               aria-label={`View line ${selection.lineNumber} on GitHub`}
             >
-              <span className="flex items-center gap-1 px-1 py-0.5 text-xs">
-                <span className="1000:hidden">GH</span>
-                <span className="1000:inline hidden">GitHub</span>
-                <OpenLink12Icon />
+              <span className="flex flex-col px-1 py-0.5 text-xs">
+                <span className="flex items-center gap-1">
+                  <span className="1000:hidden">GH</span>
+                  <span className="1000:inline hidden">GitHub</span>
+                  <OpenLink12Icon />
+                </span>
+                <span className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-150 ease-out group-hover:grid-rows-[1fr] group-focus-visible:grid-rows-[1fr] motion-reduce:transition-none">
+                  <span className="text-tertiary w-0 min-w-full overflow-hidden">
+                    <span className="1000:hidden">L</span>
+                    <span className="1000:inline hidden">line </span>
+                    {selection.lineNumber}
+                  </span>
+                </span>
               </span>
             </a>
           )}
