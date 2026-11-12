@@ -113,10 +113,21 @@ export default function Login() {
 
         <div className="border-t-secondary absolute bottom-0 h-(--header-height) w-full border-t"></div>
       </div>
-      <div className="shadow-modal bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all">
+      {/* id and tabIndex make this the skip link and route announcer target */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="shadow-modal bg-raise 600:w-[24rem] fixed top-1/2 left-1/2 w-[calc(100%-2.5rem)] -translate-x-1/2 -translate-y-1/2 space-y-3 rounded-lg p-6 text-center transition-all outline-none"
+      >
         {!showEmailForm && (
           <>
-            <h1 className="text-sans-2xl light:text-default text-accent mb-8">Sign in</h1>
+            {/* tabIndex and outline-none: the route announcer focuses the h1 */}
+            <h1
+              tabIndex={-1}
+              className="text-sans-2xl light:text-default text-accent mb-8 outline-none"
+            >
+              Sign in
+            </h1>
             <Form action="/auth/google" method="post">
               <Button className="w-full" type="submit">
                 Continue with Google
@@ -140,13 +151,17 @@ export default function Login() {
         )}
         {showEmailForm && emailSuccess && (
           <>
-            <h1 className="text-sans-2xl text-accent mb-4">Email sent</h1>
+            <h1 tabIndex={-1} className="text-sans-2xl text-accent mb-4 outline-none">
+              Email sent
+            </h1>
             <div>Check your email for a login link.</div>
           </>
         )}
         {showEmailForm && !emailSuccess && (
           <>
-            <h1 className="text-sans-2xl text-accent mb-8">Sign in</h1>
+            <h1 tabIndex={-1} className="text-sans-2xl text-accent mb-8 outline-none">
+              Sign in
+            </h1>
             <Form action="/login" method="post" className="space-y-4">
               <input
                 placeholder="Email address"
@@ -172,7 +187,7 @@ export default function Login() {
             </div>
           </>
         )}
-      </div>
+      </main>
     </>
   )
 }

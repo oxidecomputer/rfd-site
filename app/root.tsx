@@ -27,6 +27,7 @@ import {
 import styles from '~/styles/index.css?url'
 
 import LoadingBar from './components/LoadingBar'
+import RouteAnnouncer from './components/RouteAnnouncer'
 import { authenticate, logoutOnAuthError } from './services/auth.server'
 import { inlineCommentsCookie } from './services/cookies.server'
 import { isLocalMode } from './services/rfd.local.server'
@@ -102,9 +103,16 @@ export function ErrorBoundary() {
 
   return (
     <Layout>
-      <div className="flex h-full w-full items-center justify-center">
-        <h1 className="text-2xl">{message}</h1>
-      </div>
+      {/* id and tabIndex make this the skip link and route announcer target */}
+      <main
+        id="content"
+        tabIndex={-1}
+        className="flex h-full w-full items-center justify-center outline-none"
+      >
+        <h1 tabIndex={-1} className="text-2xl outline-none">
+          {message}
+        </h1>
+      </main>
     </Layout>
   )
 }
@@ -132,7 +140,25 @@ const Layout = ({ children }: { children: React.ReactNode }) => (
       )}
     </head>
     <body className="mb-32">
+      {/* Focus the target directly rather than letting the fragment nav change
+          the hash, which React Router would treat as a route change (re-running
+          the announcer, remounting the keyed Header, adding a history entry).
+          Before hydration there is no handler and the native jump still works. */}
+      <a
+        href="#content"
+        onClick={(e) => {
+          const content = document.getElementById('content')
+          if (!content) return
+          e.preventDefault()
+          content.focus()
+        }}
+        className="text-sans-md text-raise bg-tertiary sr-only focus:not-sr-only focus:fixed focus:top-2 focus:left-2 focus:z-50 focus:rounded focus:p-3"
+      >
+        Skip to content
+      </a>
       <div className="root">{children}</div>
+      {/* In Layout, not App, so error pages are announced too */}
+      <RouteAnnouncer />
       <ScrollRestoration />
       <Scripts />
     </body>
