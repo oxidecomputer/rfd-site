@@ -24,7 +24,7 @@ import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import uniqBy from 'lodash/uniqBy'
 import { marked } from 'marked'
-import { ReactNode, useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { renderToString } from 'react-dom/server'
 
 import Container from '~/components/Container'
@@ -35,7 +35,6 @@ import type {
   ListReviewsCommentsType,
   ReviewCommentsType,
 } from '~/services/github-discussion.server'
-import { useSelectedLine } from '~/stores/selected-line'
 import { parseMarkdownText } from '~/utils/markdown'
 import { diffPatchBySeparator } from '~/utils/textDiff'
 
@@ -90,41 +89,39 @@ export const matchCommentToBlock = (
 // Vertical distance between gutter buttons attached to the same block
 const GUTTER_STACK_SPACING = 32
 
-const getRfdDiffHref = async ({ rfd, pull }: { rfd: number; pull: number }) => {
-  const rfdPath = `rfd/${String(rfd).padStart(4, '0')}/README.adoc`
-  const buffer = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(rfdPath))
-  const hash = Array.from(new Uint8Array(buffer))
-    .map((byte) => byte.toString(16).padStart(2, '0'))
-    .join('')
+const subscribeToSelection = (onChange: () => void) => {
+  document.addEventListener('selectionchange', onChange)
+  return () => document.removeEventListener('selectionchange', onChange)
+}
 
-  return `https://github.com/oxidecomputer/rfd/pull/${pull}/changes#diff-${hash}`
+/**
+ * The numbered line element containing the start of the selection. We use this
+ * instead of the literal selection because it shows the user where the link
+ * will land in GitHub.
+ */
+const getSelectedLineEl = () => {
+  const selection = document.getSelection()
+  if (!selection || selection.isCollapsed) return null
+  const node = selection.anchorNode
+  const el = node instanceof Element ? node : node?.parentElement
+  return el?.closest<HTMLElement>('[data-lineno]') ?? null
 }
 
 const RfdInlineComments = ({
-  pullNumber,
+  diffHref,
   rfdNumber,
 }: {
-  pullNumber: number
+  /** Link to the RFD's file in the PR diff, without a line number */
+  diffHref: string
   rfdNumber: number
 }) => {
   const [inlineComments, setInlineComments] = useState<Comment>({})
-  const [changedFileLink, setChangedFileLink] = useState<string | null>(null)
 
-  useEffect(() => {
-    let cancelled = false
-    getRfdDiffHref({ rfd: rfdNumber, pull: pullNumber })
-      .then((href) => {
-        if (!cancelled) setChangedFileLink(href)
-      })
-      // nbd if this fails
-      .catch(() => {})
-
-    return () => {
-      cancelled = true
-    }
-  }, [rfdNumber, pullNumber])
-
-  const { selection } = useSelectedLine()
+  const selectedLineEl = useSyncExternalStore(
+    subscribeToSelection,
+    getSelectedLineEl,
+    () => null,
+  )
 
   const { data: discussion } = useDiscussionQuery(rfdNumber)
 
@@ -182,15 +179,14 @@ const RfdInlineComments = ({
     const commentsTimeout = setTimeout(() => setInlineComments(newComments), 0)
 
     return () => clearTimeout(commentsTimeout)
-  }, [discussion?.comments, discussion?.pullNumber, rfdNumber])
+  }, [discussion?.comments])
 
   // Line-number links are much less useful when there's already a discussion
   // happening on that line, but we have the stacking convention already
-  const threadsOnSelection = selection
-    ? Object.values(inlineComments).filter(
-        (thread) => thread.targetEl === selection.numberedAnchor,
-      ).length
-    : 0
+  const threadsOnSelection = Object.values(inlineComments).filter(
+    (thread) => thread.targetEl === selectedLineEl,
+  ).length
+  const selectedLine = selectedLineEl?.dataset.lineno
 
   return (
     <Container className="z-10 print:hidden">
@@ -198,18 +194,18 @@ const RfdInlineComments = ({
         const commentThread = inlineComments[parseInt(key)]
         return <CommentThread key={key || -1} commentThread={commentThread} index={index} />
       })}
-      {selection && changedFileLink && (
+      {selectedLineEl && (
         <GutterAction
           // we want to prohibit animating between paragraph selections
-          key={selection.lineNumber}
-          anchor={selection.numberedAnchor}
+          key={selectedLine}
+          anchor={selectedLineEl}
           extraOffsetTop={threadsOnSelection * GUTTER_STACK_SPACING}
         >
           <a
             className={cn(gutterActionClassName, 'rounded-[0.75rem]')}
             target="_blank"
-            href={`${changedFileLink}R${selection.lineNumber}`}
-            aria-label={`View line ${selection.lineNumber} on GitHub`}
+            href={`${diffHref}R${selectedLine}`}
+            aria-label={`View line ${selectedLine} on GitHub`}
           >
             <span className="flex flex-col px-1 py-0.5 text-xs">
               <span className="flex items-center gap-1">
@@ -221,7 +217,7 @@ const RfdInlineComments = ({
                 <span className="text-tertiary w-0 min-w-full overflow-hidden">
                   <span className="1000:hidden">L</span>
                   <span className="1000:inline hidden">line </span>
-                  {selection.lineNumber}
+                  {selectedLine}
                 </span>
               </span>
             </span>
