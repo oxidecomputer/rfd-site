@@ -257,7 +257,10 @@ export default function Rfd() {
 
   const bodyRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => clearSelection(), [number])
+  useEffect(() => {
+    clearSelection()
+    setSelectedLineDebounced.cancel()
+  }, [number])
   useEffect(() => {
     document.addEventListener('selectionchange', updateSelectedLine)
     return () => {
