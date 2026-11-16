@@ -20,6 +20,7 @@ export type LocalRfd = {
   content: string
   committedAt: Date
   visibility: 'private'
+  discussion: string | null
 }
 
 export function isLocalMode(): boolean {
@@ -52,6 +53,7 @@ export function fetchLocalRfd(num: number): LocalRfd {
       content,
       committedAt: new Date(0),
       visibility: 'private',
+      discussion: findLineStartingWith(content, ':discussion:') || null,
     }
   } catch {
     throw new Response('Not found', { status: 404 })

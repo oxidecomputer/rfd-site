@@ -13,6 +13,7 @@ import { Octokit } from 'octokit'
 import { any } from '~/utils/permission'
 
 import { getUserPermissions, type User } from './auth.server'
+import { isLocalMode } from './rfd.local.server'
 
 function getOctokitClient() {
   if (process.env.GITHUB_API_KEY) {
@@ -61,7 +62,7 @@ export type ListIssueCommentsType = ListIssueCommentsResponseType['data']
 
 export type IssueCommentType = ListIssueCommentsType[number]
 
-/** Includes auth check: non-internal users can't see discussion */
+/** Includes auth check: non-internal users can't see discussion (skipped in local mode) */
 export async function fetchDiscussion(
   rfd: number,
   pullNumber: number,
@@ -75,9 +76,14 @@ export async function fetchDiscussion(
   const octokit = getOctokitClient()
 
   if (!octokit) return null
-  if (!user) return null
-  const userPermissions = await getUserPermissions(user)
-  if (!any(userPermissions, [{ GetDiscussion: rfd }, 'GetDiscussionsAll'])) return null
+
+  // Local mode has no login. Whoever runs it is free to attempt to read the
+  // discussion using the credentials they give via the environment.
+  if (!isLocalMode()) {
+    if (!user) return null
+    const userPermissions = await getUserPermissions(user)
+    if (!any(userPermissions, [{ GetDiscussion: rfd }, 'GetDiscussionsAll'])) return null
+  }
 
   const reviews: ListReviewsResponseType = await octokit.rest.pulls.listReviews({
     owner: 'oxidecomputer',

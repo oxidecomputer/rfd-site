@@ -212,7 +212,7 @@ export default function Rfd() {
 
   const pullNumber = parsePullNumFromUrl(rfd.discussion)
 
-  const { user, inlineComments } = useRootLoaderData()
+  const { user, inlineComments, localMode } = useRootLoaderData()
 
   // This check is merely cosmetic. It hides UI elements that the user does not have access to and
   // which will fail if they try to use
@@ -225,7 +225,9 @@ export default function Rfd() {
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
-        {inlineComments && user && pullNumber && <RfdInlineComments rfdNumber={number} />}
+        {inlineComments && (user || localMode) && pullNumber && (
+          <RfdInlineComments rfdNumber={number} />
+        )}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (
