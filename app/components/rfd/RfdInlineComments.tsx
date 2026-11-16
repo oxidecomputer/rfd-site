@@ -204,16 +204,11 @@ const RfdInlineComments = ({
           key={selection.lineNumber}
           anchor={selection.numberedAnchor}
           extraOffsetTop={threadsOnSelection * GUTTER_STACK_SPACING}
+          shape="squircle"
         >
           {({ styleAndClass }) => (
             <a
               {...styleAndClass}
-              // I'm evil. Sorry! But this looks "rounded-full" when collapsed,
-              // without increasing rounding when we expand
-              className={styleAndClass.className.replace(
-                'rounded-full',
-                'rounded-[0.75rem]',
-              )}
               target="_blank"
               href={`${changedFileLink}R${selection.lineNumber}`}
               aria-label={`View line ${selection.lineNumber} on GitHub`}
@@ -281,6 +276,7 @@ const CommentThread = ({ commentThread, index }: CommentThreadProps) => {
       anchor={commentThread.targetEl}
       extraOffsetTop={commentThread.offset || 0}
       transitionDelayMs={Math.min(index * 150, 500)}
+      shape="circle"
     >
       {({ styleAndClass }) => (
         <>
@@ -340,6 +336,7 @@ const CommentThread = ({ commentThread, index }: CommentThreadProps) => {
 
 type GutterActionProps = {
   anchor: HTMLElement | null
+  shape: 'circle' | 'squircle'
   children: (args: {
     styleAndClass: { style: React.CSSProperties; className: string }
   }) => ReactNode
@@ -352,6 +349,7 @@ const GutterAction = ({
   children,
   transitionDelayMs,
   extraOffsetTop,
+  shape,
 }: GutterActionProps) => {
   const { size, hasLargeScreen } = useWindowSize()
 
@@ -395,8 +393,6 @@ const GutterAction = ({
     >
       {children({
         styleAndClass: {
-          className:
-            'group flex items-center justify-center rounded-full bg-neutral-300 p-0.5 hover:bg-neutral-400',
           style: {
             transitionProperty: 'transform, opacity',
             ...(transitionDelayMs ? { transitionDelay: `${transitionDelayMs}ms` } : {}),
@@ -404,6 +400,10 @@ const GutterAction = ({
             transform: `translateY(${hasEntered ? '0px' : '5px'})`,
             transitionDuration: hasEntered ? '250ms' : '0ms',
           },
+          className: cn(
+            'group flex items-center justify-center bg-neutral-300 p-0.5 hover:bg-neutral-400',
+            shape === 'circle' ? 'rounded-full' : 'rounded-[0.75rem]',
+          ),
         },
       })}
     </div>
