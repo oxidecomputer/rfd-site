@@ -204,31 +204,28 @@ const RfdInlineComments = ({
           key={selection.lineNumber}
           anchor={selection.numberedAnchor}
           extraOffsetTop={threadsOnSelection * GUTTER_STACK_SPACING}
-          shape="squircle"
         >
-          {({ styleAndClass }) => (
-            <a
-              {...styleAndClass}
-              target="_blank"
-              href={`${changedFileLink}R${selection.lineNumber}`}
-              aria-label={`View line ${selection.lineNumber} on GitHub`}
-            >
-              <span className="flex flex-col px-1 py-0.5 text-xs">
-                <span className="flex items-center gap-1">
-                  <span className="1000:hidden">GH</span>
-                  <span className="1000:inline hidden">GitHub</span>
-                  <OpenLink12Icon />
-                </span>
-                <span className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-150 ease-out group-hover:grid-rows-[1fr] group-focus-visible:grid-rows-[1fr] motion-reduce:transition-none">
-                  <span className="text-tertiary w-0 min-w-full overflow-hidden">
-                    <span className="1000:hidden">L</span>
-                    <span className="1000:inline hidden">line </span>
-                    {selection.lineNumber}
-                  </span>
+          <a
+            className={cn(gutterActionClassName, 'rounded-[0.75rem]')}
+            target="_blank"
+            href={`${changedFileLink}R${selection.lineNumber}`}
+            aria-label={`View line ${selection.lineNumber} on GitHub`}
+          >
+            <span className="flex flex-col px-1 py-0.5 text-xs">
+              <span className="flex items-center gap-1">
+                <span className="1000:hidden">GH</span>
+                <span className="1000:inline hidden">GitHub</span>
+                <OpenLink12Icon />
+              </span>
+              <span className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-150 ease-out group-hover:grid-rows-[1fr] group-focus-visible:grid-rows-[1fr] motion-reduce:transition-none">
+                <span className="text-tertiary w-0 min-w-full overflow-hidden">
+                  <span className="1000:hidden">L</span>
+                  <span className="1000:inline hidden">line </span>
+                  {selection.lineNumber}
                 </span>
               </span>
-            </a>
-          )}
+            </span>
+          </a>
         </GutterAction>
       )}
     </Container>
@@ -275,60 +272,59 @@ const CommentThread = ({ commentThread, index }: CommentThreadProps) => {
     <GutterAction
       anchor={commentThread.targetEl}
       extraOffsetTop={commentThread.offset || 0}
-      transitionDelayMs={Math.min(index * 150, 500)}
-      shape="circle"
     >
-      {({ styleAndClass }) => (
-        <>
-          <button {...styleAndClass} ref={reference} {...getReferenceProps()}>
-            {users.slice(0, 3).map((user, index) => {
-              return (
-                <div
-                  key={index}
-                  className={cn(
-                    'size-6 overflow-hidden rounded-full border-2 border-neutral-300 group-hover:border-neutral-400',
-                    index > 0 && '-ml-2',
-                  )}
-                >
-                  <img
-                    src={user.avatar_url}
-                    className="h-full w-full"
-                    alt={`Avatar for ${user.login}`}
-                  />
-                </div>
-              )
-            })}
-            {users.length > 2 && (
-              <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
-            )}
-          </button>
-          {open && (
-            <FloatingFocusManager context={context} modal={false}>
-              <div
-                ref={floating}
-                {...getFloatingProps}
-                className="z-10"
-                style={{
-                  position: strategy,
-                  top: y ?? 0,
-                  left: x ?? 0,
-                }}
-                aria-labelledby={headingId}
-              >
-                <CommentThreadBlock
-                  path={commentThread.data[0].path}
-                  line={commentThread.data[0].line}
-                  startLine={commentThread.data[0].start_line}
-                  diffHunk={commentThread.data[0].diff_hunk}
-                  htmlUrl={commentThread.data[0].html_url}
-                  comments={commentThread.data}
-                  handleDismiss={() => setOpen(false)}
-                  isOverlay={true}
-                />
-              </div>
-            </FloatingFocusManager>
-          )}
-        </>
+      <button
+        className={cn(gutterActionClassName, 'rounded-full')}
+        style={{ transitionDelay: `${Math.min(index * 150, 500)}ms` }}
+        ref={reference}
+        {...getReferenceProps()}
+      >
+        {users.slice(0, 3).map((user, index) => {
+          return (
+            <div
+              key={index}
+              className={cn(
+                'size-6 overflow-hidden rounded-full border-2 border-neutral-300 group-hover:border-neutral-400',
+                index > 0 && '-ml-2',
+              )}
+            >
+              <img
+                src={user.avatar_url}
+                className="h-full w-full"
+                alt={`Avatar for ${user.login}`}
+              />
+            </div>
+          )
+        })}
+        {users.length > 2 && (
+          <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
+        )}
+      </button>
+      {open && (
+        <FloatingFocusManager context={context} modal={false}>
+          <div
+            ref={floating}
+            {...getFloatingProps}
+            className="z-10"
+            style={{
+              position: strategy,
+              top: y ?? 0,
+              left: x ?? 0,
+            }}
+            aria-labelledby={headingId}
+          >
+            <CommentThreadBlock
+              path={commentThread.data[0].path}
+              line={commentThread.data[0].line}
+              startLine={commentThread.data[0].start_line}
+              diffHunk={commentThread.data[0].diff_hunk}
+              htmlUrl={commentThread.data[0].html_url}
+              comments={commentThread.data}
+              handleDismiss={() => setOpen(false)}
+              isOverlay={true}
+            />
+          </div>
+        </FloatingFocusManager>
       )}
     </GutterAction>
   )
@@ -336,22 +332,17 @@ const CommentThread = ({ commentThread, index }: CommentThreadProps) => {
 
 type GutterActionProps = {
   anchor: HTMLElement | null
-  shape: 'circle' | 'squircle'
-  children: (args: {
-    styleAndClass: { style: React.CSSProperties; className: string }
-  }) => ReactNode
-  transitionDelayMs?: number
+  children: ReactNode
   extraOffsetTop?: number
 }
 
-const GutterAction = ({
-  anchor,
-  children,
-  transitionDelayMs,
-  extraOffsetTop,
-  shape,
-}: GutterActionProps) => {
-  const { size, hasLargeScreen } = useWindowSize()
+const gutterActionClassName = cn(
+  'group flex items-center justify-center bg-neutral-300 p-0.5 hover:bg-neutral-400',
+  'transition-[translate,opacity] duration-250 starting:translate-y-[5px] starting:opacity-0 motion-reduce:transition-opacity',
+)
+
+const GutterAction = ({ anchor, children, extraOffsetTop }: GutterActionProps) => {
+  const { size } = useWindowSize()
 
   // Recalculate the tooltip position when the screen size changes
   const offsetTop = useMemo(
@@ -361,51 +352,22 @@ const GutterAction = ({
     [size, anchor],
   )
 
-  const isRendered = anchor && anchor.isConnected && hasLargeScreen
-
-  // Hide for the first frame so we get the 0->1 transition.
-  const [hasEntered, setHasEntered] = useState(false)
-  useEffect(() => {
-    if (!isRendered) return
-    const frame = requestAnimationFrame(() => {
-      setHasEntered(true)
-    })
-
-    return () => cancelAnimationFrame(frame)
-  }, [isRendered])
-
-  if (!isRendered) {
+  if (!anchor || !anchor.isConnected) {
     return null
   }
 
   return (
     <div
-      className="absolute"
+      className="800:block absolute hidden transition-[margin-top] duration-250 motion-reduce:transition-none"
       style={{
         // The extra offset is subject to change by logic, so we animate it. The
         // regular offset is caused by page resizing or changing anchors, which
         // don't really merit animation.
         top: offsetTop,
         marginTop: extraOffsetTop || 0,
-        transitionProperty: 'margin-top',
-        transitionDuration: '250ms',
       }}
     >
-      {children({
-        styleAndClass: {
-          style: {
-            transitionProperty: 'transform, opacity',
-            ...(transitionDelayMs ? { transitionDelay: `${transitionDelayMs}ms` } : {}),
-            opacity: hasEntered ? 1 : 0,
-            transform: `translateY(${hasEntered ? '0px' : '5px'})`,
-            transitionDuration: hasEntered ? '250ms' : '0ms',
-          },
-          className: cn(
-            'group flex items-center justify-center bg-neutral-300 p-0.5 hover:bg-neutral-400',
-            shape === 'circle' ? 'rounded-full' : 'rounded-[0.75rem]',
-          ),
-        },
-      })}
+      {children}
     </div>
   )
 }
