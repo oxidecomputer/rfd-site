@@ -200,6 +200,8 @@ const RfdInlineComments = ({
       })}
       {selection && changedFileLink && (
         <GutterAction
+          // we want to prohibit animating between paragraph selections
+          key={selection.lineNumber}
           anchor={selection.numberedAnchor}
           extraOffsetTop={threadsOnSelection * GUTTER_STACK_SPACING}
         >
