@@ -17,8 +17,6 @@ function useWindowSize() {
     height: 0,
   })
 
-  const [hasLargeScreen, setHasLargeScreen] = useState<boolean>(false)
-
   useEffect(() => {
     // Only execute all the code below in client side
     if (typeof window !== 'undefined') {
@@ -29,8 +27,6 @@ function useWindowSize() {
           width: window.innerWidth,
           height: window.innerHeight,
         })
-
-        setHasLargeScreen(window.innerWidth >= 800)
       }
 
       window.addEventListener('resize', handleResize)
@@ -41,10 +37,7 @@ function useWindowSize() {
     }
   }, [])
 
-  return {
-    size,
-    hasLargeScreen,
-  }
+  return { size }
 }
 
 export default useWindowSize
