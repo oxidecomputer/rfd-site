@@ -5,6 +5,7 @@
  *
  * Copyright Oxide Computer Company
  */
+import { createHash } from 'crypto'
 import {
   DesktopOutline,
   SmallScreenOutline,
@@ -113,9 +114,18 @@ export async function loader({ request, url, params: { slug } }: LoaderFunctionA
     groups.unshift('public')
   }
 
+  // GitHub identifies a file in a PR diff by the SHA-256 of its path
+  const pathHash = createHash('sha256')
+    .update(`rfd/${canonicalSlug}/README.adoc`)
+    .digest('hex')
+  const diffHref = parsePullNumFromUrl(rfd.discussion)
+    ? `${rfd.discussion}/changes#diff-${pathHash}`
+    : null
+
   return {
     rfd,
     groups,
+    diffHref,
   }
 }
 
@@ -207,7 +217,7 @@ const SectionTrackingOutlines = ({
 export default function Rfd() {
   const { pathname, hash } = useLocation()
 
-  const { rfd, groups } = useLoaderData<typeof loader>()
+  const { rfd, groups, diffHref } = useLoaderData<typeof loader>()
   const { number, title, state, authors, labels, latestMajorChangeAt, content } = rfd
 
   const pullNumber = parsePullNumFromUrl(rfd.discussion)
@@ -225,7 +235,10 @@ export default function Rfd() {
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
-        {inlineComments && user && pullNumber && <RfdInlineComments rfdNumber={number} />}
+        {inlineComments && user && diffHref && (
+          // key makes comments get matched to the new RFD's lines on navigation
+          <RfdInlineComments key={number} diffHref={diffHref} rfdNumber={number} />
+        )}
         <RfdPreview currentRfd={number} />
         <Container isGrid className="page-header 800:mb-16 mb-12">
           {state && (

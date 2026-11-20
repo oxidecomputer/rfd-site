@@ -17,13 +17,14 @@ import {
   useInteractions,
   useRole,
 } from '@floating-ui/react'
+import { OpenLink12Icon } from '@oxide/design-system/icons/react'
 import { Badge } from '@oxide/design-system/ui'
 import cn from 'classnames'
 import dayjs from 'dayjs'
 import relativeTime from 'dayjs/plugin/relativeTime'
 import uniqBy from 'lodash/uniqBy'
 import { marked } from 'marked'
-import { useEffect, useMemo, useState } from 'react'
+import { ReactNode, useEffect, useMemo, useState, useSyncExternalStore } from 'react'
 import { renderToString } from 'react-dom/server'
 
 import Container from '~/components/Container'
@@ -85,9 +86,42 @@ export const matchCommentToBlock = (
   return block
 }
 
-const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
-  const [isLoaded, setIsLoaded] = useState(false)
+// Vertical distance between gutter buttons attached to the same block
+const GUTTER_STACK_SPACING = 32
+
+const subscribeToSelection = (onChange: () => void) => {
+  document.addEventListener('selectionchange', onChange)
+  return () => document.removeEventListener('selectionchange', onChange)
+}
+
+/**
+ * The numbered line element containing the start of the selection. We use this
+ * instead of the literal selection because it shows the user where the link
+ * will land in GitHub.
+ */
+const getSelectedLineEl = () => {
+  const selection = document.getSelection()
+  if (!selection || selection.isCollapsed) return null
+  const node = selection.anchorNode
+  const el = node instanceof Element ? node : node?.parentElement
+  return el?.closest<HTMLElement>('[data-lineno]') ?? null
+}
+
+const RfdInlineComments = ({
+  diffHref,
+  rfdNumber,
+}: {
+  /** Link to the RFD's file in the PR diff, without a line number */
+  diffHref: string
+  rfdNumber: number
+}) => {
   const [inlineComments, setInlineComments] = useState<Comment>({})
+
+  const selectedLineEl = useSyncExternalStore(
+    subscribeToSelection,
+    getSelectedLineEl,
+    () => null,
+  )
 
   const { data: discussion } = useDiscussionQuery(rfdNumber)
 
@@ -136,52 +170,71 @@ const RfdInlineComments = ({ rfdNumber }: { rfdNumber: number }) => {
 
       groupedCommentKeys.forEach((key, index) => {
         const groupedComment = newComments[key]
-        groupedComment.offset = index * 32
+        groupedComment.offset = index * GUTTER_STACK_SPACING
       })
     })
 
     // Group comments by block. Defer the state updates so the effect only
     // synchronizes with the rendered document and does not cascade renders.
-    const commentsTimeout = setTimeout(() => {
-      setInlineComments(newComments)
-      setIsLoaded(false)
-    }, 0)
-    const loadedTimeout = setTimeout(() => setIsLoaded(true), 50)
+    const commentsTimeout = setTimeout(() => setInlineComments(newComments), 0)
 
-    return () => {
-      clearTimeout(commentsTimeout)
-      clearTimeout(loadedTimeout)
-    }
+    return () => clearTimeout(commentsTimeout)
   }, [discussion?.comments])
 
-  if (!inlineComments) return null
+  // Line-number links are much less useful when there's already a discussion
+  // happening on that line, but we have the stacking convention already
+  const threadsOnSelection = Object.values(inlineComments).filter(
+    (thread) => thread.targetEl === selectedLineEl,
+  ).length
+  const selectedLine = selectedLineEl?.dataset.lineno
 
   return (
     <Container className="z-10 print:hidden">
       {Object.keys(inlineComments).map((key, index) => {
         const commentThread = inlineComments[parseInt(key)]
-        return (
-          <CommentThread
-            key={key || -1}
-            commentThread={commentThread}
-            isLoaded={isLoaded}
-            index={index}
-          />
-        )
+        return <CommentThread key={key || -1} commentThread={commentThread} index={index} />
       })}
+      {selectedLineEl && (
+        <GutterAction
+          // we want to prohibit animating between paragraph selections
+          key={selectedLine}
+          anchor={selectedLineEl}
+          extraOffsetTop={threadsOnSelection * GUTTER_STACK_SPACING}
+        >
+          <a
+            className={cn(gutterActionClassName, 'rounded-[0.75rem]')}
+            target="_blank"
+            href={`${diffHref}R${selectedLine}`}
+            aria-label={`View line ${selectedLine} on GitHub`}
+          >
+            <span className="flex flex-col px-1 py-0.5 text-xs">
+              <span className="flex items-center gap-1">
+                <span className="1000:hidden">GH</span>
+                <span className="1000:inline hidden">GitHub</span>
+                <OpenLink12Icon />
+              </span>
+              <span className="grid grid-rows-[0fr] transition-[grid-template-rows] duration-150 ease-out group-hover:grid-rows-[1fr] group-focus-visible:grid-rows-[1fr] motion-reduce:transition-none">
+                <span className="text-tertiary w-0 min-w-full overflow-hidden">
+                  <span className="1000:hidden">L</span>
+                  <span className="1000:inline hidden">line </span>
+                  {selectedLine}
+                </span>
+              </span>
+            </span>
+          </a>
+        </GutterAction>
+      )}
     </Container>
   )
 }
 
 type CommentThreadProps = {
   commentThread: CommentThreadData
-  isLoaded: boolean
   index: number
 }
 
-const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) => {
+const CommentThread = ({ commentThread, index }: CommentThreadProps) => {
   const [open, setOpen] = useState(false)
-  const { size, hasLargeScreen } = useWindowSize()
 
   const { context, x, y, reference, floating, strategy } = useFloating({
     open,
@@ -202,14 +255,6 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
 
   const headingId = useId()
 
-  // Recalculate the tooltip position when the screen size changes
-  const offsetTop = useMemo(
-    () => (commentThread.targetEl ? calcOffset(commentThread.targetEl).top : 0),
-    // it gets mad when you have extra deps, which is silly
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [size, commentThread.targetEl],
-  )
-
   const users = useMemo(
     () =>
       uniqBy(
@@ -219,27 +264,15 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
     [commentThread],
   )
 
-  if (!commentThread.targetEl || !hasLargeScreen) {
-    return null
-  }
-
   return (
-    <div
-      className="absolute"
-      style={{
-        top: offsetTop + (commentThread.offset || 0),
-      }}
+    <GutterAction
+      anchor={commentThread.targetEl}
+      extraOffsetTop={commentThread.offset || 0}
     >
       <button
-        className="group flex items-center justify-center rounded-full bg-neutral-300 p-0.5 hover:bg-neutral-400"
+        className={cn(gutterActionClassName, 'rounded-full')}
+        style={{ transitionDelay: `${Math.min(index * 150, 500)}ms` }}
         ref={reference}
-        style={{
-          transitionProperty: 'transform, opacity',
-          transitionDelay: `${Math.min(index * 150, 500)}ms`,
-          opacity: isLoaded ? 1 : 0,
-          transform: `translateY(${isLoaded ? '0px' : '5px'})`,
-          transitionDuration: isLoaded ? '250ms' : '0ms',
-        }}
         {...getReferenceProps()}
       >
         {users.slice(0, 3).map((user, index) => {
@@ -263,7 +296,6 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
           <div className="text-mono-sm text-tertiary">+{users.length - 2}</div>
         )}
       </button>
-
       {open && (
         <FloatingFocusManager context={context} modal={false}>
           <div
@@ -290,6 +322,48 @@ const CommentThread = ({ commentThread, isLoaded, index }: CommentThreadProps) =
           </div>
         </FloatingFocusManager>
       )}
+    </GutterAction>
+  )
+}
+
+type GutterActionProps = {
+  anchor: HTMLElement | null
+  children: ReactNode
+  extraOffsetTop?: number
+}
+
+const gutterActionClassName = cn(
+  'group flex items-center justify-center bg-neutral-300 p-0.5 hover:bg-neutral-400',
+  'transition-[translate,opacity] duration-250 starting:translate-y-[5px] starting:opacity-0 motion-reduce:transition-opacity',
+)
+
+const GutterAction = ({ anchor, children, extraOffsetTop }: GutterActionProps) => {
+  const { size } = useWindowSize()
+
+  // Recalculate the tooltip position when the screen size changes
+  const offsetTop = useMemo(
+    () => (anchor ? calcOffset(anchor).top : 0),
+    // it gets mad when you have extra deps, which is silly
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [size, anchor],
+  )
+
+  if (!anchor || !anchor.isConnected) {
+    return null
+  }
+
+  return (
+    <div
+      className="800:block absolute hidden transition-[margin-top] duration-250 motion-reduce:transition-none"
+      style={{
+        // The extra offset is subject to change by logic, so we animate it. The
+        // regular offset is caused by page resizing or changing anchors, which
+        // don't really merit animation.
+        top: offsetTop,
+        marginTop: extraOffsetTop || 0,
+      }}
+    >
+      {children}
     </div>
   )
 }

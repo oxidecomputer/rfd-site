@@ -64,7 +64,7 @@
     "@eslint/compat": "^2.1.0",
     "@eslint/js": "^9.39.5",
     "@ianvs/prettier-plugin-sort-imports": "^4.7.0",
-    "@playwright/test": "^1.55.1",
+    "@playwright/test": "^1.64.1",
     "@react-router/dev": "^8.3.0",
     "@tailwindcss/line-clamp": "^0.4.4",
     "@types/d3": "^7.4.3",
