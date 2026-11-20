@@ -222,7 +222,7 @@ export default function Rfd() {
 
   const pullNumber = parsePullNumFromUrl(rfd.discussion)
 
-  const { user, inlineComments } = useRootLoaderData()
+  const { user, inlineComments, localMode } = useRootLoaderData()
 
   // This check is merely cosmetic. It hides UI elements that the user does not have access to and
   // which will fail if they try to use
@@ -235,7 +235,7 @@ export default function Rfd() {
       {/* key makes the search dialog close on selection */}
       <Header currentRfd={rfd} key={pathname + hash} />
       <main className="800:mt-16 relative mt-12 pb-20 print:mt-0">
-        {inlineComments && user && diffHref && (
+        {inlineComments && (user || localMode) && diffHref && (
           // key makes comments get matched to the new RFD's lines on navigation
           <RfdInlineComments key={number} diffHref={diffHref} rfdNumber={number} />
         )}

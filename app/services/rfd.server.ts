@@ -349,7 +349,7 @@ async function localRfdToItem(rfd: LocalRfd): Promise<RfdItem> {
     latestMajorChangeAt: rfd.committedAt,
 
     link: null,
-    discussion: null,
+    discussion: rfd.discussion,
     authors: [],
     labels: [],
     sha: null,
