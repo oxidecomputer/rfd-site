@@ -72,7 +72,9 @@ export type RfdListItem = {
 export async function fetchGroups(
   user: User | null,
 ): Promise<AccessGroup_for_RfdPermission[]> {
-  if (isLocalMode()) {
+  // The API rejects anonymous callers with a 401, which would otherwise be
+  // treated as a stale session. Anonymous users can't list groups anyway.
+  if (isLocalMode() || !user) {
     return []
   } else {
     return await fetchRemoteGroups(user)
@@ -105,7 +107,8 @@ export async function fetchRfdJobs(num: number, user: User | null): Promise<Job[
   if (num < 1 || num > 9999) return []
 
   try {
-    if (isLocalMode()) {
+    // Anonymous callers get a 401 from the API; see fetchGroups.
+    if (isLocalMode() || !user) {
       return []
     } else {
       return await fetchRemoteRfdJobs(num, user)
